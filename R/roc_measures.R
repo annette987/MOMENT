@@ -45,7 +45,7 @@ ROC = R6::R6Class("ROC", list(
 #' @docType package
 NULL
 
-ROCMultiClass = R6Class("ROCMultiClass", list(
+ROCMultiClass = R6::R6Class("ROCMultiClass", list(
 	roc_mc = NULL,
 	auroc  = 0,
 	
