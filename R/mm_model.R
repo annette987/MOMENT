@@ -330,7 +330,7 @@ MM_Model = R6::R6Class("MM_Model",
 			mod = self$get_modality(config, idx)
 			
 			if (is.null(selected) || (length(selected) == 0)) {
-				raw = sqldf::read.csv.sql(filename, header = TRUE, row.names = row_names, eol = "\r\n")
+				suppressWarnings(raw <- sqldf::read.csv.sql(filename, header = TRUE, row.names = row_names, eol = "\r\n"))
 				raw[raw == ''] = NA
 			} else {
 				selected = selected[!selected %in% c(exclusions, "")]
@@ -341,10 +341,10 @@ MM_Model = R6::R6Class("MM_Model",
 				}
 
 				if (transposing) {
-					suppressWarnings(raw = sqldf::read.csv.sql(filename, header=TRUE, row.names = row_names, eol = "\r\n", sql = paste0("select * from file where ID in ('", paste(selected, collapse = "','"), "')" )))
+					suppressWarnings(raw <- sqldf::read.csv.sql(filename, header=TRUE, row.names = row_names, eol = "\r\n", sql = paste0("select * from file where ID in ('", paste(selected, collapse = "','"), "')" )))
 					raw[raw == ''] = NA		
 				} else {
-					suppressWarnings(raw = sqldf::read.csv.sql(filename, header=TRUE, row.names = row_names, eol = "\r\n", sql = paste0("select `", paste(selected, collapse = "`,`"), "` from file")))
+					suppressWarnings(raw <- sqldf::read.csv.sql(filename, header=TRUE, row.names = row_names, eol = "\r\n", sql = paste0("select `", paste(selected, collapse = "`,`"), "` from file")))
 					raw[raw == ''] = NA
 				}
 			}
@@ -432,7 +432,7 @@ MM_Model = R6::R6Class("MM_Model",
 				tasks[[task_id]] = tsk
 			}
 			
-			if (!is.null(subset) && subset != "") {
+			if (!is.null(subset)) {
 				tasks = tasks[subset]
 				tasks = tasks[!is.na(tasks)]
 			}

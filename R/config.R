@@ -151,20 +151,17 @@ config = function(filename) {
 	stopifnot(file.exists(filename))
 	cf = NULL
 	
-	if (file_ext(filename) == "csv") {
+	if (tools::file_ext(filename) == "csv") {
 		config_data = read.csv(filename, header=TRUE, row.names=NULL, check.names=FALSE, fileEncoding="UTF-8-BOM")
 		cf = new_config_single(config_data, 1)
 		cf$baseModels = list(new_config_base_empty())
-	} else if (file_ext(filename) == "xlsx") {
+	} else if (tools::file_ext(filename) == "xlsx") {
 		sheet_names = readxl::excel_sheets(filename)
 		config_data = as.data.frame(readxl::read_excel(filename, sheet = "Main"))
 		cf = new_config(config_data, 1)
 		
 		if (is.na(cf$dataDir) || is.null(cf$dataDir)) {
 			cf$dataDir = "."
-		}
-		if (is.na(cf$cacheDir) || is.null(cf$cacheDir)) {
-			cf$cacheDir = "."
 		}
 		
 		base_data = as.data.frame(readxl::read_excel(filename, sheet = "BaseModels"))
