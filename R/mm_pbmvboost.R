@@ -136,8 +136,6 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 	#	:param example_weights : Weight of input training examples
 	#	:return: Weight of Classifier, training data labels, test data labels.
 		learn_classifier = function(view_name, view_index, train_subset, test_subset, example_weights, classes) {
-			print("In learn_classifier")
-			print(view_index)
 			X_train = self$X_train[[view_name]]
 			X_test = self$X_test[[view_name]]
 			y_train = self$y_train[[view_name]]
@@ -148,7 +146,6 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 			# handled by taking a weighted sample of the training set and using that.
 			
 			wght_sample = sample(train_subset, length(train_subset), replace = TRUE, prob = example_weights)
-			print("Training ...")
 			mod = mlr::train(learner = self$learners[[view_index]], task = self$tasks[[view_index]], subset = wght_sample)
 			pred_train = mlr:::predict.WrappedModel(mod, task = self$tasks[[view_index]], subset = train_subset)
 			pred_test  = mlr:::predict.WrappedModel(mod, task = self$tasks[[view_index]], subset = test_subset)
@@ -159,7 +156,7 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 			
 			#computing error
 			if (mlr::isFailureModel(mod)) {
-				print(paste0("Model ", view_index, " failed: ", mlr::getFailureModelMsg(mod)))
+				warning(paste0("Model ", view_index, " failed: ", mlr::getFailureModelMsg(mod)))
 				error_t_weighted = 0
 			} else {
 				error_t = as.numeric(as.character(predicted_labels_train) != as.character(y_train))
@@ -340,7 +337,6 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 	#          Also, Multiview C-Bound value on Training Data after T iterations.
 
 		learn_pbmv = function(train_subset, test_subset, classes, fold) {
-			print("Learning ...")
 			result_futures = list()
 			
 			#Initializing weights for training data (Line 1 and 2 of Algorithm)
@@ -400,8 +396,6 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 				# Computing Majority-vote error and f1-measure at each iteration.
 				test_predictions = self$calculate_majority_vote(data='test', classes)
 				train_predictions = self$calculate_majority_vote(data='train', classes)
-				print("Test predictions:")
-				print(test_predictions)
 
 				results_test = self$compute_stats(predicted_values = test_predictions, true_values = self$y_test[[view_name]])
 				results_train = self$compute_stats(predicted_values = train_predictions, true_values = self$y_train[[view_name]])
@@ -424,43 +418,25 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 		# Extract the feature importance scores from each model on each iteration on one fold of data.
 		# Then multiple these by the weights for each model.
 		get_feature_importances = function(fold) {
-#			print("In get_feature_importances")
 			feats = list()
 			feat_scores = list()
 			
 			# First extract the feature importance scores from the saved models for each task
 			for (view_name in self$all_views) {
 				feats[[view_name]] = list()
-#				print(view_name)
 		
 				for (i in 1:length(private$models[[view_name]])) {
-#					print(paste0("i = ", i))
 					if (mlr::isFailureModel(private$models[[view_name]][[i]])) {
-						print(paste0("Model for ", view_name, " failed on iteration ", i))
-						print(mlr::getFailureModelMsg(private$models[[view_name]][[i]]))
+						warning(paste0("Model for ", view_name, " failed on iteration ", i))
+						warning(mlr::getFailureModelMsg(private$models[[view_name]][[i]]))
 					} else {
-#						print(paste0("Saving features for ", view_name, ", ", i))
 						self$results$save_features(private$models[[view_name]][[i]], self$tasks[[view_name]], "PBMV", fold)
-
-#						scores = getFeatImpScores(mlr::getLearnerModel(private$models[[view_name]][[i]], more.unwrap = TRUE), classes)
-#						selected = mlr::getFilteredFeatures(getLearnerModel(private$models[[view_name]][[i]], more.unwrap = FALSE))
-#						not_selected = setdiff(mlr::getTaskFeatureNames(self$tasks[[view_name]]), selected)
-#						feats[[view_name]][[i]] = scores[, "all"]
-#						names(feats[[view_name]][[i]]) = rownames(scores)
-#						if (length(not_selected) > 0) {
-#							feats[[view_name]][[i]][not_selected] = 0
-#							names(feats[[view_name]][[i]][not_selected]) = not_selected
-#						}
 					}
 				}
 
 				# Calculate the weighted scores using the model weights
-#				print(view_name)
-#				print(self$results$feats$featsel[[view_name]])
 				df = as.data.frame(dplyr::bind_rows(self$results$feats$featsel[[view_name]]))
-#				print(df)
 				seln_counts = colSums(df != 0)
-#				print(seln_counts)
 
 				if (length(self$weights_classfiers) > 1) {
 					feat_scores[[view_name]] = colSums(sapply(df, function(x) {unlist(self$weights_classfiers) * unlist(x)}), na.rm = TRUE) / sum(unlist(self$weights_classfiers))
@@ -473,18 +449,13 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 		
 		learn = function()
 		{
-			print("In learn")
 			final_response = list()
 			tree_depth = 2
 
 			for (rep in 1:self$ri$desc$reps) {
-				print(paste("Rep = ", rep))
-
 				fold_responses = list()
 				for (fold in 1:self$ri$desc$folds) {
-					print(paste("Fold = ", fold))
 					subset_idx = (rep - 1) * self$ri$desc$folds + fold
-					print(paste("Subset Index = ", subset_idx))
 					train_subset = self$ri$train.inds[[subset_idx]]
 					test_subset = self$ri$test.inds[[subset_idx]]
 					

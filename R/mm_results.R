@@ -17,11 +17,8 @@ MM_Results = R6::R6Class("MM_Results",
 			
 		initialize = function(classes, tasks, measures, model_type = "VOTE", decision = "response")
 		{
-			print("Initialising results")
 			self$classes = classes
 			self$task_desc = tasks[[1]]$task.desc
-			print("Got task description")
-			print(self$task_desc)
 			self$predn = Prediction$new()
 			self$roc = ROCMultiClass$new()
 			self$perf = Performance$new(measures)
@@ -29,26 +26,16 @@ MM_Results = R6::R6Class("MM_Results",
 			self$feats = Features$new(tasks)
 			self$model_type = model_type
 			self$decision = decision
-			print("Results initialised")
 		},
 		
 		save_responses = function(responses, rpt, fold)
 		{
-			print("Saving responses")
-			print(self$model_type)
-			print(self$classes)
-			print(self$decision)
-			print(head(responses))
 			stopifnot(self$model_type != "SURV")
 			stopifnot(inherits(responses, "data.frame") && (all(c("response", "truth") %in% colnames(responses))) && self$model_type != "SURV")
 			responses$rpt = rpt
 			responses$fold = fold
 			private$responses = rbind(private$responses, responses)	
-			print("Task description:")
-			print(self$task_desc)			
 			pred_resp = self$make_mlr_prediction(responses, self$task_desc, self$decision, "PredictionClassif")
-			print("Task 1:")
-			print(self$tasks[[1]])
 			self$perf$calculate(pred_resp, self$tasks[[1]])
 			self$roc$calc(responses$truth, responses$response, as.list(self$classes))
 		},

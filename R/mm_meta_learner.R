@@ -148,7 +148,6 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 		#
 		predict = function(meta_model, test_set)
 		{
-			print("In predict")
 			# Get predictions from base learners on each fold of validation data
 			meta_data = list()
 			for (i in 1:length(self$learners)) {
@@ -173,7 +172,6 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 		#	
 		learn = function()
 		{
-			print("In learn")
 			for (rep in 1:self$ri$desc$reps) {
 				for (fold in 1:self$ri$desc$folds) {
 					subset_idx = (rep - 1) * self$ri$desc$folds + fold

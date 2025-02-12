@@ -55,10 +55,10 @@ mlr::makeFilter(
       }
 			
       if (length(to_keep) == 0){
-        print('Boruta selected 0 features! Using 2 random features')
+        warning('Boruta selected 0 features! Using 2 random features')
         to_keep = sample(colnames(X), 2)
       } else if (length(to_keep) == 1){
-			  print('Boruta selected only 1 feature! Choosing 1 more at random')
+			  warning('Boruta selected only 1 feature! Choosing 1 more at random')
         to_keep = c(to_keep, sample(colnames(X[!colnames(X) %in% to_keep]), 1))
 			}
 			

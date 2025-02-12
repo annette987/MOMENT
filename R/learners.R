@@ -9,20 +9,6 @@ Learners = R6::R6Class("Learners",
 		base_filters				= list(),
 		
 		initialize = function(learner_type) {
-#			psqrt = round(sqrt(num_features))
-#			tune_lowerlim = 5
-#			tune_upperlim = round(num_features/2)
-#			if (tune_upperlim < tune_lowerlim) {
-#				tune_upperlim = num_features
-#				tune_lowerlim = 0
-#			}
-#			print(paste0("Tuning limits: Lower - ", tune_lowerlim, " Upper - ", tune_upperlim))
-			#	tune_upperlim = min(round(num_features/2), MAX_FEATURES)
-			#	tune_seq = seq(from = tune_lowerlim, to = tune_upperlim, by = 5)
-			#	ctrl = makeTuneControlRandom(maxit = 5)
-#			ctrl = makeTuneControlRandom(maxit = 10)
-			#	ctrl = makeTuneControlGrid(resolution = 5L)				
-
 			rfsrc_params1 = makeParamSet(
 			#		makeIntegerParam("mtry", lower = round(psqrt/2), upper = psqrt*2),
 					makeIntegerParam("nodesize", lower = 1, upper = 20)
@@ -64,19 +50,12 @@ Learners = R6::R6Class("Learners",
 													"code" = LRN_GBM,
 													"name" = "GBM",
 													"tune_params" = NULL,
-					#								"args" = list(distribution = "multinomial", n.trees = 1000, interaction.depth = 6, shrinkage = 0.01, n.minobsinnode = 5, keep.data = TRUE)),
-					#								"args" = list(distribution = "bernoulli", n.trees = 1000, n.minobsinnode = 1)),
 													"args" = list(n.trees = 1000, interaction.depth = 6, shrinkage = 0.01, n.minobsinnode = 5, keep.data = TRUE)),
 						"XGBTREE" = list("class" = "classif.xgboost",
 													"code" = LRN_XGB_TREE,
 													"name" = "XGBTREE",
 													"tune_params" = xgbtree_params,
 													"args" = list(booster = BOOSTER_TREE, objective = "multi:softprob", eval_metric = "mlogloss", num_class = 4, max_depth = 5, eta = 0.001, gamma = 3, subsample = 0.75)),
-					#	"SVM" = list("class" = "classif.svm",
-					#								"code" = LRN_SVM,
-					#								"name" = "SVM",
-					#								"tune_params" = svm_params,
-					#								"args" = list(kernel = "linear", cost = 1)),
 						"NB" = list("class" = "classif.naiveBayes",
 													"code" = LRN_NB,
 													"name" = "NB",
@@ -223,7 +202,6 @@ Learners = R6::R6Class("Learners",
 
 		create_learners = function(config, learner_type, pred_type = "response", balance = FALSE, subset = NULL, model_name = NULL)
 		{
-			print("In create_learners")
 			learners = list()
 			
 			for (i in 1:length(config$baseModels)) {
@@ -285,7 +263,6 @@ Learners = R6::R6Class("Learners",
 		
 		create_learner = function(targetVar, baselrn, featsel = NULL, learner_type = TASK_CLASSIF, pred_type = "response", balance = FALSE, norm = NULL, imp = NULL)
 		{
-			print("In create_learner - single")
 			#NB - check for valid values of lrn_idx and fs_idx
 			
 			if (length(baselrn$args) == 0) {

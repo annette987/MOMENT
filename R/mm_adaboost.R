@@ -66,7 +66,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' mod = MM_Adaboost$get_final_decision()
 		#' @noRd
 		get_final_decision = function(results, classes, iter) {
-			print("In get_final_decision")
 			if (self$decision %in% c('vote', 'hard')) {
 				# Calculate final prediction with a majority vote across modalities
 				raw_responses = as.data.frame(results[,!colnames(results) %in% c('id', 'ID', 'truth')])
@@ -86,37 +85,29 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					results$response = strsplit(as.character(results$response), ".", fixed = TRUE)
 					results$response = as.factor(sapply(results$response, "[[", 2))
 				} else {
-					print("Response is NULL!")
+					warning("Response is NULL!")
 				}
 
 			} else if (self$decision == "meta") {
 				# Train a meta learner on the results of the base learners or predict using meta model
 				meta_data = as.data.frame(results[,!colnames(results) %in% c('id', 'ID')])   # Should we match?
-				print("TRAINING META DATA:")
-				print(meta_data)
 				meta_task = makeClassifTask(id = "MetaLearner", data = meta_data, target = 'truth')
-				print("Got meta task")
 				
 				if (length(self$meta_models) < iter) {
 					self$meta_models[[iter]] = mlr::train(self$meta_learner, meta_task)
-					print("Model trained")
 					if (isFailureModel(self$meta_models[[iter]])) {
-						print(paste0("Meta learner failed"))
-						print(getFailureModelMsg(self$meta_models[[iter]]))
+						warning(paste0("Meta learner failed"))
+						warning(getFailureModelMsg(self$meta_models[[iter]]))
 					}
 					
 					mod = getLearnerModel(self$meta_models[[iter]], more.unwrap = TRUE)
 					results$response = mod$class.oob
-					print("RESULTS:")
-					print(results)
 					
 					if (inherits(mod, "cv.glmnet")) {
 						coef.min = coef(mod, s = mod$lambda.min)
 					}
 				} else {
-					print("PREDICTING META DATA")
 					pred = mlr:::predict.WrappedModel(self$meta_models[[iter]], newdata = meta_data)
-					print(pred$data)
 					results$response = pred$data$response
 				}
 			}
@@ -145,8 +136,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' @noRd
 		get_predictions = function(train_subset, test_subset, classes, iter) 
 		{
-			print("In get_predictions")
-			print(classes)
 			predns = NULL
 			model_futures = list()
 			predn_futures = list()
@@ -154,10 +143,8 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 
 			# Train a model on each task (modality) in parallel and wait for the results
 			for (i in 1:length(self$tasks)) {
-				print(paste0("Task ", i))
 				lrn_idx = ifelse(length(self$tasks) == length(self$learners), i, 1L)
 				task_id = self$tasks[[i]]$task.desc$id
-				print(task_id)
 				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[lrn_idx]], task = self$tasks[[i]], subset = train_subset))
 			}
 			future::resolve(model_futures)
@@ -167,8 +154,8 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				task_id = self$tasks[[i]]$task.desc$id
 				self$models[[iter]][[task_id]] = value(model_futures[[i]])
 				if (mlr::isFailureModel(self$models[[iter]][[task_id]])) {
-					print(paste0("Model ", task_id, " failed"))
-					print(mlr::getFailureModelMsg(self$models[[iter]][[task_id]]))
+					warning(paste0("Model ", task_id, " failed"))
+					warning(mlr::getFailureModelMsg(self$models[[iter]][[task_id]]))
 				}
 				predn_futures[[i]] = future::future(mlr:::predict.WrappedModel(self$models[[iter]][[task_id]], task = self$tasks[[i]], subset = test_subset))
 			}
@@ -185,20 +172,15 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					predns$ID = rownames(pred$data)
 				}
 
-				print(self$decision)
 				if (self$decision %in% c("vote", "hard") || self$decision == "meta") {
 					if (!any(is.na(pred$data$response))) {
 						predns[, task_id] = pred$data[match(predns$ID, rownames(pred$data)), 'response']
 					}
 				} else {
-						print(head(pred$data))
 						probs = pred$data[, grepl("prob.", colnames(pred$data))]
-						print(probs)
 						probs$ID = rownames(pred$data)
 						prob_cols = paste0("prob.", levels(classes))
-						print(prob_cols)
 						predns[, paste0(task_id, ".", levels(classes))] = probs[match(predns$ID, probs$ID), prob_cols, drop = FALSE]
-						print(head(predns))
 				}
 			}			
 			return(as.data.frame(predns))
@@ -218,7 +200,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' 	train(training_set, 1, "Diagnosis")
 		#' @export
 		train = function(train_subset) {
-			print("Training")
 			boost_iter = 1
 			correct = rep(0, length(train_subset))
 				
@@ -229,10 +210,9 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			# Boosting loop: stop if maximum number of iterations is reached or if all samples predicted correctly.
 			# If all predicted correctly, then weights won't be updated, so no point continuing
 			while (boost_iter <= self$nrounds && any(correct == 0)) {
-				print(paste0("boost iter = ", boost_iter))
 				predictions = self$get_predictions(wght_sample, train_subset, self$classes, boost_iter)
 				if (all(is.na(predictions[, !names(predictions) %in% c('id', 'ID', 'truth', 'response')]))) { 
-					print("All models failed!")
+					warning("All models failed!")
 					correct = rep(FALSE, length(train_subset))
 				} else {
 					predictions = self$get_final_decision(predictions, self$classes, boost_iter)
@@ -272,13 +252,13 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				# Resample with updated weights 
 				wght_sample = sample(train_subset, length(train_subset), replace = TRUE, prob = weights)
 				while (length(unique(predictions[wght_sample, self$targetVar])) != length(unique(predictions[train_subset, self$targetVar]))) {
-					print("Not all classes represented in sample - trying again")
+					warning("Not all classes represented in sample - trying again")
 					wght_sample = sample(train_subset, length(train_subset), replace = TRUE, prob = weights)
 				}
 				boost_iter = boost_iter + 1
 			}
 			if (boost_iter < self$nrounds) {
-				print(paste0("Stopped early after ", boost_iter, " rounds"))
+				warning(paste0("Stopped early after ", boost_iter, " rounds"))
 			}
 		},
 		
@@ -302,7 +282,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' 	predict(training_set, 1, "Diagnosis")
 		#' @export
 		predict = function(test_subset) {
-			print("Predicting")
 			k = length(self$classes)
 			y_pred = 0
 			predn_futures = list()

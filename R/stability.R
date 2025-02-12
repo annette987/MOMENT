@@ -238,7 +238,6 @@ Stability = R6::R6Class("Stability", list(
 	},	
 			
 	write = function(result_file, suffix = "") {
-		print("Writing stability")
 		if (!is.null(suffix) && suffix != "") {
 			result_file = paste0(result_file, "_", suffix)
 		}

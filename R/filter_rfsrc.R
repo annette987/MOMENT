@@ -54,7 +54,7 @@ mlr::makeFilter( # nolint
     
 #		im$varselect[, "depth"] = -1L * im$varselect[, "depth"]
 		if (im$modelsize == 0) {
-			print("No variables selected. Keeping top 2.")
+			warning("No variables selected. Keeping top 2.")
 			im$varselect[3:nrow(im$varselect), "depth"] = NA
 		} else {
 			im$varselect[setdiff(rownames(im$varselect), im$topvars), "depth"] = NA

@@ -28,7 +28,6 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 		#' @export
 		initialize = function(config, decision = "prob", subset = NULL, balance = FALSE, filter_zeroes = FALSE, filter_missings = FALSE, filter_corr = FALSE, filter_var = FALSE) {
 			super$initialize(config, "VOTE", decision, subset, FALSE, balance, filter_zeroes, filter_missings, filter_corr, filter_var)
-			print("Explorer initialised")
 		},		
 
 
@@ -106,7 +105,7 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 						ggplot2::ggsave(filename = paste0(file_prefix, "_tsne_30.jpg"), plot = p, dpi = 300, device = "jpeg")
 				 }, 
 				 error = function(cond) {
-						print(paste("Rtsne::Rtsne returned error: ", cond))
+						warning(paste("Rtsne::Rtsne returned error: ", cond))
 				 })
 			} else if (plot_type == "PCA") {
 				 tryCatch({
@@ -119,7 +118,7 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 						ggplot2::ggsave(filename = paste0(file_prefix, "_pca.jpg"), plot = p, dpi = 300, device = "jpeg")
 				 }, 
 				 error = function(cond) {
-						print(paste("prcomp returned error: ", cond))
+						warning(paste("prcomp returned error: ", cond))
 				 })
 			} else if (plot_type == "UMAP") {
 					tryCatch({
@@ -165,7 +164,7 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 						ggplot2::ggsave(filename = paste0(file_prefix, "_umap_50.jpg"), plot = p, dpi = 300, device = "jpeg")
 				 }, 
 				 error = function(cond) {
-						print(paste("umap returned error: ", cond))
+						warning(paste("umap returned error: ", cond))
 				 })
 			}
 		},
