@@ -197,6 +197,7 @@ MM_Model = R6::R6Class("MM_Model",
 			
 			for (i in 1:length(config$dataSets)) {
 				mod = self$get_modality(config, i)
+				message(paste0("Modality: ", mod))
 				raw = self$read_raw(dir, config, i, row_names, NULL, FALSE, task_type)
 				dataset = as.data.frame(raw)
 				dataset = dataset[ , !colnames(dataset) %in% c(config$targetVar, config$timeVar, config$statusVar)]
@@ -340,12 +341,10 @@ MM_Model = R6::R6Class("MM_Model",
 				}
 
 				if (transposing) {
-					message(paste0("select * from file where ID in ('", paste(selected, collapse = "','"), "')" ))
-					raw = sqldf::read.csv.sql(filename, header=TRUE, row.names = row_names, eol = "\r\n", sql = paste0("select * from file where ID in ('", paste(selected, collapse = "','"), "')" ))
+					suppressWarnings(raw = sqldf::read.csv.sql(filename, header=TRUE, row.names = row_names, eol = "\r\n", sql = paste0("select * from file where ID in ('", paste(selected, collapse = "','"), "')" )))
 					raw[raw == ''] = NA		
 				} else {
-					message(paste0("select `", paste(selected, collapse = "`,`"), "` from file"))
-					raw = sqldf::read.csv.sql(filename, header=TRUE, row.names = row_names, eol = "\r\n", sql = paste0("select `", paste(selected, collapse = "`,`"), "` from file"))
+					suppressWarnings(raw = sqldf::read.csv.sql(filename, header=TRUE, row.names = row_names, eol = "\r\n", sql = paste0("select `", paste(selected, collapse = "`,`"), "` from file")))
 					raw[raw == ''] = NA
 				}
 			}

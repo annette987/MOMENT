@@ -73,7 +73,6 @@ MM_Voting = R6::R6Class("MM_Voting",
 		{
 			model_futures = list()			
 			for (i in 1:length(self$tasks)) {
-#				lrn_idx = ifelse(length(self$tasks) == length(self$learners), i, 1L)
 				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[i]], task = self$tasks[[i]], subset = training_set))
 			}
 			future::resolve(model_futures)

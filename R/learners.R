@@ -223,7 +223,7 @@ Learners = R6::R6Class("Learners",
 				
 				#	Begin pipeline with basic learner
 				baselrn = self$base_learners[[config$baseModels[[i]]$learner]]
-				lrn = do.call(makeLearner, args = append(list("cl" = baselrn$class, "id" = baselrn$name, "predict.type" = pred_type, predict.hv_threshold = NULL, fix.factors.prediction = TRUE), pars))
+				lrn = do.call(makeLearner, args = append(list("cl" = baselrn$class, "id" = baselrn$name, "predict.type" = pred_type, fix.factors.prediction = TRUE), pars))
 				
 				# Add feature selection to pipeline
 				basefilt = self$base_filters[[config$baseModels[[i]]$featsel]]
