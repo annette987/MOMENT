@@ -12,9 +12,6 @@
 #' @docType package
 NULL
 
-source("mm_voting.R")
-source("mm_adaboost.R")
-
 
 MM_MoE = R6::R6Class("MM_MoE", 
 	inherit = MM_Model,
