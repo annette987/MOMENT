@@ -3,19 +3,19 @@ makeRLearner.surv.cv.CoxBoost = function() {
   makeRLearnerSurv(
     cl = "surv.cv.CoxBoost",
     package = "!CoxBoost",
-    par.set = makeParamSet(
-      makeIntegerLearnerParam(id = "maxstepno", default = 100L, lower = 0L),
-      makeIntegerLearnerParam(id = "K", default = 10L, lower = 1L),
-      makeDiscreteLearnerParam(id = "type", default = "verweij", values = c("verweij", "naive")),
-      makeLogicalLearnerParam(id = "parallel", default = FALSE, tunable = FALSE),
-      makeLogicalLearnerParam(id = "upload.x", default = FALSE, tunable = FALSE),
-      makeLogicalLearnerParam(id = "multicore", default = FALSE, tunable = FALSE),
-      makeIntegerVectorLearnerParam(id = "unpen.index"),
-      makeLogicalLearnerParam(id = "standardize", default = TRUE),
-      makeNumericLearnerParam(id = "penalty", lower = 0),
-      makeDiscreteLearnerParam(id = "criterion", default = "pscore", values = c("pscore", "score", "hpscore", "hscore")),
-      makeNumericLearnerParam(id = "stepsize.factor", default = 1, lower = 0),
-      makeLogicalLearnerParam(id = "trace", default = FALSE, tunable = FALSE)
+    par.set = ParamHelpers::makeParamSet(
+      ParamHelpers::makeIntegerLearnerParam(id = "maxstepno", default = 100L, lower = 0L),
+      ParamHelpers::makeIntegerLearnerParam(id = "K", default = 10L, lower = 1L),
+      ParamHelpers::makeDiscreteLearnerParam(id = "type", default = "verweij", values = c("verweij", "naive")),
+      ParamHelpers::makeLogicalLearnerParam(id = "parallel", default = FALSE, tunable = FALSE),
+      ParamHelpers::makeLogicalLearnerParam(id = "upload.x", default = FALSE, tunable = FALSE),
+      ParamHelpers::makeLogicalLearnerParam(id = "multicore", default = FALSE, tunable = FALSE),
+      ParamHelpers::makeIntegerVectorLearnerParam(id = "unpen.index"),
+      ParamHelpers::makeLogicalLearnerParam(id = "standardize", default = TRUE),
+      ParamHelpers::makeNumericLearnerParam(id = "penalty", lower = 0),
+      ParamHelpers::makeDiscreteLearnerParam(id = "criterion", default = "pscore", values = c("pscore", "score", "hpscore", "hscore")),
+      ParamHelpers::makeNumericLearnerParam(id = "stepsize.factor", default = 1, lower = 0),
+      ParamHelpers::makeLogicalLearnerParam(id = "trace", default = FALSE, tunable = FALSE)
     ),
     properties = c("numerics", "factors", "weights"),
     name = "Cox Proportional Hazards Model with Componentwise Likelihood based Boosting, tuned for the optimal number of boosting steps",

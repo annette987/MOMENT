@@ -52,13 +52,13 @@ PerformanceMeasures = R6::R6Class("PerformanceMeasures",
 				self$measures = list(cindex.na, cindex.sdna, cindex_grp.na, cindex_grp.sdna, cindex.uno.na, cindex.uno.sdna)
 #				self$measures = list(cindex.na, cindex.sdna, cindex.uno.na, cindex.uno.sdna)
 			} else {
-				acc.na = mlr::setAggregation(acc, test.mean_narm)
-				acc.sdna = mlr::setAggregation(acc, test.sd_narm)
-				multiclass.aunu.na = mlr::setAggregation(multiclass.aunu, test.mean_narm)
-				multiclass.aunu.sdna = mlr::setAggregation(multiclass.aunu, test.sd_narm)
+				acc.na = mlr::setAggregation(mlr::acc, test.mean_narm)
+				acc.sdna = mlr::setAggregation(mlr::acc, test.sd_narm)
+				multiclass.aunu.na = mlr::setAggregation(mlr::multiclass.aunu, test.mean_narm)
+				multiclass.aunu.sdna = mlr::setAggregation(mlr::multiclass.aunu, test.sd_narm)
 				if (predict_type == "prob") {
-					self$measures = list(acc)
-#					self$measures = list(acc, multiclass.aunu)   ## multiclass.aunu doesn't work for PBMV - why?
+					self$measures = list(acc.na)
+#					self$measures = list(acc.na, multiclass.aunu.na)   ## multiclass.aunu doesn't work for PBMV - why?
 				} else {
 					self$measures = list(acc.na)
 				}

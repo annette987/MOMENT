@@ -5,15 +5,15 @@ makeRLearner.surv.CoxBoost = function() {
   makeRLearnerSurv(
     cl = "surv.CoxBoost",
     package = "!CoxBoost",
-    par.set = makeParamSet(
-      makeIntegerVectorLearnerParam(id = "unpen.index"),
-      makeLogicalLearnerParam(id = "standardize", default = TRUE),
-      makeNumericLearnerParam(id = "penalty", lower = 0),
-      makeDiscreteLearnerParam(id = "criterion", default = "pscore", values = c("pscore", "score", "hpscore", "hscore")),
-      makeNumericLearnerParam(id = "stepsize.factor", default = 1, lower = 0),
-      makeIntegerLearnerParam(id = "stepno", default = 100L, lower = 1),
-      makeLogicalLearnerParam(id = "return.score", default = TRUE, tunable = FALSE),
-      makeLogicalLearnerParam(id = "trace", default = FALSE, tunable = FALSE)
+    par.set = ParamHelpers::makeParamSet(
+      ParamHelpers::makeIntegerVectorLearnerParam(id = "unpen.index"),
+      ParamHelpers::makeLogicalLearnerParam(id = "standardize", default = TRUE),
+      ParamHelpers::makeNumericLearnerParam(id = "penalty", lower = 0),
+      ParamHelpers::makeDiscreteLearnerParam(id = "criterion", default = "pscore", values = c("pscore", "score", "hpscore", "hscore")),
+      ParamHelpers::makeNumericLearnerParam(id = "stepsize.factor", default = 1, lower = 0),
+      ParamHelpers::makeIntegerLearnerParam(id = "stepno", default = 100L, lower = 1),
+      ParamHelpers::makeLogicalLearnerParam(id = "return.score", default = TRUE, tunable = FALSE),
+      ParamHelpers::makeLogicalLearnerParam(id = "trace", default = FALSE, tunable = FALSE)
     ),
     par.vals = list(return.score = FALSE),
     properties = c("numerics", "factors", "ordered", "weights"),
