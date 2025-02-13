@@ -24,7 +24,7 @@ mlr::makeFilter(
     pkg = "Boruta",
     supported.tasks = c("classif", "regr", "surv"),
     supported.features = c("numerics", "factors", "ordered"),
-    fun = function(task, nselect, get_imp = getImpRfZ, pValue = 0.05, maxRuns = 200,
+    fun = function(task, nselect, get_imp = Boruta::getImpRfZ, pValue = 0.05, maxRuns = 200,
                    withTentative = FALSE, verbose = 0, mustKeep = NULL, ...) {
 
 		 # boruta run

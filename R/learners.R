@@ -3,7 +3,6 @@
 # Allows the user to select and create a set of learners for the machine learning
 #---------------------------------------------------------------------------------
 
-getArgs = function(...) return(list(...))
 
 Learners = R6::R6Class("Learners", 
 	public = list(
@@ -204,13 +203,15 @@ Learners = R6::R6Class("Learners",
 		create_learners = function(config, env, learner_type, pred_type = "response", balance = FALSE, subset = NULL, model_name = NULL)
 		{
 			learners = list()
+			getArgs <- function(...) return(list(...))
+			evalstr <- function(ss) eval.parent(parse(text=sprintf("getArgs(%s)", ss)))
 			
 			for (i in 1:length(config$baseModels)) {
 				if (is.na(config$baseModels[[i]]$params) || (length(config$baseModels[[i]]$params) == 0)) {
 					pars = list()
 				} else if (is.character(config$baseModels[[i]]$params)) {
-					print(sprintf("getArgs(%s)", config$baseModels[[i]]$params))
-					pars = eval(parse(text=sprintf("getArgs(%s)", config$baseModels[[i]]$params)), envir = env)
+#					pars = eval(parse(text=sprintf("getArgs(%s)", config$baseModels[[i]]$params)), envir = env)
+					pars = evalstr(config$baseModels[[i]]$params)
 				} else {
 					pars = config$baseModels[[i]]$params
 				}
@@ -218,7 +219,8 @@ Learners = R6::R6Class("Learners",
 				if (is.na(config$baseModels[[i]]$fsparams) || (length(config$baseModels[[i]]$fsparams) == 0)) {
 					fspars = list()
 				} else if (is.character(config$baseModels[[i]]$fsparams)) {
-					fspars = eval(parse(text=sprintf("getArgs(%s)", config$baseModels[[i]]$fsparams)), envir = env)
+#					fspars = eval(parse(text=sprintf("getArgs(%s)", config$baseModels[[i]]$fsparams)), envir = env)
+					fspars = evalstr(config$baseModels[[i]]$fsparams)
 				} else {
 					fspars = config$baseModels[[i]]$fsparams
 				}
