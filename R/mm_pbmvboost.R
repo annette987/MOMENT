@@ -435,7 +435,7 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 				}
 
 				# Calculate the weighted scores using the model weights
-				df = as.data.frame(dplyr::dplyr::bind_rows(self$results$feats$featsel[[view_name]]))
+				df = as.data.frame(dplyr::bind_rows(self$results$feats$featsel[[view_name]]))
 				seln_counts = colSums(df != 0)
 
 				if (length(self$weights_classfiers) > 1) {
