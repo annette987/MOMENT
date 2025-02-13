@@ -209,7 +209,8 @@ Learners = R6::R6Class("Learners",
 				if (is.na(config$baseModels[[i]]$params) || (length(config$baseModels[[i]]$params) == 0)) {
 					pars = list()
 				} else if (is.character(config$baseModels[[i]]$params)) {
-					pars = eval(parse(text=sprintf("list(%s)", config$baseModels[[i]]$params)))
+					print(sprintf("getArgs(%s)", config$baseModels[[i]]$params))
+					pars = eval(parse(text=sprintf("getArgs(%s)", config$baseModels[[i]]$params)), envir = environment())
 				} else {
 					pars = config$baseModels[[i]]$params
 				}
@@ -217,7 +218,7 @@ Learners = R6::R6Class("Learners",
 				if (is.na(config$baseModels[[i]]$fsparams) || (length(config$baseModels[[i]]$fsparams) == 0)) {
 					fspars = list()
 				} else if (is.character(config$baseModels[[i]]$fsparams)) {
-					fspars = eval(parse(text=sprintf("list(%s)", config$baseModels[[i]]$fsparams)))
+					fspars = eval(parse(text=sprintf("getArgs(%s)", config$baseModels[[i]]$fsparams)), envir = environment())
 				} else {
 					fspars = config$baseModels[[i]]$fsparams
 				}
