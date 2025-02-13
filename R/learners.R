@@ -201,7 +201,7 @@ Learners = R6::R6Class("Learners",
 		# Steps are added to the ML pipeline in reverse order
 		#
 
-		create_learners = function(config, learner_type, pred_type = "response", balance = FALSE, subset = NULL, model_name = NULL)
+		create_learners = function(config, env, learner_type, pred_type = "response", balance = FALSE, subset = NULL, model_name = NULL)
 		{
 			learners = list()
 			
@@ -210,7 +210,7 @@ Learners = R6::R6Class("Learners",
 					pars = list()
 				} else if (is.character(config$baseModels[[i]]$params)) {
 					print(sprintf("getArgs(%s)", config$baseModels[[i]]$params))
-					pars = eval(parse(text=sprintf("getArgs(%s)", config$baseModels[[i]]$params)), envir = environment())
+					pars = eval(parse(text=sprintf("getArgs(%s)", config$baseModels[[i]]$params)), envir = env)
 				} else {
 					pars = config$baseModels[[i]]$params
 				}
@@ -218,7 +218,7 @@ Learners = R6::R6Class("Learners",
 				if (is.na(config$baseModels[[i]]$fsparams) || (length(config$baseModels[[i]]$fsparams) == 0)) {
 					fspars = list()
 				} else if (is.character(config$baseModels[[i]]$fsparams)) {
-					fspars = eval(parse(text=sprintf("getArgs(%s)", config$baseModels[[i]]$fsparams)), envir = environment())
+					fspars = eval(parse(text=sprintf("getArgs(%s)", config$baseModels[[i]]$fsparams)), envir = env)
 				} else {
 					fspars = config$baseModels[[i]]$fsparams
 				}

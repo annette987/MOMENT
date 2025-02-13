@@ -58,7 +58,7 @@ MM_Model = R6::R6Class("MM_Model",
 				} else {
 					self$measures = PerformanceMeasures$new(model_type, decision)$measures
 					learners = Learners$new(self$task_type)
-					self$learners = learners$create_learners(config, self$task_type, predict_type, balance, subset)
+					self$learners = learners$create_learners(config, env = environment(), self$task_type, predict_type, balance, subset)
 				}
 
 				self$tasks = self$create_tasks(config$dataDir, config, self$task_type, subset, filter_zeroes, filter_missings, filter_corr, filter_var)
