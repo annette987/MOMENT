@@ -147,7 +147,8 @@ new_config_single = function(config_data, row) {
 
 # N.B. What happens if some items don't exist in file? Returns NULL?
 config = function(filename) {
-	print(getwd)
+	print(getwd())
+	print(filename)
 	stopifnot(is.character(filename))
 	stopifnot(file.exists(filename))
 	cf = NULL
