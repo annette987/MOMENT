@@ -236,7 +236,7 @@ Learners = R6::R6Class("Learners",
 					if (!is.null(config$cacheDir)) {
 						filter_args = c(filter_args, list("cache" = config$cacheDir))
 					}
-					lrn = do.call(makeFilterWrapper, args = c(filter_args, fspars))
+					lrn = do.call(mlr::makeFilterWrapper, args = c(filter_args, fspars))
 				}
 				
 				#Add multi-class balancing to the pipeline if requested
@@ -293,7 +293,7 @@ Learners = R6::R6Class("Learners",
 			if (!is.null(featsel)) {
 #				filter_args = list("learner" = lrn, "fw.method" = featsel$method, "cache" = config$cacheDir)
 				filter_args = list("learner" = lrn, "fw.method" = featsel$method)
-				lrn = do.call(makeFilterWrapper, args = c(filter_args, fspars))
+				lrn = do.call(mlr::makeFilterWrapper, args = c(filter_args, fspars))
 			}
 			
 			#Add multi-class balancing to the pipeline if requested

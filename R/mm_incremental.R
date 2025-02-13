@@ -120,15 +120,15 @@ MM_Incremental = R6::R6Class("MM_Incremental",
 						fold_perf[[fold]] = self$calc_stats(res$data$truth, res$data$response, self$classes)
 					}
 					
-					predns[[task_id]][[rep]] = bind_rows(fold_predns)
+					predns[[task_id]][[rep]] = dplyr::bind_rows(fold_predns)
 					predns[[task_id]][[rep]] = predns[[task_id]][[rep]] %>% arrange(id)
 					predns[[task_id]][[rep]][, "rpt"] = rep
-					perf[[task_id]][[rep]] = bind_rows(fold_perf)
+					perf[[task_id]][[rep]] = dplyr::bind_rows(fold_perf)
 					perf[[task_id]][[rep]][, "rpt"] = rep
 				}
 
-				predns[[task_id]] = bind_rows(predns[[task_id]])
-				perf[[task_id]]   = bind_rows(perf[[task_id]])
+				predns[[task_id]] = dplyr::bind_rows(predns[[task_id]])
+				perf[[task_id]]   = dplyr::bind_rows(perf[[task_id]])
 			}
 			return(list("predns" = predns, "perf" = perf))
 		},

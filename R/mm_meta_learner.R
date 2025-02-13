@@ -75,11 +75,11 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 						fold_responses[[length(fold_responses) + 1]] = df
 					}
 					
-					meta_data[[rep]] = bind_rows(fold_responses)
+					meta_data[[rep]] = dplyr::bind_rows(fold_responses)
 					meta_data[[rep]] = meta_data[[rep]] %>% arrange(self$targetVar)
 				}
 			
-				meta = bind_rows(meta_data)
+				meta = dplyr::bind_rows(meta_data)
 				return(meta)
 		},
 		

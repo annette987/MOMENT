@@ -4,6 +4,37 @@ Title: Multi-Omics Modelling by ENsemble Techniques
 Version: 0.1.0
 Author: Annette Spooner
 Maintainer: Annette Spooner <a.spooner@unsw.edu.au>
+Depends: 
+	future,
+	mlr,
+	mlrCPO,
+	ParamHelpers,
+	R6
+Imports:
+	BBmisc,
+	Boruta,
+	CoxBoost,
+	dplyr,
+	gbm,
+	ggplot2,
+	mboost,
+	glmnet,
+	janitor,
+	mice,
+	nloptr,
+	pROC,
+	randomForest,
+	randomForestSRC,
+	readxl,
+	Rtsne,
+	survival, 
+	testit,
+	tidyr,
+	tools,
+	treeshap,
+	umap,
+	VIM,
+	xgboost
 Description: MOMENT provides a set of ensemble machine learning algorithms 
     that can successfully model multi-omics multi-class data
     for use in predictive clinical outcome modelling

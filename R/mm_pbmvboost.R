@@ -435,7 +435,7 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 				}
 
 				# Calculate the weighted scores using the model weights
-				df = as.data.frame(dplyr::bind_rows(self$results$feats$featsel[[view_name]]))
+				df = as.data.frame(dplyr::dplyr::bind_rows(self$results$feats$featsel[[view_name]]))
 				seln_counts = colSums(df != 0)
 
 				if (length(self$weights_classfiers) > 1) {
@@ -472,13 +472,13 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 				}
 				
 				# Combine the responses for each fold
-				final_response[[rep]] = bind_rows(fold_responses)
+				final_response[[rep]] = dplyr::bind_rows(fold_responses)
 				final_response[[rep]] = final_response[[rep]] %>% arrange(id)
 				final_response[[rep]][, "rpt"] = rep
 			}
 				
 			# Combine the responses for each repeat into a single data frame
-			all_responses = bind_rows(final_response)
+			all_responses = dplyr::bind_rows(final_response)
 						
 			if (self$validation) {
 				self$validate()

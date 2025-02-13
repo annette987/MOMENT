@@ -225,7 +225,7 @@ Stability = R6::R6Class("Stability", list(
 	# Each data.frame column is one set of features
 	# Should really call this save_from_df
 	save_all = function(method, feat_df_list) {
-		df_all = bind_rows(feat_df_list)
+		df_all = dplyr::bind_rows(feat_df_list)
 		df_all$Count = rowSums(df_all != 0, na.rm = TRUE)
 		df_all[df_all$Count < (ncol(df_all) * 0.8),] = 0
 		feat_sets = apply(df_all, 2, function(x) {as.list(row.names(df_all)[x > 0])})
