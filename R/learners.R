@@ -3,40 +3,42 @@
 # Allows the user to select and create a set of learners for the machine learning
 #---------------------------------------------------------------------------------
 
+getArgs = function(...) return(list(...))
+
 Learners = R6::R6Class("Learners", 
 	public = list(
 		base_learners 			= list(),
 		base_filters				= list(),
 		
 		initialize = function(learner_type) {
-			rfsrc_params1 = makeParamSet(
-			#		makeIntegerParam("mtry", lower = round(psqrt/2), upper = psqrt*2),
-					makeIntegerParam("nodesize", lower = 1, upper = 20)
-			#			makeIntegerParam("nodedepth", lower = 1, upper = 20)	
+			rfsrc_params1 = ParamHelpers::makeParamSet(
+			#		ParamHelpers::makeIntegerParam("mtry", lower = round(psqrt/2), upper = psqrt*2),
+					ParamHelpers::makeIntegerParam("nodesize", lower = 1, upper = 20)
+			#			ParamHelpers::makeIntegerParam("nodedepth", lower = 1, upper = 20)	
 			)
-			rfsrc_params2 = makeParamSet(
-					makeDiscreteParam("mtry", values = seq(from = 10, to = 120, by = 10)),
-					makeDiscreteParam("nodesize", values= seq(from = 2, to = 20, by = 2))
+			rfsrc_params2 = ParamHelpers::makeParamSet(
+					ParamHelpers::makeDiscreteParam("mtry", values = seq(from = 10, to = 120, by = 10)),
+					ParamHelpers::makeDiscreteParam("nodesize", values= seq(from = 2, to = 20, by = 2))
 			)
-			ranger_params = makeParamSet(
-			#	makeIntegerParam("mtry", lower = round(psqrt/2), upper = psqrt*2),
-				makeIntegerParam("min.node.size", lower = 5, upper = 50)
+			ranger_params = ParamHelpers::makeParamSet(
+			#	ParamHelpers::makeIntegerParam("mtry", lower = round(psqrt/2), upper = psqrt*2),
+				ParamHelpers::makeIntegerParam("min.node.size", lower = 5, upper = 50)
 			)	
-			xgbtree_params <- makeParamSet(
+			xgbtree_params <- ParamHelpers::makeParamSet(
 				# The number of trees in the model (each one built sequentially)
-				makeIntegerParam("nrounds", lower = 100, upper = 500),
+				ParamHelpers::makeIntegerParam("nrounds", lower = 100, upper = 500),
 				# number of splits in each tree
-				makeIntegerParam("max_depth", lower = 1, upper = 10),
+				ParamHelpers::makeIntegerParam("max_depth", lower = 1, upper = 10),
 				# "shrinkage" - prevents overfitting
-				makeNumericParam("eta", lower = .1, upper = .5)
+				ParamHelpers::makeNumericParam("eta", lower = .1, upper = .5)
 			#	# L2 regularization - prevents overfitting
-			#	makeNumericParam("lambda", lower = -1, upper = 0, trafo = function(x) 10^x)
+			#	ParamHelpers::makeNumericParam("lambda", lower = -1, upper = 0, trafo = function(x) 10^x)
 			)
-			xgblinear_params = makeParamSet(
-				makeNumericParam("lambda", lower = 0, upper = 50)
+			xgblinear_params = ParamHelpers::makeParamSet(
+				ParamHelpers::makeNumericParam("lambda", lower = 0, upper = 50)
 			)
-			svm_params = makeParamSet(
-				makeNumericParam("cost", lower = 0.1, upper = 2)
+			svm_params = ParamHelpers::makeParamSet(
+				ParamHelpers::makeNumericParam("cost", lower = 0.1, upper = 2)
 			)
 
 			if (learner_type == TASK_CLASSIF) {	# Classification models
@@ -152,7 +154,7 @@ Learners = R6::R6Class("Learners",
 					)
 			}
 				
-			cox.lrn = makeLearner(cl = "surv.coxph", id = "perf.cox", predict.type = "response")
+			cox.lrn = mlr::makeLearner(cl = "surv.coxph", id = "perf.cox", predict.type = "response")
 			self$base_filters = list(
 				"UNI" = list("method" = "univariate.model.score",
 												"code" = LRN_FS_UNIVARIATE,
@@ -198,7 +200,6 @@ Learners = R6::R6Class("Learners",
 		# Create the learners for each dataset and store in a list
 		# Steps are added to the ML pipeline in reverse order
 		#
-		getArgs = function(...) return(list(...)),
 
 		create_learners = function(config, learner_type, pred_type = "response", balance = FALSE, subset = NULL, model_name = NULL)
 		{
@@ -208,7 +209,7 @@ Learners = R6::R6Class("Learners",
 				if (is.na(config$baseModels[[i]]$params) || (length(config$baseModels[[i]]$params) == 0)) {
 					pars = list()
 				} else if (is.character(config$baseModels[[i]]$params)) {
-					pars = eval(parse(text=sprintf("getArgs(%s)", config$baseModels[[i]]$params)))
+					pars = eval(parse(text=sprintf("list(%s)", config$baseModels[[i]]$params)))
 				} else {
 					pars = config$baseModels[[i]]$params
 				}
@@ -216,14 +217,14 @@ Learners = R6::R6Class("Learners",
 				if (is.na(config$baseModels[[i]]$fsparams) || (length(config$baseModels[[i]]$fsparams) == 0)) {
 					fspars = list()
 				} else if (is.character(config$baseModels[[i]]$fsparams)) {
-					fspars = eval(parse(text=sprintf("getArgs(%s)", config$baseModels[[i]]$fsparams)))
+					fspars = eval(parse(text=sprintf("list(%s)", config$baseModels[[i]]$fsparams)))
 				} else {
 					fspars = config$baseModels[[i]]$fsparams
 				}
 				
 				#	Begin pipeline with basic learner
 				baselrn = self$base_learners[[config$baseModels[[i]]$learner]]
-				lrn = do.call(makeLearner, args = append(list("cl" = baselrn$class, "id" = baselrn$name, "predict.type" = pred_type, fix.factors.prediction = TRUE), pars))
+				lrn = do.call(mlr::makeLearner, args = append(list("cl" = baselrn$class, "id" = baselrn$name, "predict.type" = pred_type, fix.factors.prediction = TRUE), pars))
 				
 				# Add feature selection to pipeline
 				basefilt = self$base_filters[[config$baseModels[[i]]$featsel]]
@@ -268,7 +269,7 @@ Learners = R6::R6Class("Learners",
 			if (length(baselrn$args) == 0) {
 				pars = list()
 			} else if (is.character(baselrn$args)) {
-				pars = eval(parse(text=sprintf("getArgs(%s)", baselrn$args)))
+				pars = eval(parse(text=sprintf("list(%s)", baselrn$args)))
 			} else {
 				pars = baselrn$args
 			}
@@ -277,13 +278,13 @@ Learners = R6::R6Class("Learners",
 				if (length(featsel$args) == 0) {
 					fspars = list()
 				} else if (is.character(featsel$args)) {
-					fspars = eval(parse(text=sprintf("getArgs(%s)", featsel$args)))
+					fspars = eval(parse(text=sprintf("list(%s)", featsel$args)))
 				} else {
 					fspars = featsel$args
 				}
 			}
 			
-			lrn = do.call(makeLearner, args = append(list("cl" = baselrn$class, "id" = baselrn$name, "predict.type" = pred_type, fix.factors.prediction = TRUE), pars))
+			lrn = do.call(mlr::makeLearner, args = append(list("cl" = baselrn$class, "id" = baselrn$name, "predict.type" = pred_type, fix.factors.prediction = TRUE), pars))
 			
 			# Add feature selection to pipeline
 			if (!is.null(featsel)) {
