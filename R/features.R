@@ -73,7 +73,7 @@ Features = R6::R6Class("Features", list(
 			coef.min = glmnet::coef(mod, s = mod$lambda.min)
 			# For binary class problems coef.min is a single dgCMatrix
 			# For multi-class problems coef.min is a list of dgCMatrix, one per class
-			if (inherits(coef.min, "dgCMatrix") {
+			if (inherits(coef.min, "dgCMatrix")) {
 				coef.min = coef.min[!rownames(coef.min) %in% c("(Intercept)"), ]
 				imp_data = data.frame('all' = coef.min)
 			} else {
