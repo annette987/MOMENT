@@ -74,6 +74,8 @@ make_filters = function() {
 #' }
 #' @return Nothing, but "boruta.filter" filter will be registered
 #' @export
+
+	print("Making mlr custom filters")
 	mlr::makeFilter(
 			name = "boruta",
 			desc = "Uses boruta for feature selection",
@@ -183,5 +185,7 @@ make_filters = function() {
 			}
 			setNames(im$varselect[, "depth"], rownames(im$varselect))
 		})
+		
+		mlr::listFilterMethods(desc = FALSE)
 }
 
