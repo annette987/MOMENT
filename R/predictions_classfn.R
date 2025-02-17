@@ -24,10 +24,10 @@ Prediction = R6::R6Class("Prediction", list(
 												group_by(id) %>% 
 												tidyr::pivot_wider(names_from = c(iter),
 																		values_from = c(response))
-#		self$reshaped = df[c('id', 'response', 'truth', 'iter')] %>%
-#												group_by(id) %>% 
-#												tidyr::pivot_wider(names_from = c(iter),
-#																		values_from = c(response))
+	},
+	
+	get_results = function() {
+		return(self$reshaped[order(self$reshaped$id),])
 	},
 		
 	write = function(result_file, suffix = "", method = "") {

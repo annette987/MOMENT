@@ -75,7 +75,6 @@ make_filters = function() {
 #' @return Nothing, but "boruta.filter" filter will be registered
 #' @export
 
-	print("Making mlr custom filters")
 	mlr::makeFilter(
 			name = "boruta",
 			desc = "Uses boruta for feature selection",

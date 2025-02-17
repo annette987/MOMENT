@@ -68,6 +68,14 @@ ROCMultiClass = R6::R6Class("ROCMultiClass", list(
 		return(colMeans(self$roc_mc, na.rm = TRUE))
 	},
 	
+	get_results = function() {
+		return(self$roc_mc)
+	},
+	
+	get_auroc = function() {
+		return(self$auroc)
+	},
+	
 	# Write a ROCMultiClass object out to a file
 	write = function(result_file, suffix = "") {
 		if (!is.null(suffix) && suffix != "") {

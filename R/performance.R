@@ -93,7 +93,12 @@ Performance = R6::R6Class("Performance", list(
 		}
 		write.csv(out_perf, paste(result_file, "_perf.csv", sep=""), row.names=TRUE)
 	},
-		
+	
+	get_results = function() {
+		out_perf = do.call(cbind, self$perf)
+		names(out_perf) = self$measures
+		return(out_perf)
+	},
 		
 	#' @description 
 	#' Plot the performance results as boxplots and return the JPEG plot object.

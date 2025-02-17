@@ -73,7 +73,7 @@ Features = R6::R6Class("Features", list(
 			coef.min = glmnet::coef(mod, s = mod$lambda.min)
 			# For binary class problems coef.min is a single dgCMatrix
 			# For multi-class problems coef.min is a list of dgCMatrix, one per class
-			if (class(coef.min) == "dgCMatrix") {
+			if (inherits(coef.min, "dgCMatrix") {
 				coef.min = coef.min[!rownames(coef.min) %in% c("(Intercept)"), ]
 				imp_data = data.frame('all' = coef.min)
 			} else {
@@ -231,6 +231,16 @@ Features = R6::R6Class("Features", list(
 				self$featsel_aggr[[1]][1:nrow(self$featsel[[1]]), 1] = rowMeans(self$featsel[[1]], na.rm = TRUE)
 				self$featsel_aggr[[1]][self$featsel_aggr[[1]] < 0.00001] = 0
 		}
+	},
+	
+	get_results = function(perc = 0.75) {
+			self$complete()
+			out_aggr  = as.data.frame(do.call(rbind, self$featsel_aggr))
+			out_feats = as.data.frame(do.call(rbind, self$featsel))
+			out_feats$Avg = rowMeans(out_feats != 0, na.rm = TRUE)
+			out_feats$Count = rowSums(out_feats != 0, na.rm = TRUE) - 1  # -1 so as not to include the Avg column
+			out_aggr[out_feats$Count < (ncol(out_feats) * perc),] = 0
+			return(list("aggr" = out_aggr, "feats" = out_feats))
 	},
 	
 	#' @description 

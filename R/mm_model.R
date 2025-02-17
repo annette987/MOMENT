@@ -163,7 +163,7 @@ MM_Model = R6::R6Class("MM_Model",
 			# Therefore we must check for both.
 
 			# Convert categorical features to factors and others to numerics
-			if (class(config) == "config_single") {
+			if (inherits(config, "config_single") {
 				cat_str = config$categoricals
 			} else {
 				cat_str = config$dataSets[[idx]]$categoricals
@@ -267,7 +267,7 @@ MM_Model = R6::R6Class("MM_Model",
 		#' mod = Tasks$get_modality(config, 1)
 		#' @noRd
 		get_modality = function(config, idx) {
-			if (class(config) == "config_single") {
+			if (inherits(config, "config_single") {
 				mod = config$modality
 			} else {
 				if (is.na(config$dataSets[[idx]]$modality) || is.null(config$dataSets[[idx]]$modality)) {
@@ -296,7 +296,7 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @noRd
 		read_raw = function(dir, config, idx, row_names = 'ID', selected = NULL, prepend = FALSE, task_type = TASK_CLASSIF, validation = FALSE) 
 		{
-			if (class(config) == "config_single") {
+			if (inherits(config, "config_single") {
 				transposing = FALSE
 				exclusions = ""
 				filename = config$dataset
@@ -362,7 +362,7 @@ MM_Model = R6::R6Class("MM_Model",
 			rownames(raw) = raw[, row_names]
 			
 			# Remove exclusions
-			if (class(config) != "config_single") {
+			if (inherits(config, "config_single") {
 				raw = raw[,!(colnames(raw) %in% c(exclusions, "")), drop = FALSE]
 				target = raw[, colnames(raw) %in% c(config$targetVar, config$timeVar, config$statusVar), drop = FALSE]
 				rnames = rownames(raw)

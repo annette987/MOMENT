@@ -235,7 +235,11 @@ Stability = R6::R6Class("Stability", list(
 	save_df = function(method, features_df) {
 		feat_list = as.list(features_df[, grepl(method, colnames(features_df))])
 		self$stab[[method]] = self$calculate(feat_list, length(feat_list), nrow(features_df))
-	},	
+	},
+
+	get_results = function() {
+		return(self$stab)
+	},
 			
 	write = function(result_file, suffix = "") {
 		if (!is.null(suffix) && suffix != "") {

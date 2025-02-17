@@ -1,7 +1,6 @@
 .onAttach <- function(libname, pkgname) {
   # to show a startup message
-  packageStartupMessage("This is the MOMENT package")
-	make_filters()
+  packageStartupMessage("Welcome to MOMENT - Multi-Omics Modelling by ENsemble Techniques")
 }
 
 .onLoad <- function(libname, pkgname) {

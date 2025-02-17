@@ -97,6 +97,26 @@ MM_Results = R6::R6Class("MM_Results",
 			self$feats$write(result_file_prefix, suffix)
 			self$stab$write(result_file_prefix, suffix)
 #			self$predn$write(result_file_prefix, suffix)
+		},
+		
+		get_stability = function() {
+			return(self$stab$get_results())
+		},
+		
+		get_performance = function() {
+			return(self$perf$get_results())
+		},
+		
+		get_predictions = function() {
+			return(self$predn$get_results())
+		},
+		
+		get_features = function() {
+			return(self$feats$get_results())
+		},
+		
+		get_roc_measures = function() {
+			return(list("roc" = self$roc$get_results(), "auroc" = self$roc_get_auroc()))
 		}
 	),
 	

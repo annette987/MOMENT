@@ -202,6 +202,7 @@ Learners = R6::R6Class("Learners",
 
 		create_learners = function(config, env, learner_type, pred_type = "response", balance = FALSE, subset = NULL, model_name = NULL)
 		{
+			print("Creating learners")
 			learners = list()
 			getArgs <- function(...) return(list(...))
 			evalstr <- function(ss) eval.parent(parse(text=sprintf("getArgs(%s)", ss)))
@@ -235,6 +236,8 @@ Learners = R6::R6Class("Learners",
 					filter_args = list("learner" = lrn, "fw.method" = basefilt$method)
 					if (!is.null(config$cacheDir)) {
 						filter_args = c(filter_args, list("cache" = config$cacheDir))
+					} else {
+						filter_args = c(filter_args, list("cache" = FALSE))
 					}
 					lrn = do.call(mlr::makeFilterWrapper, args = c(filter_args, fspars))
 				}
@@ -292,7 +295,7 @@ Learners = R6::R6Class("Learners",
 			# Add feature selection to pipeline
 			if (!is.null(featsel)) {
 #				filter_args = list("learner" = lrn, "fw.method" = featsel$method, "cache" = config$cacheDir)
-				filter_args = list("learner" = lrn, "fw.method" = featsel$method)
+				filter_args = list("learner" = lrn, "fw.method" = featsel$method, "cache" = FALSE)
 				lrn = do.call(mlr::makeFilterWrapper, args = c(filter_args, fspars))
 			}
 			
