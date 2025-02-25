@@ -1,10 +1,16 @@
-####################################################################################
-# NORMALISATION
-# CPO to run various normalisation methods within the CV loop
-# Only apply normalisation to the numeric columns (non-boolean)
-#
-####################################################################################
-
+#' @title Normalisation methods for use with multi-modal modelling
+#'
+#' @description
+#' Provides methods for adding normalisation to the pre-processing pipeline.
+#'
+#' @details
+#' Two methods are provided for adding normalisation to the machine learning pipeline.
+#' One uses mlrCPO to create a new Composable Preprocessing Operator (CPO) for normalisation.
+#' The other creates a preprocessing wrapper that can be added to a learner.
+#' Normalisation is only applied to the numeric columns (non-boolean)
+#'
+#' @name Normalisation
+NULL
 
 is.nan.data.frame <- function(x) do.call(cbind, lapply(x, is.nan))
 
@@ -36,10 +42,10 @@ normaliseData = function(data, method = "STAND", epsilon = 1e100) {
 					norm_dat = scale(as.matrix(data[, numeric_cols, drop = FALSE]), center = TRUE, scale = TRUE)
 					norm_dat[!sapply(norm_dat, is.finite)] = 0
 			} else if (method == "ZSCORE") {
-					norm_dat = as.matrix(sapply(data[, numeric_cols, drop = FALSE], function(x) {x - mean(x, na.rm = TRUE) / (sd(x, na.rm = TRUE) + epsilon)}))
+					norm_dat = as.matrix(sapply(data[, numeric_cols, drop = FALSE], function(x) {x - mean(x, na.rm = TRUE) / (stats::sd(x, na.rm = TRUE) + epsilon)}))
 					norm_dat[!sapply(norm_dat, is.finite)] = 0
 			} else if (method == "MEDIAN") {
-					norm_dat = sapply(data[, numeric_cols, drop = FALSE], function(x) {x - median(x, na.rm = TRUE) / (mad(x, na.rm = TRUE) + epsilon)})
+					norm_dat = sapply(data[, numeric_cols, drop = FALSE], function(x) {x - stats::median(x, na.rm = TRUE) / (stats::mad(x, na.rm = TRUE) + epsilon)})
 					norm_dat[is.nan(norm_dat)] = 0
 			} else if (method == "CPM") {
 					rs = rowSums(data[, numeric_cols, drop = FALSE], na.rm = TRUE)

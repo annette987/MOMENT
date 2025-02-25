@@ -1,9 +1,15 @@
-####################################################################################
-# MICE IMPUTATION
-# CPO to run imputation using MICE or KNN within the CV loop
-# cpo.train creates the prediction matrix used by mice.
-# cpo.retrafo applies the same prediction matrix to both the training and test sets
-####################################################################################
+#' @title Imputation methods for use with multi-modal modelling
+#'
+#' @description
+#' Provides two imputation methods for adding imputation to the pre-processing pipeline: Mice and KNN.
+#'
+#' @details
+#' Two methods are provided for adding imputation to the machine learning pipeline.
+#' One uses mlrCPO to create a new Composable Preprocessing Operator (CPO) for imputation.
+#' The other creates a preprocessing wrapper that can be added to a learner.
+#'
+#' @name Imputation
+NULL
 
 
 get_minpc = function(num_feats) {
@@ -53,6 +59,9 @@ initMice = function(data) {
 
 
 imputeMice = function(data, control) {
+	if (!requireNamespace("mice", quietly = TRUE)) {
+		stop("Package \'mice\' must be installed to perform mice imputation")
+	}
 	if (all(control == 0L)) {
 		minpc = get_minpc(ncol(data))
 		control = mice::quickpred(data, minpuc = minpc, mincor = minpc)
@@ -78,6 +87,9 @@ imputeMice = function(data, control) {
 
 
 imputeKNN = function(data) {
+	if (!requireNamespace("VIM", quietly = TRUE)) {
+		stop("Package \'VIM\' must be installed to performmice KNN")
+	}
 	imputed = tryCatch({
 			VIM::kNN(data, k = 3, trace = FALSE)	
 	}, 
@@ -169,7 +181,7 @@ makePreprocWrapperImpute = function(learner, impute_method = "MICE") {
 			data = cbind(data, imputed_test$data)
 			return(data)
   }
-  makePreprocWrapper(
+  mlr::makePreprocWrapper(
     learner,
     train = trainfun,
     predict = predictfun,

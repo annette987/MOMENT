@@ -1,20 +1,9 @@
-#-------------------------------------------------------------
-# CLASS Incremental
-# Forward/backward sequential building of a sequence of views
-#-------------------------------------------------------------
-
 #' R6 Class representing an incremental model to determine
 #' an optimal subset of modalities for model building.
 #'
 #' @description
-#' Creates a multi-modal ensemble classifier that uses 
-#' hard or soft voting to determine the final outcome of the classifier.
-#'
-#' @details
-#' Trains a classifier on each modality then combines the
-#' predictions from those modalities using a hard vote
-#' (majority voting) or a soft vote (average of probabilities)
-#' to give a final prediction.
+#' Forward/backward sequential building of a sequence of views.
+#' Only works for classification.
 #'
 #' @name MM_Incremental
 #' @docType package
@@ -32,11 +21,10 @@ MM_Incremental = R6::R6Class("MM_Incremental",
 	
 		#' @description 
 		#' Create a new MM_Incremental object.
+		#' @inheritParams MM_Model$initialize
 		#' @param metric Metric for deciding on best performance - 'F1', 'Acc' or 'AUC' (character)
 		#' @param decision Aggregation method - 'vote' (majority vote) or 'prob' (soft vote)
 		#' @return A new `MM_Incremental`object.
-		#' @examples
-		#' mod = MM_Incremental$new(env)
 		#' @export
 		initialize = function(config, metric = "F1", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
 			super$initialize(config, "INC", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
@@ -44,6 +32,16 @@ MM_Incremental = R6::R6Class("MM_Incremental",
 		},
 		
 		
+		#' @description 
+		#' Calculate the performance measures for the current set of model responses.
+		#' @param truth (factor)\cr
+		#' The ground truth labels
+		#' @param response (factor)\cr
+		#' The model responses.
+		#' @param class_names (factor)\cr
+		#' The names of the classes in the target variable.
+		#' @return A data.frame containing the performance metrics.
+		#' @noRd
 		calc_stats = function(truth, response, class_names) {
 			response = factor(response, levels = levels(truth))  # In case some classes were not predicted
 			measures = list()
@@ -72,10 +70,15 @@ MM_Incremental = R6::R6Class("MM_Incremental",
 			return(as.data.frame(measures))
 		},
 		
-		##########################################################################################
-		# Train a model on each view for each fold. These will be reused.
-		#
-		train_base_models = function(ri, decision) {
+
+		#' @description 
+		#' Train a model on each view for each fold of data. 
+		#' These models will be reused when building the incremental model.
+		#' @param ri (ResampleInstance)\cr
+		#' The resampling instance for the cross validation used in building the model.
+		#' @return A list containing the predictions and the performance of the models.
+		#' @noRd
+		train_base_models = function(ri) {
 			predn_futures = list()
 			
 			for (i in 1:length(self$tasks)) {
@@ -93,7 +96,7 @@ MM_Incremental = R6::R6Class("MM_Incremental",
 							if (mlr::isFailureModel(mod)) {
 								warnimg(paste0("Model ", i, " failed: ", mlr::getFailureModelMsg(mod)))
 							} else {
-								mlr:::predict.WrappedModel(mod, task = self$tasks[[i]], subset = test_subset)
+								mlr::predict.WrappedModel(mod, task = self$tasks[[i]], subset = test_subset)
 							}
 						})
 					}
@@ -134,9 +137,16 @@ MM_Incremental = R6::R6Class("MM_Incremental",
 		},
 
 		
-		##########################################################################################
-		# Calculate the final response, according to the decision type from the given set of views
-		#
+		#' @description 
+		#' Calculate the final response, according to the decision type from the given set of views. 
+		#' @param results (data.frame)\cr
+		#' The results from each modality concatenated into a data.frame.
+		#' @param views (list)\cr
+		#' A list of view to be combined to obtain a final decision. (Indices or view names???)		
+		#' @param decision_type (character)\cr
+		#' The method of combining the results from each modality - a hard or soft vote.
+		#' @return A list containing the predictions and the performance of the models.
+		#' @noRd
 		get_response = function(results, views, decision_type) {
 			if (length(views) <= 0) {
 				stop("No views to get response from")
@@ -182,10 +192,11 @@ MM_Incremental = R6::R6Class("MM_Incremental",
 		},
 		
 		
-		##########################################################################################
-		# Train a multi-modal (multi-view) incremental model in a forward manner
-		# Add the best performing view on each iteration until performance drops
-		#
+		#' @description
+		#' Train a multi-modal incremental model in a forward manner.
+		#' On each iteration, the best performing view is added until performance drops.
+    #' @return list
+		#' @export
 		train_incremental_forward = function() {
 			finished = FALSE			
 			train_results = self$train_base_models(self$ri, self$decision)
@@ -231,10 +242,11 @@ MM_Incremental = R6::R6Class("MM_Incremental",
 		},
 		
 			
-		##########################################################################################
-		# Train a multi-modal (multi-view) incremental model in reverse
-		# Remove the worst performing view on each iteration until performance drops
-		#
+		#' @description
+		#' Train a multi-modal incremental model in a forward manner.
+		#' On each iteration, the worst performing view is removed until performance drops.
+    #' @return list
+		#' @export
 		train_incremental_reverse = function() {
 			finished = FALSE
 			train_results = self$train_base_models(self$ri, self$decision)

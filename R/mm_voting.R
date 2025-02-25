@@ -1,4 +1,4 @@
-#' R6 Class representing a multi-modal voting ensemble classifier
+#' MM_Voting: R6 Class representing a multi-modal voting ensemble classifier
 #'
 #' @description
 #' Creates a multi-modal ensemble classifier that uses 
@@ -11,7 +11,6 @@
 #' to give a final prediction.
 #'
 #' @name MM_Voting
-#' @docType package
 NULL
 
 MM_Voting = R6::R6Class("MM_Voting", 
@@ -20,19 +19,23 @@ MM_Voting = R6::R6Class("MM_Voting",
 		
     #' @description 
 		#' Create a new MM_Voting object.
-    #' @param config Model parameters (MM_Config).
-    #' @return A new `MM_Voting`object.
-		#' @examples
-		#' mod = MM_Voting$new(config)
+		#' @inheritParams MM_Model$initialize
+    #' @return A new `MM_Voting` object.
 		#' @export
 		initialize = function(config, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = FALSE, filter_missings = FALSE, filter_corr = FALSE, filter_var = FALSE) {
 			super$initialize(config, "VOTE", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 		},		
 
 
-		# Calculate the final response, according to the decision_type type and
-		# add a response column to the results
-		#
+		#' @description 
+		#' Calculate the final response, according to the decision_type type and
+		#' add a response column to the results.
+    #' @param results (data.frame)\cr
+		#' The results from the individual models, concatenated column-wise into a data.frame.
+		#' @param classes
+		#' The classes to be found in teh target variable.
+    #' @return A data.frame containing the results including the final decision.
+		#' @noRd
 		get_final_decision = function(results, classes) 
 		{
 			results$truth = as.factor(results$truth)
@@ -59,15 +62,17 @@ MM_Voting = R6::R6Class("MM_Voting",
 			return(results)
 		},
 
+
 		#' @description 
 		#' Train a model for each modality in parallel. 
-		#' Save the features selected by each model..
-    #' @param training_set
-		#' @param rpt
+		#' Save the features selected by each model.
+    #' @param training_set (integer)\cr
+		#' A vector of indices indicating which samples should be used in training.
+		#' @param rpt (integer)\cr
+		#' Which repeat in the repeated cross-validation is being trained.
 		#' @param fold
+		#' Which fold in the repeated cross-validation is being trained.
     #' @return Nothing
-		#' @examples
-		#' train(training_set, 1, 2)
 		#' @export
 		train = function(training_set, rpt, fold) 
 		{
@@ -89,25 +94,34 @@ MM_Voting = R6::R6Class("MM_Voting",
 				}
 			}
 		},
-		
+	
+	
   	#' @description 
 		#' Predict on new data with fitted models for each modality in parallel. 
 		#' Combine the predictions into a data.frame.
-    #' @param test_set
-		#' @param decision
-		#' @param rpt
+		#' @param decision (character)\cr
+		#' Type of decision to make in combining predictions. 
+		#' Can be 'vote' or 'hsrd' for a hard vote or 'prob' or 'soft' for a soft vote.
+    #' @param test_set (integer)\cr
+		#' A vector of indices indicating which samples should be used in testing.
+		#' @param rpt (integer)\cr
+		#' Which repeat in the repeated cross-validation is being tested.
 		#' @param fold
+		#' Which fold in the repeated cross-validation is being tested.
     #' @return Results of the predictions (data.frame)
-		#' @examples
-		#' predict(training_set, 1, 2)
 		#' @export
 		predict = function(test_set, decision, rpt, fold) 
 		{
+			checkmate::assertInteger(test_set)
+			checkmate::assertChoice(decision, choices = c('vote', 'hard', 'prob', 'soft'))
+			checkmate::assertInteger(rpt)
+			checkmate::assertInteger(fold)
+			
 			responses = NULL
 			predn_futures = list()
 			
 			for (i in 1:length(self$tasks)) {
-				predn_futures[[i]] = future::future(mlr:::predict.WrappedModel(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE)	
+				predn_futures[[i]] = future::future(mlr::predict.WrappedModel(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE)	
 			}
 			future::resolve(predn_futures)
 
@@ -136,12 +150,12 @@ MM_Voting = R6::R6Class("MM_Voting",
 			self$results$save_responses(responses, rpt, fold)
 			return(responses)
 		},
+
 						
   	#' @description 
 		#' Validate all modalities for one fold of the test data. 
 		#' Combine the validation predictions into a data.frame.
     #' @return Nothing
-		#' @examples
 		#' @noRd
 		validate = function() {
 			vroc = ROCMultiClass$new()
@@ -162,9 +176,7 @@ MM_Voting = R6::R6Class("MM_Voting",
   	#' @description 
 		#' Training and prediction of a multi-modal Voting ensemble in a cross validated loop. 
 		#' Perform validation if a validation set is provided. 
-		#' Save the results to a file.
-    #' @param validation_set
-    #' @return mm_results
+    #' @return An object of type [mm_results] containing the model results.
 		#' @export
 		learn = function() 
 		{

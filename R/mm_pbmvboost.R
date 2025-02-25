@@ -6,10 +6,10 @@
 #' @details
 #' This classifier is based on a two-level multiview learning approach. It learns the distribution over view-specific
 #' classifiers and the distribution over views in one step following a boosing approach.
-#' Related Paper:
+#'
+#' @references
 #' Multiview Boosting by Controlling the Diversity and the Accuracy of View-specific Voters
 #' by Anil Goyal, Emilie Morvant, Pascal Germain and Massih-Reza Amini
-#' Link to the paper:
 #' https://arxiv.org/abs/1808.05784
 #'
 #' Original Author = "Anil Goyal"
@@ -40,10 +40,29 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 		rho_vectors = list(),
 
 			#' @description 
-			#'		Create a new PB_MVBoost object.
+			#' Create a new PB_MVBoost object.
+			#' @param config (MM_Config)\cr
+			#' Configuration object, specifying how the model should be constructed.
+			#' @param model_type (character)\cr
+			#' Type of model - "CLASSIF" for classification or "SURV" for survival analysis. 
+			#' @param decision (character)\cr
+			#' Type of prediction - 'response' or 'prob'.
+			#' @param subset (integer)\cr
+			#' @param concat (logical(1))\cr
+			#' Should the tasks be concatenated to form a single, large dataset?
+			#' @param balance (logical(1))\cr
+			#' Should the tasks be balanced during training?
+			#' @param validate (logical(1))\cr
+			#' Should the model be validated with validation data provided in the config file.
+			#' @param filter_zeroes (double(1))\cr
+			#' Features with this percentage of zero values or greater will not be included in the model.
+			#' @param filter_missings (double(1))\cr
+			#' Features with this percentage of missing values or greater will not be included in the model.
+			#' @param filter_corr (double(1))\cr
+			#' Should correlated features be included in the model? If FALSE, one feature from each correlated pair is eliminated.
+			#' @param filter_var (double(1))\cr
+			#' Should low variance features be included in the model?
 			#' @return A new`PB_MVBoost` object.
-			#' @examples
-			#' mod = MM_Adaboost$new(env, 10, "Label", NULL)
 			#' @export
 		initialize = function(config, nrounds = 10, decision_tree_depth = 2, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = FALSE, filter_missings = FALSE, filter_corr = FALSE, filter_var = FALSE) {
 				super$initialize(config, "PBMV", decision, subset, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
@@ -62,10 +81,15 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 				}
 		},
 		
-		#
-		# Format the data for one fold as PB_MVBoost expects it:
-		#   4 named lists with one element per view
-		# 
+		#' @description 
+		#' Format the data for one fold as PB_MVBoost expects it:
+		#'   4 named lists with one element per view
+    #' @param train_subset (integer)\cr
+		#' A vector containing the indices of the samples in the training set.
+    #' @param test_subset (integer)\cr
+		#' A vector containing the indices of the samples in the test set.
+    #' @return Nothing but the relevant internal variables are set up.
+		#' @noRd
 		format_data = function(train_subset, test_subset) {
 			self$X_train = list()
 			self$y_train = list()
@@ -95,10 +119,17 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 		},
 
 
-	#	This function is a helper function to compute the weight of the hypothesis based on the error pased to it.
-	#	It computes 0.5 * ln (1-error/ error)
-	#	:param error: Error value
-	#	:return: Weight value
+		#' @description 
+		#' A helper function to compute the weight of the hypothesis based on the error passed to it.\cr
+		#'	It computes 0.5 * ln (1-error/ error)
+    #' @param error (integer)\cr
+		#' The error value.
+    #' @param view_index (integer)\cr
+		#' The view for which the error is caluclated.
+		#' @param classes (factor)\cr
+		#' The classes in the target variable
+    #' @return The weight value
+		#' @noRd
 		compute_weight = function(error, view_index, classes) {
 			view_weight = self$rho[[view_index]]
 			if (view_weight == 0) {
@@ -111,10 +142,14 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 		},
 
 
-	#	This function returns the error and f1-score.
-	#	:param predicted_values:  Predicted labels of any estimator
-	#	:param true_values: True labels
-	#	:return:
+		#' @description 
+		#' Computes the error and f1-score.
+    #' @param predicted_values (vector)\cr
+		#' The predicted labels of any classifier.
+    #' @param true_values (integer)\cr
+		#' The true labels of the classifier.
+		#' @return A list containing the error and F1 score
+		#' @noRd
 		compute_stats = function(predicted_values, true_values) {
 			# remove the elements with output zero.
 			predicted_values = as.numeric(predicted_values[predicted_values != 0])
@@ -127,14 +162,24 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 		},
 
 
-	#	This function learns the weak classifier and returns a weight for this learned classifier. 
-	# Fitting is done on weighted samples which are passed as an input parameter.
-	# The classifier is trained on one view on one fold of data.
-	#	Input
-	#	======
-	#	:param view_name : View name for which we need to learn a classfier
-	#	:param example_weights : Weight of input training examples
-	#	:return: Weight of Classifier, training data labels, test data labels.
+		#' @description 
+		#' This function learns the weak classifier and returns a weight for this learned classifier. 
+		#' Fitting is done on weighted samples which are passed as an input parameter.
+		#' The classifier is trained on one view on one fold of data.
+		#' @param view_name (character)\cr
+		#' The name of the view  for which we need to learn a classfier
+		#' @param view_index (character)\cr
+		#' The index of the view  for which we need to learn a classfier		
+    #' @param train_subset (integer)\cr
+		#' A vector containing the indices of the samples in the training set.
+    #' @param test_subset (integer)\cr
+		#' A vector containing the indices of the samples in the test set.
+		#' @param example_weights (numeric)\cr: 
+		#' Weight of the input training examples
+		#' @param classes (factor)\cr
+		#' The classes in the target variable
+		#' @return Weight of Classifier, training data labels, test data labels
+		#' @noRd
 		learn_classifier = function(view_name, view_index, train_subset, test_subset, example_weights, classes) {
 			X_train = self$X_train[[view_name]]
 			X_test = self$X_test[[view_name]]
@@ -147,8 +192,8 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 			
 			wght_sample = sample(train_subset, length(train_subset), replace = TRUE, prob = example_weights)
 			mod = mlr::train(learner = self$learners[[view_index]], task = self$tasks[[view_index]], subset = wght_sample)
-			pred_train = mlr:::predict.WrappedModel(mod, task = self$tasks[[view_index]], subset = train_subset)
-			pred_test  = mlr:::predict.WrappedModel(mod, task = self$tasks[[view_index]], subset = test_subset)
+			pred_train = mlr::predict.WrappedModel(mod, task = self$tasks[[view_index]], subset = train_subset)
+			pred_test  = mlr::predict.WrappedModel(mod, task = self$tasks[[view_index]], subset = test_subset)
 
 			#predicting labels for training and test data
 			predicted_labels_train = pred_train$data$response
@@ -181,10 +226,14 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 		},
 
 
-	#	This function learns the weights over views.
-	#	:param initial_guess: initial weights over views.
-	#	:return: rho : weight over views.
-
+		#' @description 
+		#' This function learns the weights over views.
+		#' @param initial_guess (numeric)\cr
+		#' Initial weights over the views.
+		#' @param example_weights (numeric)\cr: 
+		#' Weight of the input training examples
+		#' @return rho - the weight over the views.
+		#' @noRd
 		learn_view_weights = function(initial_guess, example_weights) {
 			errors_t = list()
 			disagreement_t = list()
@@ -230,27 +279,35 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 		},
 
 
-	#	This function computes the C-Bound on the value of gibbs risk and gibbs disagreement.
-	#	:return: C-bound value
-
+		#' @description 
+		#' Computes the C-Bound on the value of gibbs risk and gibbs disagreement.
+		#' @param risk (numeric)\cr
+		#' Gibbs risk.
+		#' @param disagreement (numeric)\cr: 
+		#' Gibbs disagreement
+		#' @return C-bound value.
+		#' @noRd
 		compute_Cbound = function(risk, disagreement) {
 			C_bound = 1-((1-2*risk)**2 / (1-2*disagreement))
 			return(C_bound)
 		},
 
 
-	#	This function calculates the majority vote
-	#	:param data : tells on which data we need to compute the majority vote
-	#	:return: predictions of majority vote
-
+		#' @description 
+		#' Calculates predictions using a majority vote. 
+		#' Converted to multi-class problem using matrix of predictions		
+		#' @param data (data.frame)\cr
+		#' The data on which to compute the majority vote.
+		#' @param classes (factor)\cr
+		#' The classes in the target variable
+		#' @return predictions using a majority vote
+		#' @noRd
 		calculate_majority_vote = function(data = 'train', classes) {
-	# Convert to multi-class problem using matrix of predictions
+
 			if (data == 'train') {
-	#			predictions = rep(0, self$num_train_examples)
 				predictions = matrix(0, nrow = self$num_train_examples, ncol = length(classes), dimnames = list(NULL, classes))
 				classifiers_outputs = self$train_predictions_classifiers
 			} else if (data == 'test') {
-	#			predictions = rep(0, self$num_test_examples)
 				predictions = matrix(0, nrow = self$num_test_examples, ncol = length(classes), dimnames = list(NULL, levels(classes)))
 				classifiers_outputs = self$test_predictions_classfiers
 			}
@@ -259,7 +316,6 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 				view_name = self$all_views[[view_index]]
 				
 				for (t in 1:length(classifiers_outputs[[view_name]])) {
-	#				output = as.numeric(classifiers_outputs[[view_name]][[t]])
 					output = matrix(0, nrow = nrow(predictions), ncol = length(classes), dimnames = list(NULL, levels(classes)))
 					output[cbind(1:nrow(predictions), classifiers_outputs[[view_name]][[t]])] = 1
 					classifier_weights = unlist(self$weights_classfiers[[view_name]])
@@ -268,17 +324,18 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 				}
 			}
 
-	#		predictions = sign(predictions)
 			y_pred_max = apply(predictions, 1, which.max)
 			predictions = levels(classes)[y_pred_max]
 			return(predictions)
 		},
 
 
-	#	This function will compute the 2nd form of multiview c-bound for mv-boost.
-	#	:param data : this parameter will tell on which data we have to compute the c-bound.
-	#	:return: the value of c-bound on input data.
-
+		#' @description 
+		#' Computes the 2nd form of multiview c-bound for mv-boost. 	
+		#' @param data (data.frame)\cr
+		#' The data on which to compute the c-bound.
+		#' @return the value of c-bound on the input data
+		#' @noRd
 		mv_cbound = function(data = 'train') {
 			if (data == 'train') {
 				predictions =  self$train_predictions_classifiers
@@ -332,10 +389,19 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 		},
 
 
-	#	This function will learn the mvboost model for input multiview learning data.
-	#	:return: Accuracy and F1 Measure on Training and Test Data. 
-	#          Also, Multiview C-Bound value on Training Data after T iterations.
-
+		#' @description 
+		#' Learn the pbmvboost model for one fold of data. 	
+    #' @param train_subset (integer)\cr
+		#' A vector containing the indices of the samples in the training set.
+    #' @param test_subset (integer)\cr
+		#' A vector containing the indices of the samples in the test set.
+		#' @param classes (factor)\cr
+		#' The classes in the target variable
+		#' @param fold (integer)\cr
+		#' The fold of data to be used in learning the model.
+		#' @return Accuracy and F1 Measure on Training and Test Data.\cr 
+		#' Also, Multiview C-Bound value on Training Data after T iterations.
+		#' @noRd
 		learn_pbmv = function(train_subset, test_subset, classes, fold) {
 			result_futures = list()
 			
@@ -415,8 +481,13 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 		},
 			
 
-		# Extract the feature importance scores from each model on each iteration on one fold of data.
-		# Then multiple these by the weights for each model.
+		#' @description 
+		#' Calculate the weighted feature importance scores from each model on each iteration on one fold of data.
+		#' The raw feature importance scores are multiplied by the weights for each model.
+		#' @param fold (integer)\cr
+		#' The fold of data for which feature importance scores are to be calculated..
+		#' @return The feature importance scores for the given fold. 
+		#' @noRd
 		get_feature_importances = function(fold) {
 			feats = list()
 			feat_scores = list()
@@ -447,6 +518,10 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 		},
 		
 		
+		#' @description 
+		#' Learn a pb_mvboost model.
+		#' @return The model results. 
+		#' @export
 		learn = function()
 		{
 			final_response = list()

@@ -1,10 +1,9 @@
-#' R6 class to hold performance results
+#' @title R6 class to hold the performance results
 #'
 #' @description
 #' Stores and gives access to the performance results for each metric for each modality.
 #'
-#' @name Features
-#' @docType package
+#' @name Performance
 NULL
 
 Performance = R6::R6Class("Performance", list(
@@ -25,10 +24,8 @@ Performance = R6::R6Class("Performance", list(
 	#' @description 
 	#' Create a new `Performance` object.
 	#' @param measures (list)\cr
-	#' 	The names of the requested mlr performance metrics.
+	#' The names of the requested mlr performance metrics.
 	#' @return A new `Performance` object
-	#' @examples
-	#' 	perf = Performance$new(list(acc))
 	#' @export
 	initialize = function(measures) {
 		self$measures = measures
@@ -37,14 +34,17 @@ Performance = R6::R6Class("Performance", list(
 			self$aggr[[m$id]] = list()
 		}
 	},
+
 	
 	#' @description 
 	#' Calculate the performance from an mlr Prediction object and save it.
 	#' @param pred (Prediction)\cr
 	#' 	mlr Prediction object
+	#' @param task (Task)\cr
+	#' 	mlr Task object
+	#' @param model (object)\cr
+	#' 	mlr trained model
 	#' @return Nothing
-	#' @examples
-	#' 	Performance$calculate(pred)
 	#' @export
 	calculate = function(pred, task = NULL, model = NULL) {
 		all_perf = mlr::performance(pred, self$measures, task = task, model = model)
@@ -53,14 +53,13 @@ Performance = R6::R6Class("Performance", list(
 			self$aggr[[m$id]] = mean(unlist(self$perf[[m$id]]), na.rm = TRUE)
 		}
 	},
+
 				
 	#' @description 
 	#' Save the performance results internally
 	#' @param res (ResampleResult or ???)\cr
 	#' 	An mlr structure containing the performance results.
 	#' @return Nothing
-	#' @examples
-	#' 	imp = Features$save(res)
 	#' @export	
 	save = function(res) {
 		for (m in self$measures) {
@@ -79,11 +78,7 @@ Performance = R6::R6Class("Performance", list(
 	#' 	The prefix of the name of the files to which the results will be written.
 	#' @param suffix (character)\cr
 	#' 	The suffix will be appended to the prefix of the output file name.
-	#' @param method (character)\cr
-	#' 	Method used ???
 	#' @return Nothing
-	#' @examples
-	#' 	imp = Features$write("results", "241105")
 	#' @export	
 	write = function(result_file, suffix = "") {
 		out_perf = do.call(cbind, self$perf)
@@ -93,7 +88,12 @@ Performance = R6::R6Class("Performance", list(
 		}
 		write.csv(out_perf, paste(result_file, "_perf.csv", sep=""), row.names=TRUE)
 	},
+
 	
+	#' @description 
+	#' Return the performance results.
+	#' @return A data.frame containing the performance results.
+	#' @export
 	get_results = function() {
 		out_perf = do.call(cbind, self$perf)
 		names(out_perf) = self$measures
@@ -108,10 +108,7 @@ Performance = R6::R6Class("Performance", list(
 	#' 	The name of the file containing the results to be plotted (optional).
 	#'  If this value is NA (the default), the results saved internally are plotted.
 	#' @return The plot object
-	#' @examples
-	#' 	imp = Features$plot("results", "") ???
 	#' @export	
-	#Produce boxplots from data in a Performance object
 	plot = function(method, result_file = NA) {
 		if (!is.na(result_file)) {
 			data = read.csv(result_file, sep = ",", dec = '.', header = TRUE, stringsAsFactors=FALSE)

@@ -1,6 +1,10 @@
+#' @importFrom mlr makeRLearner
+#' @importFrom mlr trainLearner
+#' @importFrom mlr predictLearner
+
 #' @export
 makeRLearner.classif.imputedRF = function() {
-  makeRLearnerClassif(
+  mlr::makeRLearnerClassif(
     cl = "classif.imputedRF",
     package = "randomForest",
     par.set = ParamHelpers::makeParamSet(
@@ -52,32 +56,5 @@ trainLearner.classif.imputedRF = function(.learner, .task, .subset, .weights = N
 #' @export
 predictLearner.classif.imputedRF = function(.learner, .model, .newdata, ...) {
   type = ifelse(.learner$predict.type == "response", "response", "prob")
-  randomForest::predict(.model$learner.model, newdata = .newdata, type = type, ...)
-}
-
-#' @export
-getOOBPredsLearner.classif.imputedRF = function(.learner, .model) {
-  if (.learner$predict.type == "response") {
-    m = mlr::getLearnerModel(.model, more.unwrap = TRUE)
-    unname(m$predicted)
-  } else {
-    mlr::getLearnerModel(.model, more.unwrap = TRUE)$votes
-  }
-}
-
-#' @export
-getFeatureImportanceLearner.classif.imputedRF = function(.learner, .model, ...) {
-  mod = mlr::getLearnerModel(.model, more.unwrap = TRUE)
-  ctrl = list(...)
-  if (is.null(ctrl$type)) {
-    ctrl$type = 2L
-  } else {
-    if (ctrl$type == 1L) {
-      has.fiv = .learner$par.vals$importance
-      if (is.null(has.fiv) || has.fiv != TRUE) {
-        stop("You need to train the learner with parameter 'importance' set to TRUE")
-      }
-    }
-  }
-  randomForest::importance(mod, ctrl$type)[, 1]
+  mlr::predictLearner(.model$learner.model, newdata = .newdata, type = type, ...)
 }

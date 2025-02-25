@@ -1,14 +1,8 @@
-#' R6 Class representing a multi-modal voting ensemble classifier
+#' R6 Class for exploring the raw data
 #'
 #' @description
-#' Creates a multi-modal ensemble classifier that uses 
-#' hard or soft voting to determine the final outcome of the classifier.
-#'
-#' @details
-#' Trains a classifier on each modality then combines the
-#' predictions from those modalities using a hard vote
-#' (majority voting) or a soft vote (average of probabilities)
-#' to give a final prediction.
+#' Allow the user to generate PCA, TSNE and UMAP plots
+#' for each modality in the data.
 #'
 #' @name MM_Explorer
 #' @docType package
@@ -21,26 +15,65 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 		
     #' @description 
 		#' Create a new MM_Explorer object.
-    #' @param config Model parameters (MM_Config).
-    #' @return A new `MM_Explorer`object.
-		#' @examples
-		#' mod = MM_Explorer$new(config)
+		#' @param config (MM_Config)\cr
+		#' Configuration object, specifying how the model should be constructed.
+    #' @param model_type (character)\cr
+		#' Type of model - "CLASSIF" for classification or "SURV" for survival analysis. 
+		#' @param decision (character)\cr
+		#' Type of prediction - 'response' or 'prob'.
+		#' @param subset (integer)\cr
+		#' @param concat (logical(1))\cr
+		#' Should the tasks be concatenated to form a single, large dataset?
+		#' @param balance (logical(1))\cr
+		#' Should the tasks be balanced during training?
+		#' @param validate (logical(1))\cr
+		#' Should the model be validated with validation data provided in the config file.
+		#' @param filter_zeroes (double(1))\cr
+		#' Features with this percentage of zero values or greater will not be included in the model.
+		#' @param filter_missings (double(1))\cr
+		#' Features with this percentage of missing values or greater will not be included in the model.
+		#' @param filter_corr (double(1))\cr
+		#' Should correlated features be included in the model? If FALSE, one feature from each correlated pair is eliminated.
+		#' @param filter_var (double(1))\cr
+		#' Should low variance features be included in the model?
+    #' @return A new [MM_Explorer] object.
 		#' @export
 		initialize = function(config, decision = "prob", subset = NULL, balance = FALSE, filter_zeroes = FALSE, filter_missings = FALSE, filter_corr = FALSE, filter_var = FALSE) {
 			super$initialize(config, "VOTE", decision, subset, FALSE, balance, filter_zeroes, filter_missings, filter_corr, filter_var)
 		},		
 
 
-		#
-		# Create UMAP, t-SNE and PCA plots to explore data
-		#
+		#' @description
+		#' Create UMAP, t-SNE and PCA plots for one modality of  data.
+		#' Each plot is geerated with a range of parameters.
+		#' @param plot_type (character)\cr
+		#' The type of plot to produce. Can be either "PCA", "TSNE" or "UMAP".
+		#' @param data (data.frame)\cr
+		#' The raw data to be explored.
+		#' @param target (character)\cr
+		#' The target variable in the data.frame.
+		#' @param file_prefix (character)\cr
+		#' The prefix (including path) of the filename to which the plots should be saved.
+    #' @return Nothing.
+		#' @export
 		exploreData = function(plot_type, data, target, file_prefix)
 		{
+			checkmate::assertChoice(plot_type, choices = c("PCA", "TSNE", "UMAP"))
+			checkmate::assertClass(data, data.frame)
+			checkMate::assertString(target)
+			checkMate::assertStrinf(file_prefix)
+			if (!requireNamespace("ggplot2", quietly = TRUE)) {
+				stop("Package \'ggplot2\' must be installed to generate plots")
+			}
+			
 			names(target) = 'Label'
 			numeric_cols = unlist(lapply(data, function(x) {is.numeric(x) && !all(x %in% c(0,1))}))
 			dat = data[, numeric_cols]
 
 			if (plot_type == "TSNE") {
+				 if (!requireNamespace("Rtsne", quietly = TRUE)) {
+					 stop("Package \'Rtsne\' must be installed to generate TSNE plots")
+				 }
 				 tryCatch({
 						
 						tsne_2 <- Rtsne::Rtsne(X = data.matrix(dat),
@@ -121,6 +154,9 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 						warning(paste("prcomp returned error: ", cond))
 				 })
 			} else if (plot_type == "UMAP") {
+				  if (!requireNamespace("umap", quietly = TRUE)) {
+					  stop("Package \'umap\' must be installed to generate UMAP plots")
+				  }
 					tryCatch({
 						umap_5  = umap::umap(dat, n_components = 2, n_neighbors = 5, min_dist = 0.1)
 						umap_10 = umap::umap(dat, n_components = 2, n_neighbors = 10, min_dist = 0.1)
@@ -170,10 +206,20 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 		},
 
 		
-  	#' @description 
+  	#' @description
+		#' Explore each modality of data.
+		#' PCA, TSNE and UMAP plots with varying parameters are generated for each modality and saved to disk.
+		#' @param config (config)\cr
+		#' The config object contain details of the data to be explored.
+		#' @param file_prefix (character)\cr
+		#' The prefix (including path) of the filename to which the plots should be saved.
+    #' @return Nothing.
 		#' @export
 		learn = function(config, file_prefix) 
 		{
+			assertClass(config, "config")
+			assertString(file_prefix)
+			
 			for (i in 1:length(self$tasks)) {
 				task_id = self$tasks[[i]]$task.desc$id
 				dat = mlr::getTaskData(self$tasks[[i]], target.extra = TRUE)

@@ -1,10 +1,9 @@
-#' R6 class to hold feature selections
+#' @title R6 class to hold feature selections
 #'
 #' @description
 #' Stores feature selections and gives access to feature importance scores.
 #'
 #' @name Features
-#' @docType package
 NULL
 
 Features = R6::R6Class("Features", list(
@@ -26,8 +25,6 @@ Features = R6::R6Class("Features", list(
 	#' @param tasks (list)\cr
 	#' List of tasks (datasets) for the multi-modal model - one per modality
 	#' @return A new `Features` object
-	#' @examples
-	#' mod = Features$new(tasks)
 	#' @export
 	initialize = function(tasks) {
 		for (i in 1:length(tasks)) {
@@ -48,8 +45,6 @@ Features = R6::R6Class("Features", list(
 	#' @param class_names (character vector)
 	#' 	Names of the classes in the data
 	#' @return A data.frame containing feature importance scores
-	#' @examples
-	#' 	imp = Features$getFeatImpScores(mod, classes)
 	#' @export
 	getFeatImpScores = function(mod, class_names = NULL)
 	{	
@@ -156,8 +151,6 @@ Features = R6::R6Class("Features", list(
 	#' @param fold_num (integer)\cr
 	#' 	The index of the fold for which the scores were calculated.
 	#' @return A data.frame containing feature importance scores
-	#' @examples
-	#' imp = Features$save(mod, classes)
 	#' @export	
 	save = function(mod, task, classes, method, fold_num)
 	{
@@ -191,8 +184,6 @@ Features = R6::R6Class("Features", list(
 	#' @param seln_col (character)\cr
 	#' 	The name of the column in the results data.frame containing the scores for the model as a whole
 	#' @return A data.frame containing feature importance scores
-	#' @examples
-	#' imp = Features$save_multiclass(save_multiclass)
 	#' @export	
 	save_multiclass = function(method, results, task_id, fold_num, seln_col = 'all') {
 		results = results[order(row.names(results)), seln_col, drop = FALSE]
@@ -208,8 +199,6 @@ Features = R6::R6Class("Features", list(
 	#' The scores from the individual cross-validation runs are saved to a file ending in '_featsel.csv'.
 	#' The aggregated scores are saved to a file ending in '_featsel_aggr.csv'
 	#' @return Nothing
-	#' @examples
-	#' 	imp = Features$normalise()
 	#' @export	
 	complete = function() {
 		# Aggregate and normalise
@@ -233,7 +222,15 @@ Features = R6::R6Class("Features", list(
 		}
 	},
 	
-	get_results = function(perc = 0.75) {
+	
+	#' @description 
+	#' Return the selected features - for each fold and an aggregated result.
+	#' @param perc (numeric)\cr
+	#' 	Only features which are selected in this percentage of folds or greater are returned.
+	#'  To retrieve all selected features, pass 1??
+	#' @return list
+	#' @export	
+	get_results = function(perc = 1.0) {
 			self$complete()
 			out_aggr  = as.data.frame(do.call(rbind, self$featsel_aggr))
 			out_feats = as.data.frame(do.call(rbind, self$featsel))
@@ -249,9 +246,10 @@ Features = R6::R6Class("Features", list(
 	#' 	The prefix of the name of the files to which the results will be written.
 	#' @param suffix (character)\cr
 	#' 	The suffix will be appended to the prefix of the output file name.
+	#' @param perc (numeric)\cr
+	#' 	Only features which are selected in this percentage of folds or greater are returned.
+	#'  To retrieve all selected features, pass 1??
 	#' @return Nothing
-	#' @examples
-	#' 	imp = Features$write("results", "241105")
 	#' @export	
 	write = function(result_file, suffix = "", perc = 0.75) {
 		# Only output features selected in perc % of folds

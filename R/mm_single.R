@@ -22,8 +22,6 @@ MM_Single = R6::R6Class("MM_Single",
 		#' Create a new MM_Single object.
     #' @param config Model parameters (MM_Config).
     #' @return A new `MM_Single`object.
-		#' @examples
-		#' mod = MM_Single$new(config)
 		#' @export
 		initialize = function(config, model_type = "CLASSIF", predict_type = "response", concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = FALSE, filter_missings = FALSE, filter_corr = FALSE, filter_var = FALSE) {
 			super$initialize(config, model_type, predict_type, NULL, concat, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
@@ -35,7 +33,6 @@ MM_Single = R6::R6Class("MM_Single",
 		#' Validate all modalities for one fold of the test data. 
 		#' Combine the validation predictions into a data.frame.
     #' @return Nothing
-		#' @examples
 		#' @noRd
 		validate = function() {
 			vroc = ROCMultiClass$new()
@@ -71,7 +68,7 @@ MM_Single = R6::R6Class("MM_Single",
 		#' Training and prediction of a multi-modal Voting ensemble in a cross validated loop. 
 		#' Perform validation if a validation set is provided. 
 		#' Save the results to a file.
-    #' @param validation_set
+    #' @param active_learners (integer)
     #' @return mm_results
 		#' @export
 		learn = function(active_learners) 

@@ -35,8 +35,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
     #' @param target Target variable name (character).
     #' @param meta_lrn Name of meta learner. Used only if meta learning is the combination method.
     #' @return A new`MM_Adaboost` object.
-		#' @examples
-		#' mod = MM_Adaboost$new(env, 10, "Label", NULL)
 		#' @export
 		initialize = function(config, nrounds = 10, meta_lrn = "RF", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = FALSE, filter_missings = FALSE, filter_corr = FALSE, filter_var = FALSE) {
 			super$initialize(config, "ADA", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
@@ -62,8 +60,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
     #' @param iter 
     #' @return A data.frame containing the raw results for each modality and a new column,
 		#' labelled 'response', containing the final response for the classifier.
-		#' @examples
-		#' mod = MM_Adaboost$get_final_decision()
 		#' @noRd
 		get_final_decision = function(results, classes, iter) {
 			if (self$decision %in% c('vote', 'hard')) {
@@ -107,7 +103,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 						coef.min = coef(mod, s = mod$lambda.min)
 					}
 				} else {
-					pred = mlr:::predict.WrappedModel(self$meta_models[[iter]], newdata = meta_data)
+					pred = mlr::predict.WrappedModel(self$meta_models[[iter]], newdata = meta_data)
 					results$response = pred$data$response
 				}
 			}
@@ -131,8 +127,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#'  The iteration number in the cross-validation loop.
     #' @return A data.frame containing the raw results for each modality and a new column,
 		#' labelled 'response', containing the final response for the classifier.
-		#' @examples
-		#' mod = MM_Adaboost$get_predictions()
 		#' @noRd
 		get_predictions = function(train_subset, test_subset, classes, iter) 
 		{
@@ -157,7 +151,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					warning(paste0("Model ", task_id, " failed"))
 					warning(mlr::getFailureModelMsg(self$models[[iter]][[task_id]]))
 				}
-				predn_futures[[i]] = future::future(mlr:::predict.WrappedModel(self$models[[iter]][[task_id]], task = self$tasks[[i]], subset = test_subset))
+				predn_futures[[i]] = future::future(mlr::predict.WrappedModel(self$models[[iter]][[task_id]], task = self$tasks[[i]], subset = test_subset))
 			}
 			future::resolve(predn_futures)
 			
@@ -196,8 +190,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' @param target_var (character)\cr
 		#' The target variable in the data.
     #' @return Nothing
-		#' @examples
-		#' 	train(training_set, 1, "Diagnosis")
 		#' @export
 		train = function(train_subset) {
 			boost_iter = 1
@@ -278,8 +270,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' @param self$decision (character)\cr
 		#'  Type of decision to be made in determining final response.
     #' @return Nothing
-		#' @examples
-		#' 	predict(training_set, 1, "Diagnosis")
 		#' @export
 		predict = function(test_subset) {
 			k = length(self$classes)
@@ -294,7 +284,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				# Also get feature importance scores for each modality
 				for (j in 1:length(self$tasks)) { # Modality
 					task_id = self$tasks[[j]]$task.desc$id
-					predn_futures[[j]] = future::future(mlr:::predict.WrappedModel(self$models[[i]][[task_id]], task = self$tasks[[j]], subset = test_subset))
+					predn_futures[[j]] = future::future(mlr::predict.WrappedModel(self$models[[i]][[task_id]], task = self$tasks[[j]], subset = test_subset))
 				}
 			
 				# Wait for results
@@ -339,11 +329,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		
   	#' @description 
 		#' Training and prediction of a multi-modal Adaboost model in a cross validated loop. 
-		#' Also performs validation if a validation set is provided. 
-    #' @param validate
     #' @return Nothing
-		#' @examples
-		#' learn(TRUE)
 		#' @export
 		learn = function() {
 			for (rpt in 1:self$ri$desc$reps) {
@@ -372,8 +358,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' @param classes (character vector)\cr
 		#'  The classes to which data samples can belong.
     #' @return Feature importance scores for the model.
-		#' @examples
-		#' get_feature_importance(classes)
 		#' @export
 		get_feature_importance = function(classes) {
 			feat_scores = list()

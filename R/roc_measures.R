@@ -1,10 +1,9 @@
-#' R6 class to hold Receiver Operating Curve (ROC) measures for one class
+#' @title R6 class to hold Receiver Operating Curve (ROC) measures for one class
 #'
 #' @description
 #' Stores ROC measures for a single class
 #'
 #' @name ROC
-#' @docType package
 NULL
 
 #' @noRd

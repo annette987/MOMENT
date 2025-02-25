@@ -16,14 +16,34 @@ NULL
 MM_MoE = R6::R6Class("MM_MoE", 
 	inherit = MM_Model,
 	public = list(
+		#' @field models (list)
+		#' List of the models created in training.
 		models = list(),
 		
     #' @description 
 		#' Create a new MM_MoE object.
-    #' @param config Model parameters (MM_Config).
-    #' @return A new `MM_MoE`object.
-		#' @examples
-		#' mod = MM_MoE$new(config)
+		#' @param config (MM_Config)\cr
+		#' Configuration object, specifying how the model should be constructed.
+    #' @param model_type (character)\cr
+		#' Type of model - "CLASSIF" for classification or "SURV" for survival analysis. 
+		#' @param decision (character)\cr
+		#' Type of prediction - 'response' or 'prob'.
+		#' @param subset (integer)\cr
+		#' @param concat (logical(1))\cr
+		#' Should the tasks be concatenated to form a single, large dataset?
+		#' @param balance (logical(1))\cr
+		#' Should the tasks be balanced during training?
+		#' @param validate (logical(1))\cr
+		#' Should the model be validated with validation data provided in the config file.
+		#' @param filter_zeroes (double(1))\cr
+		#' Features with this percentage of zero values or greater will not be included in the model.
+		#' @param filter_missings (double(1))\cr
+		#' Features with this percentage of missing values or greater will not be included in the model.
+		#' @param filter_corr (double(1))\cr
+		#' Should correlated features be included in the model? If FALSE, one feature from each correlated pair is eliminated.
+		#' @param filter_var (double(1))\cr
+		#' Should low variance features be included in the model?
+    #' @return A new [MM_MoE] object.
 		#' @export
 		initialize = function(config, model_type = "VOTE", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = FALSE, filter_missings = FALSE, filter_corr = FALSE, filter_var = FALSE) {
 			super$initialize(config, model_type, decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)	
@@ -53,6 +73,13 @@ MM_MoE = R6::R6Class("MM_MoE",
 #			self$results = MM_Results$new(self$classes, self$tasks[[1]], self$measures, self$model_type, self$decision)
 		},		
 
+
+		#' @description 
+		#' Train and test the mix of experts model.
+		#' @param config (MM_Config)\cr
+		#' Configuration object, specifying how the model should be constructed.
+		#' @return An MM_Results object containing the model results.
+		#' @export
 		learn = function(config) 
 		{  
 			# Classes form the outer loop and a resampling instance is made for each class.

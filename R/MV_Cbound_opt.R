@@ -53,6 +53,7 @@ MV_Cbound_opt = R6::R6Class("MV_Cbound_opt", list(
 #		:return:
 
     learn_weights = function() {
+		  BBMisc::requirePackages("nloptr")
 			res = nloptr::slsqp(x0 = self$initial_guess,
 									fn = self$func_obj, 										  
 								  gr = self$func_deriv,

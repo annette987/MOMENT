@@ -1,8 +1,10 @@
-library(mlr)
+#' @importFrom mlr makeRLearner
+#' @importFrom mlr trainLearner
+#' @importFrom mlr predictLearner
 
 #' @export
 makeRLearner.surv.CoxBoost = function() {
-  makeRLearnerSurv(
+  mlr::makeRLearnerSurv(
     cl = "surv.CoxBoost",
     package = "!CoxBoost",
     par.set = ParamHelpers::makeParamSet(
@@ -48,5 +50,5 @@ trainLearner.surv.CoxBoost = function(.learner, .task, .subset, .weights = NULL,
 predictLearner.surv.CoxBoost = function(.learner, .model, .newdata, ...) {
   info = mlr:::getTrainingInfo(.model)
   .newdata = as.matrix(mlr:::fixDataForLearner(.newdata, info))
-  as.numeric(CoxBoost::predict(.model$learner.model, newdata = .newdata, type = "lp"))
+  as.numeric(mlr::predictLearner(.model$learner.model, newdata = .newdata, type = "lp"))
 }

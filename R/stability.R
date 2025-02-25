@@ -1,28 +1,37 @@
-#' R6 class to hold stability results
+#' @title R6 class to hold the stability results
 #'
 #' @description
 #' Calculates and stores stability results for each stability metric.
+#'
+#' @details
 #' Five stability metrics are available: the Jaccard Index, the Dice Score,
 #' Kuncheva's Index, Lustgarten's Index and the Relative Weighted Consistency Index.
-#' Relative weighted consistency index - Song et al 2019, Petr Somol and Jana Novovicova 2010
-#' Give references ???
+#'
+#' @references Relative weighted consistency index - Song et al 2019, Petr Somol and Jana Novovicova 2010
 #'
 #' @name Stability
-#' @docType package
 NULL
 
 Stability = R6::R6Class("Stability", list(
+	#' @field stab (data.frame)\cr
+	#' A data.frame containing one row per performance metric requested.
 	stab = NULL,
+	
+	#' @field class_names (factor)\cr
+	#' The names of the classes in the multi-class data.
 	class_names = NULL,
+	
+	#' @field feature_sets (list)\cr
+	#' The sets of features on which stability is calculated.
 	feature_sets = list(),
 	
 	#' @description 
 	#' Create a new `Stability` object.
 	#' @param classes (list)\cr
-	#' 	The names of the classes in the multi-class data.
+	#' The names of the classes in the multi-class data.
 	#' @return A new `Stability` object
 	#' @examples
-	#' 	perf = Stability$new(c("C1", "C2", "C3"))
+	#' stab = Stability$new(c("C1", "C2", "C3"))
 	#' @export
 	initialize = function(classes) {
 		self$class_names = c(classes, "All")
@@ -157,20 +166,17 @@ Stability = R6::R6Class("Stability", list(
 		return(rwci)
 	},
 
-	# Use the first num_sets sets in the calculation.
-	# That way we can run it once with a large number of repeats and 
-	# do the calculation multiple times on different numbers of runs.
-	#
+
 	#' @description 
 	#' Calculate the value of all stability metrics.
 	#' The first num_sets sets are used in the calculation
-	#' @param sets (list???)\cr
+	#' @param sets (list)\cr
 	#' 	The sets of features.
 	#' @param num_sets (integer)\cr
 	#' 	The total number of sets.
 	#' @param num_feats (integer)\cr
 	#' 	The total number of features available.
-	#' @return The value of the Relative Weighted Consistency Index
+	#' @return The value of the 4 stability metrics, as a vector.
 	#' @examples
 	#'  set1 = c('cat', 'dog', 'mouse')
 	#'  set2 = c('cat', 'mouse', 'elephant')
@@ -201,16 +207,46 @@ Stability = R6::R6Class("Stability", list(
 		return( c(jaccard, dice, kuncheva, lustgarten, consistency) )
 	},
 
+
+	#' @description 
+	#' Save one set of features, selected from one fold of the cross-validated model.
+	#' @param fset (character)\cr
+	#' 	A character vector containing the set of features.
+  #' @return Nothing
+	#' @examples
+	#'  featset = c('cat', 'dog', 'mouse')
+	#' 	Stability$save_features(featset)
+	#' @export
 	save_features = function(fset) {
 		self$feature_sets[[length(self$feature_sets) + 1]] = fset
 	},
 
+
+	#' @description 
+	#' Determine if a list is a nested list.
+	#' @param lst (list)\cr
+	#' 	The list to test.
+  #' @return logical
+	#' @export
 	isNested = function(lst) {
 		if (!is.list(lst))
 				return(FALSE)
 		return(any(unlist( lapply(lst,is.list) )))
 	},
-	
+
+
+	#' @description 
+	#' Save all of the features sets from all folds of the cross-validation.
+	#' @param method (character)\cr
+	#'  A character string that forms part of the column name in the output. Typically the model type.
+	#' @param sets (list)\cr
+	#' 	The sets of features.
+	#' @param num_sets (integer)\cr
+	#' 	The total number of sets.
+	#' @param num_feats (integer)\cr
+	#' 	The total number of features available.
+  #' @return Nothing
+	#' @export	
 	save = function(method, sets, num_feats) {
 		if (self$isNested(sets)) {
 			for (cls in self$class_names) {
@@ -220,10 +256,17 @@ Stability = R6::R6Class("Stability", list(
 			self$stab[[paste0(method, '-All')]] = self$calculate(sets, length(sets), num_feats)
 		}
 	},
-	
-	# Calculate stability value from a list of data.frames, one per task or view
-	# Each data.frame column is one set of features
-	# Should really call this save_from_df
+
+
+	#' @description 
+	#' Calculate the stability  from a list of data.frames, one per task or view
+	#' Each data.frame column is one set of features
+	#' @param method (character)\cr
+	#'  A character string that forms part of the column name in the output data.frame. Typically the model used.
+	#' @param feat_df_list (list)\cr
+	#' 	The sets of features.
+  #' @return Nothing
+	#' @export	
 	save_all = function(method, feat_df_list) {
 		df_all = dplyr::bind_rows(feat_df_list)
 		df_all$Count = rowSums(df_all != 0, na.rm = TRUE)
@@ -232,11 +275,24 @@ Stability = R6::R6Class("Stability", list(
 		self$stab[[method]] = self$calculate(feat_sets, length(feat_sets), nrow(df_all))
 	},	
 		
+	#' @description 
+	#' Calculate stability value from a list of data.frames, one per task or view
+	#' Each data.frame column is one set of features
+	#' @param method (character)\cr
+	#'  A character string that forms part of the column name in the output data.frame. Typically the model used.
+	#' @param sets (list)\cr
+	#' 	The sets of features.
+  #' @return Nothing
+	#' @export	
 	save_df = function(method, features_df) {
 		feat_list = as.list(features_df[, grepl(method, colnames(features_df))])
 		self$stab[[method]] = self$calculate(feat_list, length(feat_list), nrow(features_df))
 	},
 
+	#' @description 
+	#' Return the stability results.
+	#' @return A data.frame containing the stability results.
+	#' @export
 	get_results = function() {
 		return(self$stab)
 	},

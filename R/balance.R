@@ -1,7 +1,13 @@
-####################################################################################
-# MULTI-CLASS SMOTE
-# Balance data in a multi-class problem using SMOTE
-####################################################################################
+#' @title Balancing of classes in multi-modal modelling
+#'
+#' @description
+#' Provides a pre-processing wrapper to balance classes during modelling using the Synthetic Minority Oversampling Technique (SMOTE).
+#'
+#' @details
+#' To implement SMOTE for a multi-class problem, balancing is performed on each class.
+#'
+#' @name Imputation
+NULL
 
 makePreprocWrapperBalanceMC = function(learner, target_name, bal_method) {
   trainfun = function(data, target, args = list(target_name, bal_method)) {

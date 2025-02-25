@@ -1,14 +1,27 @@
-#--------------------------------------------------------------------------------
-# CLASS Learners
-# Allows the user to select and create a set of learners for the machine learning
-#---------------------------------------------------------------------------------
-
+#' @title Learners: R6 class representing the mlr learners used by the models
+#'
+#' @description
+#' Select and create a set of learners for the machine learning models
+#'
+#' @name Learners
+NULL
 
 Learners = R6::R6Class("Learners", 
 	public = list(
+		#' @field base_learners (list)
+		#' List of the learners to be used in modelling.	
 		base_learners 			= list(),
+
+		#' @field base_filters (list)
+		#' List of the filters to be used in modelling.	
 		base_filters				= list(),
 		
+    #' @description 
+		#' Create a new Learners object.
+		#' @param learner_type (character)\cr
+		#' The type of learner - "CLASSIF" for classification or "SURV" for survival analysis.
+    #' @return A new `Learners` object.
+		#' @export
 		initialize = function(learner_type) {
 			rfsrc_params1 = ParamHelpers::makeParamSet(
 			#		ParamHelpers::makeIntegerParam("mtry", lower = round(psqrt/2), upper = psqrt*2),
@@ -195,14 +208,25 @@ Learners = R6::R6Class("Learners",
 			)
 		},			
 
-		#
-		# Create the learners for each dataset and store in a list
-		# Steps are added to the ML pipeline in reverse order
-		#
 
-		create_learners = function(config, env, learner_type, pred_type = "response", balance = FALSE, subset = NULL, model_name = NULL)
+    #' @description 
+		#' Create the learners for each modality and store in a list.
+		#' A complete pre-processing pipeline is created, 
+		#' including optionally class balancing, normalisation and imputation. 
+		#' @param config (MM_Config)\cr
+		#' Configuration object, specifying how the model should be constructed.
+    #' @param env (character)\cr
+		#' Environment in which the learners are created. Needed for eval(parse()) to work.
+		#' @param pred_type (character)\cr
+		#' Type of prediction - 'response' or 'prob'.
+		#' @param balance (logical(1))\cr
+		#' Should the tasks be balanced during training?
+		#' @param subset (integer)\cr
+		#' A vector containing the indices of a subset of modalities to be included in the model.
+    #' @return A list of learners, one per modality.
+		#' @export
+		create_learners = function(config, env, pred_type = "response", balance = FALSE, subset = NULL)
 		{
-			print("Creating learners")
 			learners = list()
 			getArgs <- function(...) return(list(...))
 			evalstr <- function(ss) eval.parent(parse(text=sprintf("getArgs(%s)", ss)))
@@ -268,9 +292,29 @@ Learners = R6::R6Class("Learners",
 		},
 		
 		
-		create_learner = function(targetVar, baselrn, featsel = NULL, learner_type = TASK_CLASSIF, pred_type = "response", balance = FALSE, norm = NULL, imp = NULL)
+    #' @description 
+		#' Create a single learner for one modality.
+		#' A complete pre-processing pipeline is created, 
+		#' including optionally class balancing, normalisation and imputation. 
+		#' @param targetVar (character)\cr
+		#' The target variable for the model.
+    #' @param baselrn (??)\cr
+		#' Details of the base learner to be created.
+		#' @param featsel (character)\cr
+		#' If feature selection is to be added, details of the feature selector.
+		#' @param pred_type (character)\cr
+		#' Type of prediction - 'response' or 'prob'.
+		#' @param balance (logical(1))\cr
+		#' Should the tasks be balanced during training?
+		#' @param norm (character)\cr
+		#' The normalisation method to be added to the pipeline.
+		#' @param imp (character)\cr
+		#' The imputation method to be added to the pipeline.
+    #' @return A list of learners, one per modality.
+		#' @export
+		create_learner = function(targetVar, baselrn, featsel = NULL, pred_type = "response", balance = FALSE, norm = NULL, imp = NULL)
 		{
-			#NB - check for valid values of lrn_idx and fs_idx
+			#NB - check for valid values of lrn_idx and fs_idx, norm and imp
 			
 			if (length(baselrn$args) == 0) {
 				pars = list()

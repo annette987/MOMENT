@@ -1,44 +1,53 @@
 Package: MOMENT
 Type: Package
 Title: Multi-Omics Modelling by ENsemble Techniques
-Version: 0.1.0
+Version: 1.0
 Author: Annette Spooner
 Maintainer: Annette Spooner <a.spooner@unsw.edu.au>
 Depends: 
-	Boruta,
-	future,
-	magrittr,
-	mlr,
-	mlrCPO,
-	ParamHelpers,
-	R6
+ 		checkmate,
+		future,
+		mlr,
+		R6
 Imports:
-	BBmisc,
-	CoxBoost,
-	dplyr,
-	gbm,
-	ggplot2,
-	mboost,
-	glmnet,
-	janitor,
-	mice,
-	nloptr,
-	pROC,
-	randomForest,
-	randomForestSRC,
-	readxl,
-	Rtsne,
-	survival, 
-	testit,
-	tidyr,
-	tools,
-	treeshap,
-	umap,
-	VIM,
-	xgboost
+		BBmisc,
+		dplyr,
+		mice,
+		mlrCPO,
+		ParamHelpers
+Suggests:
+		Boruta,
+    CoxBoost,
+ 		data.table,
+    gbm,
+    ggplot2,
+    glmnet,
+    janitor,
+ 		magrittr,
+    mboost,
+		nloptr,
+		preprocessCore,
+    pROC,
+		R.utils,
+    randomForest,
+    randomForestSRC,
+		readxl,
+		Rtsne,
+    survival,
+		testit,
+    tidyr,
+    tools,
+    treeshap,
+    umap,
+    VIM,
+    xgboost,
+    knitr,
+    rmarkdown
 Description: MOMENT provides a set of ensemble machine learning algorithms 
     that can successfully model multi-omics multi-class data
-    for use in predictive clinical outcome modelling
-License: GNU General Public License (GNU GPL)
+    for use in predictive clinical outcome modelling.
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: false
+RoxygenNote: 7.2.3  
+VignetteBuilder: knitr

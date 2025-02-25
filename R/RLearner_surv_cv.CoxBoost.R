@@ -1,6 +1,11 @@
+#' @importFrom mlr makeRLearner
+#' @importFrom mlr trainLearner
+#' @importFrom mlr predictLearner
+
+
 #' @export
 makeRLearner.surv.cv.CoxBoost = function() {
-  makeRLearnerSurv(
+  mlr::makeRLearnerSurv(
     cl = "surv.cv.CoxBoost",
     package = "!CoxBoost",
     par.set = ParamHelpers::makeParamSet(
@@ -50,7 +55,7 @@ trainLearner.surv.cv.CoxBoost = function(.learner, .task, .subset, .weights = NU
     warning("Could not determine the optimal step number in cv.CoxBoost")
   }
 
-  pars = insert(pars, list(stepno = res$optimal.step))
+  pars = R.utils::insert(pars, list(stepno = res$optimal.step))
   pars$maxstepno = NULL
   mlr:::attachTrainingInfo(do.call(CoxBoost::CoxBoost, pars), info)
 }
@@ -59,5 +64,5 @@ trainLearner.surv.cv.CoxBoost = function(.learner, .task, .subset, .weights = NU
 predictLearner.surv.cv.CoxBoost = function(.learner, .model, .newdata, ...) {
   info = mlr:::getTrainingInfo(.model)
   .newdata = as.matrix(mlr:::fixDataForLearner(.newdata, info))
-  as.numeric(CoxBoost::predict(.model$learner.model, newdata = .newdata, type = "lp"))
+  as.numeric(mlr::predictLearner(.model$learner.model, newdata = .newdata, type = "lp"))
 }

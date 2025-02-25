@@ -1,6 +1,10 @@
+#' @importFrom mlr makeRLearner
+#' @importFrom mlr trainLearner
+#' @importFrom mlr predictLearner
+
 #' @export
 makeRLearner.surv.randomForestSRC = function() {
-  makeRLearnerSurv(
+  mlr::makeRLearnerSurv(
     cl = "surv.randomForestSRC",
     package = c("survival", "randomForestSRC"),
     par.set = ParamHelpers::makeParamSet(
@@ -58,5 +62,5 @@ trainLearner.surv.randomForestSRC = function(.learner, .task, .subset, .weights 
 
 #' @export
 predictLearner.surv.randomForestSRC = function(.learner, .model, .newdata, ...) {
-  randomForestSRC::predict(.model$learner.model, newdata = .newdata, membership = FALSE, ...)$predicted
+  mlr::predictLearner(.model$learner.model, newdata = .newdata, membership = FALSE, ...)$predicted
 }

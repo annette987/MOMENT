@@ -1,13 +1,25 @@
-#############################################################################
-# CLASS PERFORMANCE_MEASURES
-# Customised performance aggregation measures
-# Modify existing measures to provide a valid result in the presence of NA
-#############################################################################
+#' @title PerformanceMeasures: R6 class representing custom performance measures
+#'
+#' @description
+#' Modifies existing performance measures to create new measures that provide a valid result in the presence of NA
+#'
+#' @name PerformanceMeasures
+NULL
 
 PerformanceMeasures = R6::R6Class("PerformanceMeasures", 
 	public = list(
+		#' @field measures (list)
+		#' List of the performance measures to be used.
 		measures = NULL,
-		
+					
+    #' @description 
+		#' Create a new PerformanceMeasures object.
+		#' @param task_type (character)\cr
+		#' The type of task - "CLASSIF" for classification or "SURV" for survival analysis.
+		#' @param predict_type (character)\cr
+		#' The type of prediction to be made - “response” or “prob.
+    #' @return A new `PerformanceMeasures` object.
+		#' @export
 		initialize = function(task_type, predict_type) {
 		
 			test.mean_narm = mlr::makeAggregation(

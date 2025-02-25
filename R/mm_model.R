@@ -1,14 +1,12 @@
-#' R6 base class for all multi-modal models
+#' @title MM_Model: R6 class representing a multi-modal model
 #'
 #' @description
 #' Provides functions to create and fit a generic model, which is run using mlr.
-#' All of the multi-model models inherit from MM_Model.
+#' This is a super-class of all of the multi-model models.
 #'
 #' @name MM_Model
-#' @docType package
 NULL
 
-#@export
 MM_Model = R6::R6Class("MM_Model", 
 	public = list(
 		config     = NULL,
@@ -28,40 +26,74 @@ MM_Model = R6::R6Class("MM_Model",
 		ri_v			 = NULL,
 
     #' @description 
-		#' Create a new MM_Model object, based on parameters specified in the environment.
+		#' Create a new MM_Model object, based on parameters specified in the config object.
 		#' Reads in the data and creates an mlr task for each modality.
 		#' Creates the required learners, and other structures needed by mlr.
 		#' @param config (MM_Config)\cr
-		#' Parameters specifying how model should be constructed
+		#' Configuration object, specifying how the model should be constructed.
     #' @param model_type (character)\cr
-		#' Type of model 
-		#' @param predict_type (character)\cr
-		#' Type of prediction - 'response' or 'prob'
-    #' @return A new `MM_Model`object
-		#' @examples
-		#' mod = MM_Model$new(config, "VOTE",  'prob')
+		#' Type of model - "CLASSIF" for classification or "SURV" for survival analysis. 
+		#' @param decision (character)\cr
+		#' Type of prediction - 'response' or 'prob'.
+		#' @param subset (integer)\cr
+		#' @param concat (logical(1))\cr
+		#' Should the tasks be concatenated to form a single, large dataset?
+		#' @param balance (logical(1))\cr
+		#' Should the tasks be balanced during training?
+		#' @param validate (logical(1))\cr
+		#' Should the model be validated with validation data provided in the config file.
+		#' @param filter_zeroes (double(1))\cr
+		#' Features with this percentage of zero values or greater will not be included in the model.
+		#' @param filter_missings (double(1))\cr
+		#' Features with this percentage of missing values or greater will not be included in the model.
+		#' @param filter_corr (double(1))\cr
+		#' Should correlated features be included in the model? If FALSE, one feature from each correlated pair is eliminated.
+		#' @param filter_var (double(1))\cr
+		#' Should low variance features be included in the model?
+### NB explain how these are selected
+		#' @return A new `MM_Model`object
 		#' @export
+		#' 
 		initialize = function(config, model_type = "CLASSIF", decision = "prob", subset = NULL, concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE)
 		{
-			if (!is.null(config)) {
+			mlr::configureMlr(show.learner.output = TRUE, on.learner.error = 'warn', on.par.without.desc = 'warn')
+			Filters$new()
+			if (!missing(config)) {
+				assertClass(config, "MM_Config")
 				self$config     = config
 				self$targetVar  = config$targetVar
-				self$model_type = model_type
-				self$decision   = decision
-				self$validation = validate
 				
-				mlr::configureMlr(show.learner.output = TRUE, on.learner.error = 'warn', on.par.without.desc = 'warn')
+				if (!missing(model_type)) {
+					checkmate::assertChoice(model_type, choices = c("CLASSIF", "SURV"))
+				}
+				self$model_type = model_type
 				self$task_type = ifelse(model_type == "SURV", TASK_SURV, TASK_CLASSIF)
+				
+				if (!missing(subset) && !is.null(subset)) {
+					checkmate::assertNumeric(subset, unique = TRUE)
+				}
+				if (!missing(decision)) {
+					checkmate::assertChoice(decision, choices = c("prob", "response"))
+				}
+				self$decision   = decision
 				predict_type   = ifelse(decision == "prob", "prob", "response")
-				if (model_type == "SURV") {
-					self$measures = PerformanceMeasures$new(model_type)$measures
+					
+				if (self$model_type == "SURV") {
+					self$measures = PerformanceMeasures$new(self$model_type)$measures
 				} else {
-					self$measures = PerformanceMeasures$new(model_type, decision)$measures
+					checkmate::assertLogical(balance)
+					self$measures = PerformanceMeasures$new(self$model_type, decision)$measures
 					learners = Learners$new(self$task_type)
-					self$learners = learners$create_learners(config, env = environment(), self$task_type, predict_type, balance, subset)
+					self$learners = learners$create_learners(config, env = environment(), predict_type, balance, subset)
 				}
 
-				self$tasks = self$create_tasks(config$dataDir, config, self$task_type, subset, filter_zeroes, filter_missings, filter_corr, filter_var)
+				checkmate::assertNumeric(filter_zeroes, lower = 0.0, upper = 100)
+				checkmate::assertNumeric(filter_zeroes, lower = 0.0, upper = 100)
+				checkmate::assertLogical(filter_corr)
+				checkmate::assertLogical(filter_var)
+				self$tasks = self$create_tasks(config$dataDir, config, self$task_type, subset, filter_zeroes, filter_zeroes, filter_corr, filter_var)
+
+				checkmate::assertLogical(concat)
 				if (concat) {
 					ctasks = self$concat_tasks(self$tasks)
 					if (length(self$tasks) > 1) {
@@ -74,7 +106,11 @@ MM_Model = R6::R6Class("MM_Model",
 				resamp = mlr::makeResampleDesc("RepCV", reps = config$itersOuter, folds = config$foldsOuter, stratify = TRUE)
 				self$ri = mlr::makeResampleInstance(resamp, self$tasks[[1]])
 
-				if (self$validation) {
+				if (!missing(validate)) {
+					checkmate::assertLogical(validate)
+				}
+				self$validation = validate
+				if (validate) {
 					self$vtasks = self$create_validation_tasks(self$tasks, config$dataDir, config, self$task_type, ovr_class, subset, filter_zeroes, filter_missings, filter_corr, filter_var)
 					vdat = getTaskData(self$vtasks[[1]])
 					self$ri_v = mlr::makeFixedHoldoutInstance(c(1:nrow(dat)), c((nrow(dat) + 1):nrow(vdat)), nrow(vdat))
@@ -83,6 +119,21 @@ MM_Model = R6::R6Class("MM_Model",
 			}
 		},
 		
+    #' @description 
+		#' Clone an MM_Model object, from another MM_MOdel object.
+		#' Pass in new tasks, classes and optiobnally learners.
+		#' @param model (MM_Model)\cr
+		#' Model to be cloned from
+    #' @param tasks (list)\cr
+		#' New list of tasks for this model 
+		#' @param classes (factor)\cr
+		#' New classes for this model
+		#' @param learners (list)\cr
+		#' New list of learners for this model (optional) 
+		#' If not supplied, the learners will be the same as for the old model
+    #' @return A new `MM_Model`object
+		#' @export
+		#' 
 		clone_model = function(model, tasks, classes, learners = NULL) {
 			self$tasks 			= tasks
 			self$classes    = classes
@@ -103,9 +154,10 @@ MM_Model = R6::R6Class("MM_Model",
 			self$ri_v			 	= model$ri_v
 		},
 		
-		# Calculate the final response, according to the decision_type type and
-		# add a response column to the results
-		#
+    #' @description 
+		#' Calculate the final response, according to the decision_type type and
+		#' add a response column to the results
+		#' @noRd
 		get_final_decision = function(results) {
 			final_results = NULL
 			if (self$decision %in% c('vote', 'hard')) {
@@ -146,8 +198,6 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @param id_col Index of column containing sample identifier
 		#' @param prepend Should the data modality be prepended to the name of each feature?
     #' @return The filtered data
-		#' @examples
-		#' data = prepare_data(config, 1, raw, 1, "CIR", "CLASSIF", TRUE)
 		#' @noRd
 		prepare_data = function(config, idx, raw, id_col, task_type = "CLASSIF", prepend = FALSE) {
 			dataset = as.data.frame(raw)
@@ -189,8 +239,6 @@ MM_Model = R6::R6Class("MM_Model",
 		#' Apply filtering to the data to identify those variables likely to be relevant.
     #' @inheritParams create_tasks
 		#' @return A list of vectors of relevant parameters, one vector per modality
-		#' @examples
-		#' rel = identify_relevant(config, dirname, "CLASSIF", "ID", 90, 50, TRUE, TRUE)
 		#' @noRd
 		identify_relevant = function(config, dir, task_type, row_names, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
 			relevant = list()
@@ -263,8 +311,6 @@ MM_Model = R6::R6Class("MM_Model",
     #' @param config Configuration object
 		#' @param idx Index into the list of tasks
     #' @return modality `character vector`
-		#' @examples
-		#' mod = Tasks$get_modality(config, 1)
 		#' @noRd
 		get_modality = function(config, idx) {
 			if (inherits(config, "config_single")) {
@@ -291,8 +337,6 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @param task_type Type of task - either CLASSIF or SURV
 		#' @param validation Is this validation data?
     #' @return A data.frame cobtaining the selected columns of the raw data or all column sif none selected
-		#' @examples
-		#' raw = read_raw()
 		#' @noRd
 		read_raw = function(dir, config, idx, row_names = 'ID', selected = NULL, prepend = FALSE, task_type = TASK_CLASSIF, validation = FALSE) 
 		{
@@ -380,8 +424,6 @@ MM_Model = R6::R6Class("MM_Model",
 		#' When there are multiple files per modality,  bind these into one data.frame.
 		#" inheritsParams read_raw
     #' @return A list of data.frames, one per modality, containing the raw multi-modal data
-		#' @examples
-		#' 
 		#' @noRd
 		read_raw_data = function(dir, config, row_names, selected_names, task_type, validation) 
 		{
@@ -409,8 +451,6 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @param filter_corr Remove features that are highly correlated
 		#' @param filter_var Remove features with low variance
     #' @return A list of mlr tasks, one per modality
-		#' @examples
-		#' tsks = Tasks$create_tasks()
 		#' @export
 		create_tasks = function(data_dir, config, task_type = TASK_CLASSIF, subset = NULL, filter_zeroes = 90, filter_missings = 50, filter_corr = FALSE, filter_var = FALSE)
 		{
@@ -446,8 +486,6 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @inheritParams create_tasks
     #' @param base_tasks The base tasks to be validated
     #' @return A list of mlr tasks, one per modality
-		#' @examples
-		#' tsks = Tasks$create_validation_tasks()
 		#' @export
 		create_validation_tasks = function(base_tasks, data_dir, config, task_type = TASK_CLASSIF, subset = NULL, filter_zeroes = 90, filter_missings = 50, filter_corr = FALSE, filter_var = FALSE)
 		{
@@ -489,8 +527,6 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @param classes The classes found in the data
 		#' @param target_var The target variable 
     #' @return A list of mlr tasks, converted to binary
-		#' @examples
-		#' tsks = Tasks$create_ovr_tasks()
 		#' @export
 		create_ovr_tasks = function(data_dir, config, task_type = TASK_CLASSIF, subset = NULL, filter_zeroes = 90, filter_missings = 50, filter_corr = FALSE, filter_var = FALSE)
 		{			
@@ -535,8 +571,6 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @param classes The classes found in the data
 		#' @param target The target variable 
     #' @return A list of mlr tasks 
-		#' @examples
-		#' tsks = Tasks$create_validation_tasks()
 		#' @noRd
 		update_task_classes = function(model, classes, target) {
 				model$task.desc$class.levels = as.character(classes)
@@ -550,8 +584,6 @@ MM_Model = R6::R6Class("MM_Model",
     #' @param tasks The list fo tasks to be concatenated
 		#' @param task_type The type of task "CLASSIF" or "SURV"
     #' @return A list containing a single task
-		#' @examples
-		#' tasks = Tasks$concat_tasks(tasks)
 		#' @export
 		concat_tasks = function(tasks)
 		{
@@ -582,8 +614,6 @@ MM_Model = R6::R6Class("MM_Model",
     #' @param dataset The dataset to be converted
 		#' @param target_var The name of the target variable 
     #' @return A list of binary datasets
-		#' @examples
-		#' tasks = Tasks$binarise_OVO(dataset, target_var)
 		#' @export
 		binarise_OVO = function(dataset, target_var)
 		{
@@ -603,8 +633,6 @@ MM_Model = R6::R6Class("MM_Model",
     #' @param dataset The dataset to be converted
 		#' @param target_var The name of the target variable 
     #' @return A list of binary datasets
-		#' @examples
-		#' tasks = Tasks$binarise_OVA(dataset, target_var)
 		#' @export		
 		binarise_OVA = function(dataset, target_var)
 		{
@@ -625,8 +653,6 @@ MM_Model = R6::R6Class("MM_Model",
     #' @param dataset The dataset to be converted
 		#' @param target_var The name of the target variable 
     #' @return A list of binary datasets
-		#' @examples
-		#' tasks = Tasks$binarise_OVA(dataset, target_var)
 		#' @export		
 		binarise = function(classfn_type, dataset, target_var)
 		{

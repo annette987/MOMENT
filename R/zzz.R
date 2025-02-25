@@ -4,7 +4,11 @@
 }
 
 .onLoad <- function(libname, pkgname) {
-  make_filters()
+#  make_filters()
+}
+
+ignore_unused_imports <- function() {
+  mlrCPO::cpoDropConstants
 }
 
 

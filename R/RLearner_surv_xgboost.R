@@ -1,6 +1,10 @@
+#' @importFrom mlr makeRLearner
+#' @importFrom mlr trainLearner
+#' @importFrom mlr predictLearner
+
 #' @export
 makeRLearner.surv.xgboost = function() {
-  makeRLearnerSurv(
+  mlr::makeRLearnerSurv(
     cl = "surv.xgboost",
     package = "xgboost",
     par.set = ParamHelpers::makeParamSet(
@@ -17,7 +21,7 @@ makeRLearner.surv.xgboost = function() {
       ParamHelpers::makeNumericLearnerParam(id = "colsample_bylevel", default = 1, lower = 0, upper = 1),
       ParamHelpers::makeNumericLearnerParam(id = "colsample_bynode", default = 1, lower = 0, upper = 1),
       ParamHelpers::makeIntegerLearnerParam(id = "num_parallel_tree", default = 1L, lower = 1L),
-      mParamHelpers::akeNumericLearnerParam(id = "lambda", default = 1, lower = 0),
+      ParamHelpers::makeNumericLearnerParam(id = "lambda", default = 1, lower = 0),
       ParamHelpers::makeNumericLearnerParam(id = "lambda_bias", default = 0, lower = 0),
       ParamHelpers::makeNumericLearnerParam(id = "alpha", default = 0, lower = 0),
       ParamHelpers::makeUntypedLearnerParam(id = "objective", default = "reg:linear", tunable = FALSE),
@@ -72,11 +76,11 @@ trainLearner.surv.xgboost = function(.learner, .task, .subset, .weights = NULL, 
   }
 
   data = mlr::getTaskData(.task, subset = .subset, target.extra = TRUE, recode.target = "surv")
-  info = mlr:::getFixDataInfo(data$data, factors.to.dummies = TRUE, ordered.to.int = TRUE)
-  data$data = as.matrix(mlr:::fixDataForLearner(data$data, info))
+
+#  info = mlr:::getFixDataInfo(data$data, factors.to.dummies = TRUE, ordered.to.int = TRUE)
+#  data$data = as.matrix(mlr:::fixDataForLearner(data$data, info))
 	time = data$target[, 1L]
   status = data$target[, 2L]
-
   survtime <- ifelse(status == 1, time, -time)
 	parlist$data = xgboost::xgb.DMatrix(data = data.matrix(data$data), label = survtime)
                                                                                                                   
@@ -92,15 +96,7 @@ trainLearner.surv.xgboost = function(.learner, .task, .subset, .weights = NULL, 
 #' @export
 predictLearner.surv.xgboost = function(.learner, .model, .newdata, ...) {
   m = .model$learner.model
-  res = xgboost::predict(m, newdata = data.matrix(.newdata), ...)
+  res = mlr::predictLearner(m, newdata = data.matrix(.newdata), ...)
 	return(res)
 }
 
-#' @export
-getFeatureImportanceLearner.surv.xgboost = function(.learner, .model, ...) {
-	mod = getLearnerModel(.model, more.unwrap = TRUE)
-	imp = xgboost::xgb.importance(feature_names = .model$features, model = mod, ...)
-
-  fiv = imp$Gain
-  setNames(fiv, imp$Feature)
-}
