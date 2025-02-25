@@ -16,7 +16,7 @@ MM_Config = R6::R6Class("MM_Config",
 		#' Path to the configuration file, containing the configuration parameters.
 		#' @return A new MM_Config object.
 		#' @export
-		config = function(filename) {
+		initialize = function(filename) {
 			stopifnot(is.character(filename))
 			stopifnot(file.exists(filename))
 			cf = NULL
