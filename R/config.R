@@ -23,30 +23,30 @@ MM_Config = R6::R6Class("MM_Config",
 			
 			if (tools::file_ext(filename) == "csv") {
 				config_data = read.csv(filename, header=TRUE, row.names=NULL, check.names=FALSE, fileEncoding="UTF-8-BOM")
-				cf = new_config_single(config_data, 1)
-				cf$baseModels = list(new_config_base_empty())
+				cf = self$new_config_single(config_data, 1)
+				cf$baseModels = list(self$new_config_base_empty())
 			} else if (tools::file_ext(filename) == "xlsx") {
 				sheet_names = readxl::excel_sheets(filename)
 				config_data = as.data.frame(readxl::read_excel(filename, sheet = "Main"))
-				cf = new_config(config_data, 1)
+				cf = self$new_config(config_data, 1)
 				
 				if (is.na(cf$dataDir) || is.null(cf$dataDir)) {
 					cf$dataDir = "."
 				}
 				
 				base_data = as.data.frame(readxl::read_excel(filename, sheet = "BaseModels"))
-				cf$baseModels = apply(base_data, 1, new_config_base)
+				cf$baseModels = apply(base_data, 1, self$new_config_base)
 				
 				if ("Datasets" %in% sheet_names) {
 					data_sets = as.data.frame(readxl::read_excel(filename, sheet = "Datasets"))
-					cf$dataSets = apply(data_sets, 1, new_config_data)
+					cf$dataSets = apply(data_sets, 1, self$new_config_data)
 				} else {
-					cf$dataSets = apply(base_data, 1, new_config_data)
+					cf$dataSets = apply(base_data, 1, self$new_config_data)
 				}
 				
 				if ("ValidationSets" %in% sheet_names) {
 					validation_sets = as.data.frame(readxl::read_excel(filename, sheet = "ValidationSets"))
-					cf$validationSets = apply(validation_sets, 1, new_config_data)
+					cf$validationSets = apply(validation_sets, 1, self$new_config_data)
 				}
 				
 				if ("Experts" %in% sheet_names) {
