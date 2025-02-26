@@ -96,7 +96,7 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 		#						feat_base[[j]]$save_multiclass(task_name, getFeatImpScores(raw_mod, classes), i, subset_idx)
 								
 								sub_task = subsetTask(self$tasks[[j]], subset = training_set)						
-								pred = mlr::predict.WrappedModel(mod, task = sub_task, subset = ri_inner$test.inds[[subset_idx]])
+								pred = mlr::predictLearner(mod, task = sub_task, subset = ri_inner$test.inds[[subset_idx]])
 								pred_df = as.data.frame(pred$data[, grepl("prob.", colnames(pred$data))])
 								colnames(pred_df) = paste0(names(self$tasks)[[j]], ".", colnames(pred_df))
 								pred_df[is.na(pred_df)] = 0
@@ -208,7 +208,7 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 			for (i in 1:length(self$learners)) {
 				task_idx = ifelse(length(self$tasks) == length(self$learners), i, 1L)
 				task_name = self$tasks[[task_idx]]$task.desc$id				
-				pred = mlr::predict.WrappedModel(private$models[[i]], task = self$tasks[[task_idx]], subset = test_set)
+				pred = mlr::predictLearner(private$models[[i]], task = self$tasks[[task_idx]], subset = test_set)
 
 				pred_df = as.data.frame(pred$data[, grepl("prob.", colnames(pred$data))])
 				colnames(pred_df) = paste0(task_name, ".", colnames(pred_df))
@@ -217,7 +217,7 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 			
 			meta = data.frame(meta_data)
 			meta[self$targetVar] = factor(pred$data$truth)
-			pred = mlr::predict.WrappedModel(meta_model, newdata = meta)
+			pred = mlr::predictLearner(meta_model, newdata = meta)
 			return(pred)
 		},
 				

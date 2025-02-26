@@ -96,7 +96,7 @@ MM_Incremental = R6::R6Class("MM_Incremental",
 							if (mlr::isFailureModel(mod)) {
 								warnimg(paste0("Model ", i, " failed: ", mlr::getFailureModelMsg(mod)))
 							} else {
-								mlr::predict.WrappedModel(mod, task = self$tasks[[i]], subset = test_subset)
+								mlr::predictLearner(mod, task = self$tasks[[i]], subset = test_subset)
 							}
 						})
 					}

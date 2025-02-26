@@ -192,8 +192,8 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 			
 			wght_sample = sample(train_subset, length(train_subset), replace = TRUE, prob = example_weights)
 			mod = mlr::train(learner = self$learners[[view_index]], task = self$tasks[[view_index]], subset = wght_sample)
-			pred_train = mlr::predict.WrappedModel(mod, task = self$tasks[[view_index]], subset = train_subset)
-			pred_test  = mlr::predict.WrappedModel(mod, task = self$tasks[[view_index]], subset = test_subset)
+			pred_train = mlr::predictLearner(mod, task = self$tasks[[view_index]], subset = train_subset)
+			pred_test  = mlr::predictLearner(mod, task = self$tasks[[view_index]], subset = test_subset)
 
 			#predicting labels for training and test data
 			predicted_labels_train = pred_train$data$response
