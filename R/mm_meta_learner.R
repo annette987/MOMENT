@@ -249,7 +249,7 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 				self$validate()
 			}
 			
-			self$results$complete("Meta Learner")
+			self$results$complete()
 			return(self$results)
 		}
 	),	

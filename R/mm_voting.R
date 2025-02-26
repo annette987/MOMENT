@@ -169,7 +169,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 
 			vpred_resp = make_mlr_prediction(vresponses, vtasks[[1]]$task.desc)
 			vperf$calculate(vpred_resp$data)
-			self$vresults$complete("Voting Ensemble")
+			self$vresults$complete()
 			return(self$vresults)
 		},
 		
@@ -195,7 +195,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 				self$validate()
 			}
 			
-			self$results$complete("Voting Ensemble")
+			self$results$complete()
 			return(self$results)
 		},
 		

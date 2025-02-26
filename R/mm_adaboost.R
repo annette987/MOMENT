@@ -347,7 +347,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			if (self$validation) {
 				self$validate()
 			}
-			self$results$complete("Adaboost")
+			self$results$complete()
 			return(self$results)
 		},		
 

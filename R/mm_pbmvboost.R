@@ -559,7 +559,7 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 				self$validate()
 			}
 			
-			self$results$complete("PB-MVBoost")
+			self$results$complete()
 			return(self$results)
 		}
 

@@ -22,6 +22,13 @@ get_minpc = function(num_feats) {
 		return (minpc)
 }
 
+
+#' @description 
+#' Perform initialisation to set up the MICE method.
+#' @param data (data.frame)\cr
+#' The data with missing values.
+#' @return A control object to be used in imputation.
+#' @noRd
 initMice = function(data) {
 	minpc = get_minpc(ncol(data))
 	
@@ -58,6 +65,15 @@ initMice = function(data) {
 }
 
 
+#' @description 
+#' Perform imputation using Multiple Imputation by Chained Equiations (MICE).
+#' If MICE fails, KNN is used instead.
+#' @param data (data.frame)\cr
+#' The data with missing values.
+#' @param control (object)\cr
+#' The control object, which is used to ensure that the same actions are applied to both training and test data.
+#' @return The data with missing values imputed .
+#' @export
 imputeMice = function(data, control) {
 	if (!requireNamespace("mice", quietly = TRUE)) {
 		stop("Package \'mice\' must be installed to perform mice imputation")
@@ -86,6 +102,13 @@ imputeMice = function(data, control) {
 } 
 
 
+#' @description 
+#' Perform imputation using KNN.
+#' If KNN fails, mean value imputation is used instead.
+#' @param data (data.frame)\cr
+#' The data with missing values.
+#' @return The data with missing values imputed .
+#' @export
 imputeKNN = function(data) {
 	if (!requireNamespace("VIM", quietly = TRUE)) {
 		stop("Package \'VIM\' must be installed to performmice KNN")
@@ -95,7 +118,7 @@ imputeKNN = function(data) {
 	}, 
 	error = function(cond) {
 			warning(paste("VIM::kNN returned error: ", cond))
-			warning("Using mean imputation instead")
+			warning("Using mean value imputation instead")
 			mean_val <- colMeans(data, na.rm = TRUE)
 			for(i in 1:length(colnames(data))) {
 				data[,i][is.na(data[,i])] <- mean_val[i]
@@ -159,12 +182,13 @@ cpoImputeData = mlrCPO::makeCPOExtendedTrafo("imputeData",
 )
 
 
-
 #' @description 
 #' Create a pre-processing wrapper to perform imputation in the ML pipeline.
+#' @param learner (character)\cr
+#' The learner to which imputation should be added.
 #' @param impute_method (character)\cr
 #' Method of imputation - \'MICE\' or \'KNN\'
-#' @return Nothing but the function can be used in a pipeline to perform imputation.
+#' @return A pre-processing wrapper. The function can be used in a pipeline to perform imputation.
 #' @export
 makePreprocWrapperImpute = function(learner, impute_method = "MICE") {
   trainfun = function(data, target, args = list(impute_method)) {			

@@ -189,10 +189,10 @@ MM_MoE = R6::R6Class("MM_MoE",
 					self$results$save_responses(roc_rpt, rpt, fold)
 				}
 			}
-			self$results$complete("Mix of Experts")  # Needs summary responses saved
+			self$results$complete()  # Needs summary responses saved
 			
 			for (cls_idx in 1:length(self$classes)) {
-					self$models[[cls_idx]]$results$complete("Mix of Experts")
+					self$models[[cls_idx]]$results$complete()
 			}				
 			return(self$results)
 		}

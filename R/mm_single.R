@@ -46,7 +46,7 @@ MM_Single = R6::R6Class("MM_Single",
 
 #			vpred_resp = make_mlr_prediction(vresponses, vtasks[[1]]$task.desc)
 #			vperf$calculate(vpred_resp)
-			self$vresults$complete("Voting Ensemble")
+			self$vresults$complete()
 			return(self$vresults)
 		},
 		
@@ -59,7 +59,7 @@ MM_Single = R6::R6Class("MM_Single",
 				results$save_predictions(res$pred, task, res$models[[i]])
 				results$save_features(res$models[[i]], task, self$model_type, i)
 			}
-			results$complete(self$model_type)
+			results$complete()
 			return(results)
 		},
 
