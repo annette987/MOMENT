@@ -62,6 +62,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' labelled 'response', containing the final response for the classifier.
 		#' @noRd
 		get_final_decision = function(results, classes, iter) {
+			print("In get_final_decision")
 			if (self$decision %in% c('vote', 'hard')) {
 				# Calculate final prediction with a majority vote across modalities
 				raw_responses = as.data.frame(results[,!colnames(results) %in% c('id', 'ID', 'truth')])
@@ -205,6 +206,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			# Boosting loop: stop if maximum number of iterations is reached or if all samples predicted correctly.
 			# If all predicted correctly, then weights won't be updated, so no point continuing
 			while (boost_iter <= self$nrounds && any(correct == 0)) {
+				print("Getting predictions")
 				predictions = self$get_predictions(wght_sample, train_subset, self$classes, boost_iter)
 				if (all(is.na(predictions[, !names(predictions) %in% c('id', 'ID', 'truth', 'response')]))) { 
 					warning("All models failed!")
@@ -339,10 +341,12 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				for (fold in 1:self$ri$desc$folds) {
 					subset_idx = (rpt - 1) * self$ri$desc$folds + fold
 					message(paste0("Subset Index = ", subset_idx))
+
 					training_set = self$ri$train.inds[[subset_idx]]
-					test_set = self$ri$test.inds[[subset_idx]]
-					
+					test_set = self$ri$test.inds[[subset_idx]]					
+					print("Training")
 					self$train(training_set)
+					print("Predicting")
 					pred = self$predict(test_set)
 					self$results$save_responses(pred$data, rpt, fold)			
 				}
