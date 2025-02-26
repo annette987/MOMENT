@@ -295,8 +295,16 @@ Stability = R6::R6Class("Stability", list(
 	#' @export
 	get_results = function() {
 		return(self$stab)
-	},
-			
+	},			
+
+	#' @description 
+	#' Write the stability results to disk.
+	#' @param result_file (character)\cr
+	#'  The prefix of the filename (including full path) to which the stability results should be written.
+	#' @param suffix (character)\cr
+	#'  The optional suffix of the filename to which the stability results should be written.
+	#' @return Nothing
+	#' @export
 	write = function(result_file, suffix = "") {
 		if (!is.null(suffix) && suffix != "") {
 			result_file = paste0(result_file, "_", suffix)
