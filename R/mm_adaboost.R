@@ -15,7 +15,7 @@
 #' are given more weight in subsequent boosting steps.
 #'
 #' @name MM_Adaboost
-#' @docType package
+#' @importFrom mlr predict.WrappedModel
 NULL
 
 MM_Adaboost = R6::R6Class("MM_Adaboost", 
@@ -87,8 +87,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				}
 
 			} else if (self$decision == "meta") {
-				print("Training meta model")
-				print(iter)
 				# Train a meta learner on the results of the base learners or predict using meta model
 				meta_data = as.data.frame(results[,!colnames(results) %in% c('id', 'ID')])   # Should we match?
 				meta_task = makeClassifTask(id = "MetaLearner", data = meta_data, target = 'truth')
@@ -100,7 +98,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 						warning(getFailureModelMsg(self$meta_models[[iter]]))
 					}
 					
-					print(self$meta_models[[iter]])
 					mod = mlr::getLearnerModel(self$meta_models[[iter]], more.unwrap = TRUE)
 					results$response = mod$class.oob
 					
@@ -108,7 +105,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 						coef.min = coef(mod, s = mod$lambda.min)
 					}
 				} else {
-					pred = mlr::predictLearner(self$meta_models[[iter]], newdata = meta_data)
+					pred = mlr::predict.WrappedModel(self$meta_models[[iter]], newdata = meta_data)
 					results$response = pred$data$response
 				}
 			}
@@ -162,7 +159,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					warning(paste0("Model ", task_id, " failed"))
 					warning(mlr::getFailureModelMsg(self$models[[iter]][[task_id]]))
 				}
-				predn_futures[[i]] = future::future(mlr::predictLearner(self$models[[iter]][[task_id]], task = self$tasks[[i]], subset = test_subset))
+				predn_futures[[i]] = future::future(mlr::predict.WrappedModel(self$models[[iter]][[task_id]], task = self$tasks[[i]], subset = test_subset))
 			}
 			future::resolve(predn_futures)
 			print("Prediction done")
@@ -302,7 +299,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				# Also get feature importance scores for each modality
 				for (j in 1:length(self$tasks)) { # Modality
 					task_id = self$tasks[[j]]$task.desc$id
-					predn_futures[[j]] = future::future(mlr::predictLearner(self$models[[i]][[task_id]], task = self$tasks[[j]], subset = test_subset))
+					predn_futures[[j]] = future::future(mlr::predict.WrappedModel(self$models[[i]][[task_id]], task = self$tasks[[j]], subset = test_subset))
 				}
 			
 				# Wait for results
