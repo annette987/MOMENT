@@ -169,7 +169,9 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			
 			# Combine the responses from each task into a single data.frame and add the response
 			for (i in 1:length(predn_futures)) {
+				print(paste0("i = ", i))
 				pred = value(predn_futures[[i]])
+				print(head(pred$data))
 				task_id = self$tasks[[i]]$task.desc$id
 				
 				# Set up predns first time through
