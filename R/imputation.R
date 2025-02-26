@@ -11,7 +11,7 @@
 #' @name Imputation
 NULL
 
-
+#' @noRd
 get_minpc = function(num_feats) {
 		if (num_feats < 100)
 			minpc = 0.2
@@ -135,6 +135,12 @@ imputeData = function(data, impute_method = "MICE", control = NULL) {
 }		
 
 
+#' @description 
+#' Create a pre-processing object to perform imputation in the ML pipeline.
+#' @param impute_method (character)\cr
+#' Method of imputation - \'MICE\' or \'KNN\'
+#' @return Nothing but the function can be used in a pipeline to perform imputation.
+#' @export
 cpoImputeData = mlrCPO::makeCPOExtendedTrafo("imputeData", 
 	mlrCPO::pSS(impute_method = "MICE": character),
 	dataformat = "df.features",
@@ -153,6 +159,13 @@ cpoImputeData = mlrCPO::makeCPOExtendedTrafo("imputeData",
 )
 
 
+
+#' @description 
+#' Create a pre-processing wrapper to perform imputation in the ML pipeline.
+#' @param impute_method (character)\cr
+#' Method of imputation - \'MICE\' or \'KNN\'
+#' @return Nothing but the function can be used in a pipeline to perform imputation.
+#' @export
 makePreprocWrapperImpute = function(learner, impute_method = "MICE") {
   trainfun = function(data, target, args = list(impute_method)) {			
 			# Identify numerical features

@@ -121,7 +121,7 @@ MM_Model = R6::R6Class("MM_Model",
 		
     #' @description 
 		#' Clone an MM_Model object, from another MM_MOdel object.
-		#' Pass in new tasks, classes and optiobnally learners.
+		#' Pass in new tasks, classes and optionally learners.
 		#' @param model (MM_Model)\cr
 		#' Model to be cloned from
     #' @param tasks (list)\cr

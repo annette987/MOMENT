@@ -85,6 +85,8 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				}
 
 			} else if (self$decision == "meta") {
+				print("Training meta model")
+				print(iter)
 				# Train a meta learner on the results of the base learners or predict using meta model
 				meta_data = as.data.frame(results[,!colnames(results) %in% c('id', 'ID')])   # Should we match?
 				meta_task = makeClassifTask(id = "MetaLearner", data = meta_data, target = 'truth')
@@ -96,7 +98,8 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 						warning(getFailureModelMsg(self$meta_models[[iter]]))
 					}
 					
-					mod = getLearnerModel(self$meta_models[[iter]], more.unwrap = TRUE)
+					print(self$meta_models[[iter]])
+					mod = mlr::getLearnerModel(self$meta_models[[iter]], more.unwrap = TRUE)
 					results$response = mod$class.oob
 					
 					if (inherits(mod, "cv.glmnet")) {
@@ -360,6 +363,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
     #' @return Feature importance scores for the model.
 		#' @export
 		get_feature_importance = function(classes) {
+			print("Getting feature importance scores")
 			feat_scores = list()
 			
 			# First extract the feature importance scores from the saved models for each task
@@ -372,8 +376,8 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 						warning(paste0("Model ", task_id, " failed on iteration ", i))
 						warning(mlr::getFailureModelMsg(self$models[[i]][[task_id]]))
 					} else {
-						scores = getFeatImpScores(getLearnerModel(self$models[[i]][[task_id]], more.unwrap = TRUE), classes)
-						selected = mlr::getFilteredFeatures(getLearnerModel(self$models[[i]][[task_id]], more.unwrap = FALSE))
+						scores = getFeatImpScores(mlr::getLearnerModel(self$models[[i]][[task_id]], more.unwrap = TRUE), classes)
+						selected = mlr::getFilteredFeatures(mlr::getLearnerModel(self$models[[i]][[task_id]], more.unwrap = FALSE))
 						not_selected = setdiff(mlr::getTaskFeatureNames(self$tasks[[j]]), selected)
 						self$feats[[task_id]][[i]] = scores[, "all"]
 						names(self$feats[[task_id]][[i]]) = rownames(scores)
