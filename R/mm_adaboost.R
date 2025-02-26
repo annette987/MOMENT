@@ -15,7 +15,6 @@
 #' are given more weight in subsequent boosting steps.
 #'
 #' @name MM_Adaboost
-#' @importFrom mlr predict.WrappedModel
 NULL
 
 MM_Adaboost = R6::R6Class("MM_Adaboost", 
@@ -62,8 +61,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' labelled 'response', containing the final response for the classifier.
 		#' @noRd
 		get_final_decision = function(results, classes, iter) {
-			print("In get_final_decision")
-			flush.console()
 			if (self$decision %in% c('vote', 'hard')) {
 				# Calculate final prediction with a majority vote across modalities
 				raw_responses = as.data.frame(results[,!colnames(results) %in% c('id', 'ID', 'truth')])
@@ -138,23 +135,17 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			self$models[[iter]] = list()
 
 			# Train a model on each task (modality) in parallel and wait for the results
-			print("Training")
 			for (i in 1:length(self$tasks)) {
-				print(paste0("i = ", i))
 				lrn_idx = ifelse(length(self$tasks) == length(self$learners), i, 1L)
 				task_id = self$tasks[[i]]$task.desc$id
-				print(self$learners[[lrn_idx]])
 				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[lrn_idx]], task = self$tasks[[i]], subset = train_subset))
 			}
 			future::resolve(model_futures)
 		
 			# Predict from each model in parallel and wait for the results
-			print("Predicting")
 			for (i in 1:length(model_futures)) {
-				print(paste0("i = ", i))
 				task_id = self$tasks[[i]]$task.desc$id
 				self$models[[iter]][[task_id]] = value(model_futures[[i]])
-				print(self$models[[iter]][[task_id]])
 				if (mlr::isFailureModel(self$models[[iter]][[task_id]])) {
 					warning(paste0("Model ", task_id, " failed"))
 					warning(mlr::getFailureModelMsg(self$models[[iter]][[task_id]]))
@@ -162,13 +153,10 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				predn_futures[[i]] = future::future(predict(self$models[[iter]][[task_id]], task = self$tasks[[i]], subset = test_subset))
 			}
 			future::resolve(predn_futures)
-			print("Prediction done")
 			
 			# Combine the responses from each task into a single data.frame and add the response
 			for (i in 1:length(predn_futures)) {
-				print(paste0("i = ", i))
 				pred = value(predn_futures[[i]])
-				print(head(pred$data))
 				task_id = self$tasks[[i]]$task.desc$id
 				
 				# Set up predns first time through
@@ -187,8 +175,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 						prob_cols = paste0("prob.", levels(classes))
 						predns[, paste0(task_id, ".", levels(classes))] = probs[match(predns$ID, probs$ID), prob_cols, drop = FALSE]
 				}
-			}	
-			print(head(	as.data.frame(predns)))		
+			}		
 			return(as.data.frame(predns))
 		},
 		
@@ -214,12 +201,9 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			# Boosting loop: stop if maximum number of iterations is reached or if all samples predicted correctly.
 			# If all predicted correctly, then weights won't be updated, so no point continuing
 			while (boost_iter <= self$nrounds && any(correct == 0)) {
-				print("Getting predictions")
 				predictions = self$get_predictions(wght_sample, train_subset, self$classes, boost_iter)
-				print("Got predictions")
 				if (all(is.na(predictions[, !names(predictions) %in% c('id', 'ID', 'truth', 'response')]))) { 
 					warning("All models failed!")
-					flush.console()
 					correct = rep(FALSE, length(train_subset))
 				} else {
 					predictions = self$get_final_decision(predictions, self$classes, boost_iter)
@@ -354,9 +338,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 
 					training_set = self$ri$train.inds[[subset_idx]]
 					test_set = self$ri$test.inds[[subset_idx]]					
-					print("Training")
 					self$train(training_set)
-					print("Predicting")
 					pred = self$predict(test_set)
 					self$results$save_responses(pred$data, rpt, fold)			
 				}
@@ -377,7 +359,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
     #' @return Feature importance scores for the model.
 		#' @export
 		get_feature_importance = function(classes) {
-			print("Getting feature importance scores")
 			feat_scores = list()
 			
 			# First extract the feature importance scores from the saved models for each task
