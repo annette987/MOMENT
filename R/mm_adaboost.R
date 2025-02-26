@@ -37,7 +37,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
     #' @return A new`MM_Adaboost` object.
 		#' @export
 		initialize = function(config, nrounds = 10, meta_lrn = "RF", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = FALSE, filter_missings = FALSE, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, "ADA", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
+			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 			self$nrounds = nrounds					# Number of boosting iterations
 			if (decision == "meta") {
 				learner = Learners$new(self$task_type)$base_learners[[meta_lrn]]

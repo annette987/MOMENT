@@ -46,7 +46,7 @@ MM_MoE = R6::R6Class("MM_MoE",
     #' @return A new [MM_MoE] object.
 		#' @export
 		initialize = function(config, model_type = "VOTE", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = FALSE, filter_missings = FALSE, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, model_type, decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)	
+			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)	
 					
 			ovr_data = self$create_ovr_tasks(config$dataDir, config, self$task_type, subset, filter_zeroes, filter_missings, filter_corr, filter_var)
 			self$tasks = ovr_data$tasks

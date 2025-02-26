@@ -251,8 +251,10 @@ Learners = R6::R6Class("Learners",
 				}
 				
 				#	Begin pipeline with basic learner
+				print(i)
 				baselrn = self$base_learners[[config$baseModels[[i]]$learner]]
 				lrn = do.call(mlr::makeLearner, args = append(list("cl" = baselrn$class, "id" = baselrn$name, "predict.type" = pred_type, fix.factors.prediction = TRUE), pars))
+				print(lrn)
 				
 				# Add feature selection to pipeline
 				basefilt = self$base_filters[[config$baseModels[[i]]$featsel]]
@@ -265,21 +267,25 @@ Learners = R6::R6Class("Learners",
 					}
 					lrn = do.call(mlr::makeFilterWrapper, args = c(filter_args, fspars))
 				}
+				print(lrn)
 				
 				#Add multi-class balancing to the pipeline if requested
 				if (balance) {
 					lrn = makePreprocWrapperBalanceMC(lrn, config$targetVar, "SMOTE")
 				}
+				print(lrn)
 								
 				#	Add normalisation to pipeline
 				if (!is.null(config$baseModels[[i]]$norm)) {				
-					lrn = cpoNormalise(config$baseModels[[i]]$norm) %>>% lrn		
+					lrn = cpoNormalise(config$baseModels[[i]]$norm) %>% lrn		
 				}
+				print(lrn)
 				
 				#Add imputation to the pipeline - use cop as it adds the missings property
 				if (!is.null(config$baseModels[[i]]$imputation)) {				
-					lrn = cpoImputeData(config$baseModels[[i]]$imputation, NULL) %>>% lrn
+					lrn = cpoImputeData(config$baseModels[[i]]$imputation, NULL) %>% lrn
 				}
+				print(lrn)
 	
 				learners[[i]] = lrn
 			}
@@ -351,13 +357,13 @@ Learners = R6::R6Class("Learners",
 			#	Add normalisation to pipeline
 			if (!is.null(norm)) {
 				# Check that norm is a valid value
-				lrn = cpoNormalise(norm) %>>% lrn
+				lrn = cpoNormalise(norm) %>% lrn
 			}
 			
 			#Add imputation to the pipeline - use cop as it adds the missings property
 			if (!is.null(imp)) {
 				# Check that imp is a valid value
-				lrn = cpoImputeData(imp, NULL) %>>% lrn
+				lrn = cpoImputeData(imp, NULL) %>% lrn
 			}
 	
 			return(lrn)

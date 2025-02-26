@@ -46,7 +46,7 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 		#' @export
 		#' 
 		initialize = function(config, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, "META", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)	
+			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)	
 			self$inner = mlr::makeResampleDesc("CV", iters = config$foldsInner, stratify = TRUE)
 			self$meta_model = MM_Model$new(NULL)
 			learner = Learners$new(self$task_type)$base_learners[[config$metaLearner]]

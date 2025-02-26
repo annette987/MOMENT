@@ -54,12 +54,12 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @return A new `MM_Model`object
 		#' @export
 		#' 
-		initialize = function(config, model_type = "CLASSIF", decision = "prob", subset = NULL, concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE)
+		initialize = function(config, model_type = "CLASSIF", decision = "hard", subset = NULL, concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE)
 		{
 			mlr::configureMlr(show.learner.output = TRUE, on.learner.error = 'warn', on.par.without.desc = 'warn')
 			Filters$new()
 			if (!missing(config)) {
-				assertClass(config, "MM_Config")
+#				assertClass(config, "MM_Config")
 				self$config     = config
 				self$targetVar  = config$targetVar
 				
@@ -68,15 +68,16 @@ MM_Model = R6::R6Class("MM_Model",
 				}
 				self$model_type = model_type
 				self$task_type = ifelse(model_type == "SURV", TASK_SURV, TASK_CLASSIF)
+				print(self$task_type)
 				
 				if (!missing(subset) && !is.null(subset)) {
 					checkmate::assertNumeric(subset, unique = TRUE)
 				}
 				if (!missing(decision)) {
-					checkmate::assertChoice(decision, choices = c("prob", "response"))
+					checkmate::assertChoice(decision, choices = c("hard", "vote", "soft", "prob", "meta"))
 				}
 				self$decision   = decision
-				predict_type   = ifelse(decision == "prob", "prob", "response")
+				predict_type   = ifelse(decision == "hard" || decision == "vote", "response", "prob")
 					
 				if (self$model_type == "SURV") {
 					self$measures = PerformanceMeasures$new(self$model_type)$measures
