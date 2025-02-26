@@ -146,7 +146,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				print(paste0("i = ", i))
 				lrn_idx = ifelse(length(self$tasks) == length(self$learners), i, 1L)
 				task_id = self$tasks[[i]]$task.desc$id
-				print(self$learners[[lrn_idx])
+				print(self$learners[[lrn_idx]])
 				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[lrn_idx]], task = self$tasks[[i]], subset = train_subset))
 			}
 			future::resolve(model_futures)
