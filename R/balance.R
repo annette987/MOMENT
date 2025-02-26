@@ -9,6 +9,17 @@
 #' @name Balance
 NULL
 
+
+#' @description 
+#' Create a pre-processing wrapper to balance classes in the ML pipeline.
+#' @param learner (character)\cr
+#' The learner to which balancing should be added.
+#' @param target_name (character)\cr
+#' The name of teh target variable in the data.
+#' @param bal_method (character)\cr
+#' Method of balancing - \'SMOTE\' or \'OVERSAMPLE\'
+#' @return A pre-processing wrapper. The function can be used in a pipeline to perform balancing.
+#' @export
 makePreprocWrapperBalanceMC = function(learner, target_name, bal_method) {
   trainfun = function(data, target, args = list(target_name, bal_method)) {
 			# Convert any integer columns to numeric

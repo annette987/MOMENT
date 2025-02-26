@@ -136,6 +136,16 @@ imputeKNN = function(data) {
 }
 
 
+#' @description 
+#' Perform imputation using the requested method.
+#' @param data (data.frame)\cr
+#' The data with missing values.
+#' @param impute_method (character)\cr
+#' Method of imputation - \'MICE\' or \'KNN\'
+#' @param control (object)\cr
+#' The control object, which is used to ensure that the same actions are applied to both training and test data.
+#' @return A list containing the data with missing values imputed and the control object.
+#' @export
 imputeData = function(data, impute_method = "MICE", control = NULL) {
 	if (ncol(data) == 0) {
 		control = matrix(0, 1, 1)

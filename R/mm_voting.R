@@ -33,7 +33,7 @@ MM_Voting = R6::R6Class("MM_Voting",
     #' @param results (data.frame)\cr
 		#' The results from the individual models, concatenated column-wise into a data.frame.
 		#' @param classes
-		#' The classes to be found in teh target variable.
+		#' The classes to be found in the target variable.
     #' @return A data.frame containing the results including the final decision.
 		#' @noRd
 		get_final_decision = function(results, classes) 

@@ -12,12 +12,25 @@
 #' @name Normalisation
 NULL
 
+@noRd
 is.nan.data.frame <- function(x) do.call(cbind, lapply(x, is.nan))
 
+@noRd
 norm_minMax = function(x) {
 	return((x - min(x, na.rm = TRUE)) /(max(x, na.rm = TRUE) - min(x, na.rm = TRUE)))
 }
 
+
+#' @description 
+#' Perform normalisation using the requested method.
+#' @param data (data.frame)\cr
+#' The data to be normalised.
+#' @param impute_method (character)\cr
+#' Method of normalisation
+#' @param epsilon (numeric)\cr
+#' A small error value added to eth denominator in some calculations  to avoid division by zero.
+#' @return The normalised data.
+#' @export
 normaliseData = function(data, method = "STAND", epsilon = 1e100) {
 	if (ncol(data) == 0) {
 		final = data
@@ -74,6 +87,13 @@ normaliseData = function(data, method = "STAND", epsilon = 1e100) {
 	return(final)
 }
 
+
+#' @description 
+#' Create a pre-processing object to perform normalisation in the ML pipeline.
+#' @param method (character)\cr
+#' Method of normalisation
+#' @return Nothing but the function can be used in a pipeline to perform normalisation.
+#' @export
 cpoNormalise = mlrCPO::makeCPOExtendedTrafo("normalise",
   mlrCPO::pSS(method = "STAND": character),
   dataformat = "df.features",
@@ -90,6 +110,14 @@ cpoNormalise = mlrCPO::makeCPOExtendedTrafo("normalise",
   })
 
 
+#' @description 
+#' Create a pre-processing wrapper to perform normalisation in the ML pipeline.
+#' @param learner (character)\cr
+#' The learner to which imputation should be added.
+#' @param impute_method (character)\cr
+#' Method of normalisation
+#' @return A pre-processing wrapper. The function can be used in a pipeline to perform normalisation.
+#' @export
 makePreprocWrapperNormalise = function(learner, method = "STAND") {
   trainfun = function(data, target, args = list(method)) {
 			norm_dat = normaliseData(data, unlist(args), NULL)

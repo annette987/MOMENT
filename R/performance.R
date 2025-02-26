@@ -14,7 +14,7 @@ Performance = R6::R6Class("Performance", list(
 	
 	#' @field aggr (list of lists)\cr
 	#' The top level list contains one list per performance metric requested.
-	#' The second level list contains teh aggregated performance for each modality.
+	#' The second level list contains the aggregated performance for each modality.
 	aggr = list(),
 	
 	#' @field measures (list)\cr
