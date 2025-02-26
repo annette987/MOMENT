@@ -51,3 +51,5 @@ Encoding: UTF-8
 LazyData: false
 RoxygenNote: 7.2.3  
 VignetteBuilder: knitr
+Config/testthat/parallel: true
+Config/testthat/start-first: voting, single, meta_learner, pbmvboost, mix_of_experts, adaboost, explorer, incremental
