@@ -125,12 +125,14 @@ MM_Voting = R6::R6Class("MM_Voting",
 			predn_futures = list()
 			
 			for (i in 1:length(self$tasks)) {
-				predn_futures[[i]] = future::future(mlr::predictLearner(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE)	
+				predn_futures[[i]] = future::future(mlr::predict(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE)	
 			}
 			future::resolve(predn_futures)
 
 			for (i in 1:length(predn_futures)) {
+				print(paste0("i = ", i))
 				pred = future::value(predn_futures[[i]])
+				print(head(pred$data))
 				task_id = self$tasks[[i]]$task.desc$id
 
 				if (is.null(responses)) {
