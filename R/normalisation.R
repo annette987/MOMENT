@@ -12,10 +12,10 @@
 #' @name Normalisation
 NULL
 
-@noRd
+#' @noRd
 is.nan.data.frame <- function(x) do.call(cbind, lapply(x, is.nan))
 
-@noRd
+#' @noRd
 norm_minMax = function(x) {
 	return((x - min(x, na.rm = TRUE)) /(max(x, na.rm = TRUE) - min(x, na.rm = TRUE)))
 }
