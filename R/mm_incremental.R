@@ -27,7 +27,7 @@ MM_Incremental = R6::R6Class("MM_Incremental",
 		#' @return A new `MM_Incremental`object.
 		#' @export
 		initialize = function(config, metric = "F1", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, "INC", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
+			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 			self$perf_metric = metric
 		},
 		

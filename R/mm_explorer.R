@@ -39,7 +39,7 @@ MM_Explorer = R6::R6Class("MM_Explorer",
     #' @return A new [MM_Explorer] object.
 		#' @export
 		initialize = function(config, decision = "prob", subset = NULL, balance = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, "VOTE", decision, subset, FALSE, balance, filter_zeroes, filter_missings, filter_corr, filter_var)
+			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, filter_zeroes, filter_missings, filter_corr, filter_var)
 		},		
 
 
