@@ -38,6 +38,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @noRd
 		get_final_decision = function(results, classes) 
 		{
+			print("In get_final_decision")
 			results$truth = as.factor(results$truth)
 			if (self$decision %in% c('vote', 'hard')) {
 				# Calculate final prediction with a majority vote across modalities
@@ -76,6 +77,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @export
 		train = function(training_set, rpt, fold) 
 		{
+			print("Training")
 			model_futures = list()			
 			for (i in 1:length(self$tasks)) {
 				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[i]], task = self$tasks[[i]], subset = training_set), seed = TRUE)
@@ -90,6 +92,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 					warning(paste0("Model ", task_id, " failed on repeat ", rpt, " fold ", fold))
 					warning(mlr::getFailureModelMsg(private$models[[task_id]]))
 				} else {
+					print("Saving features")
 					self$results$save_features(private$models[[task_id]], self$tasks[[i]], "VOTE", fold)
 				}
 			}
@@ -112,6 +115,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @export
 		predict = function(test_set, decision, rpt, fold) 
 		{
+			print("Predicting")
 			checkmate::assertInteger(test_set)
 			checkmate::assertChoice(decision, choices = c('vote', 'hard', 'prob', 'soft'))
 			checkmate::assertInteger(rpt)
