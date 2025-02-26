@@ -6,14 +6,14 @@ Author: Annette Spooner
 Maintainer: Annette Spooner <a.spooner@unsw.edu.au>
 Depends: 
  		checkmate,
-		dplyr,
 		future,
 		mlr,
+		mlrCPO,
 		R6
 Imports:
 		BBmisc,
+		dplyr,
 		mice,
-		mlrCPO,
 		ParamHelpers
 Suggests:
 		Boruta,

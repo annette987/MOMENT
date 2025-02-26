@@ -22,7 +22,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @inheritParams MM_Model$initialize
     #' @return A new `MM_Voting` object.
 		#' @export
-		initialize = function(config, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = FALSE, filter_missings = FALSE, filter_corr = FALSE, filter_var = FALSE) {
+		initialize = function(config, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
 			super$initialize(config, "VOTE", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 		},		
 

@@ -3,8 +3,7 @@
 #' @description
 #' Provides functions to read and store configuration parameters
 #'
-#' @name MM_Config
-#' @docType package
+#' @name Config
 NULL
 
 normalisation = factor(levels = c("NONE", "STAND", "LOGT", "CPM", "CPM_LOGT"))
@@ -146,16 +145,17 @@ new_config_single = function(config_data, row) {
 
 
 # N.B. What happens if some items don't exist in file? Returns NULL?
-config = function(filename) {
+#' @export
+make_config = function(filename) {
 	stopifnot(is.character(filename))
 	stopifnot(file.exists(filename))
 	cf = NULL
 	
-	if (file_ext(filename) == "csv") {
+	if (tools::file_ext(filename) == "csv") {
 		config_data = read.csv(filename, header=TRUE, row.names=NULL, check.names=FALSE, fileEncoding="UTF-8-BOM")
 		cf = new_config_single(config_data, 1)
 		cf$baseModels = list(new_config_base_empty())
-	} else if (file_ext(filename) == "xlsx") {
+	} else if (tools::file_ext(filename) == "xlsx") {
 		sheet_names = readxl::excel_sheets(filename)
 		config_data = as.data.frame(readxl::read_excel(filename, sheet = "Main"))
 		cf = new_config(config_data, 1)

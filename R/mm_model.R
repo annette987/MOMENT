@@ -68,7 +68,6 @@ MM_Model = R6::R6Class("MM_Model",
 				}
 				self$model_type = model_type
 				self$task_type = ifelse(model_type == "SURV", TASK_SURV, TASK_CLASSIF)
-				print(self$task_type)
 				
 				if (!missing(subset) && !is.null(subset)) {
 					checkmate::assertNumeric(subset, unique = TRUE)

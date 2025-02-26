@@ -64,7 +64,7 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 			#' Should low variance features be included in the model?
 			#' @return A new`PB_MVBoost` object.
 			#' @export
-		initialize = function(config, nrounds = 10, decision_tree_depth = 2, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = FALSE, filter_missings = FALSE, filter_corr = FALSE, filter_var = FALSE) {
+		initialize = function(config, nrounds = 10, decision_tree_depth = 2, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
 				super$initialize(config, "PBMV", decision, subset, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 				self$all_views = names(self$tasks)
 				self$nb_view_classifiers = rep(0, length(self$all_views))

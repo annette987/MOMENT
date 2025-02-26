@@ -6,7 +6,7 @@
 #' @details
 #' To implement SMOTE for a multi-class problem, balancing is performed on each class.
 #'
-#' @name Imputation
+#' @name Balance
 NULL
 
 makePreprocWrapperBalanceMC = function(learner, target_name, bal_method) {

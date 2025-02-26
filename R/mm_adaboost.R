@@ -36,7 +36,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
     #' @param meta_lrn Name of meta learner. Used only if meta learning is the combination method.
     #' @return A new`MM_Adaboost` object.
 		#' @export
-		initialize = function(config, nrounds = 10, meta_lrn = "RF", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = FALSE, filter_missings = FALSE, filter_corr = FALSE, filter_var = FALSE) {
+		initialize = function(config, nrounds = 10, meta_lrn = "RF", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
 			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 			self$nrounds = nrounds					# Number of boosting iterations
 			if (decision == "meta") {
