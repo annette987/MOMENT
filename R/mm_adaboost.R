@@ -105,7 +105,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 						coef.min = coef(mod, s = mod$lambda.min)
 					}
 				} else {
-					pred = mlr::predict.WrappedModel(self$meta_models[[iter]], newdata = meta_data)
+					pred = predict(self$meta_models[[iter]], newdata = meta_data)
 					results$response = pred$data$response
 				}
 			}
@@ -159,7 +159,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					warning(paste0("Model ", task_id, " failed"))
 					warning(mlr::getFailureModelMsg(self$models[[iter]][[task_id]]))
 				}
-				predn_futures[[i]] = future::future(mlr::predict.WrappedModel(self$models[[iter]][[task_id]], task = self$tasks[[i]], subset = test_subset))
+				predn_futures[[i]] = future::future(predict(self$models[[iter]][[task_id]], task = self$tasks[[i]], subset = test_subset))
 			}
 			future::resolve(predn_futures)
 			print("Prediction done")
@@ -299,7 +299,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				# Also get feature importance scores for each modality
 				for (j in 1:length(self$tasks)) { # Modality
 					task_id = self$tasks[[j]]$task.desc$id
-					predn_futures[[j]] = future::future(mlr::predict.WrappedModel(self$models[[i]][[task_id]], task = self$tasks[[j]], subset = test_subset))
+					predn_futures[[j]] = future::future(predict(self$models[[i]][[task_id]], task = self$tasks[[j]], subset = test_subset))
 				}
 			
 				# Wait for results
