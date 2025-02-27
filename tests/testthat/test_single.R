@@ -18,7 +18,7 @@ test_that("Survival Analysis - single modality", {
 	cc = make_config(test_path("config_gbm_boruta_4C.xlsx"))
 	active_learners = LRN_COX
 	
-	single_s = MM_Single$new(cc, TASK_SURV, "response",  concat = FALSE, validate = FALSE)
+	single_s = MM_Single$new(cc, TASK_SURV, "response", concat = FALSE, validate = FALSE)
 	single_s_res = single_s$learn(active_learners)
 
 	for (i in 1: length(single_s_res)) {

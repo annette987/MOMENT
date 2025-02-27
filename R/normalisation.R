@@ -30,7 +30,7 @@ norm_minMax = function(x) {
 #' @param epsilon (numeric)\cr
 #' A small error value added to eth denominator in some calculations  to avoid division by zero.
 #' @return The normalised data.
-#' @export
+#' @noRd
 normaliseData = function(data, method = "STAND", epsilon = 1e100) {
 	if (ncol(data) == 0) {
 		final = data
@@ -93,6 +93,9 @@ normaliseData = function(data, method = "STAND", epsilon = 1e100) {
 #' @param method (character)\cr
 #' Method of normalisation
 #' @return Nothing but the function can be used in a pipeline to perform normalisation.
+#' @examples
+#' lrn <- mlr::makeLearner(cl = "classif.gbm", id = "test", predict.type = "prob")
+#' lrn <- cpoNormalise("ZSCORE") %>>% lrn
 #' @export
 cpoNormalise = mlrCPO::makeCPOExtendedTrafo("normalise",
   mlrCPO::pSS(method = "STAND": character),
@@ -117,6 +120,9 @@ cpoNormalise = mlrCPO::makeCPOExtendedTrafo("normalise",
 #' @param impute_method (character)\cr
 #' Method of normalisation
 #' @return A pre-processing wrapper. The function can be used in a pipeline to perform normalisation.
+#' @examples
+#' lrn <- mlr::makeLearner(cl = "classif.gbm", id = "test", predict.type = "prob")
+#' lrn <- makePreprocWrapperImpute(lrn, "MINMAX")
 #' @export
 makePreprocWrapperNormalise = function(learner, method = "STAND") {
   trainfun = function(data, target, args = list(method)) {

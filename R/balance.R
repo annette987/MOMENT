@@ -19,6 +19,9 @@ NULL
 #' @param bal_method (character)\cr
 #' Method of balancing - \'SMOTE\' or \'OVERSAMPLE\'
 #' @return A pre-processing wrapper. The function can be used in a pipeline to perform balancing.
+#' @examples
+#' lrn <- mlr::makeLearner(cl = "classif.gbm", id = "test", predict.type = "prob")
+#' lrn <- makePreprocWrapperBalanceMC(lrn, targetVar, "SMOTE")
 #' @export
 makePreprocWrapperBalanceMC = function(learner, target_name, bal_method) {
   trainfun = function(data, target, args = list(target_name, bal_method)) {

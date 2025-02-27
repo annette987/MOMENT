@@ -73,7 +73,7 @@ initMice = function(data) {
 #' @param control (object)\cr
 #' The control object, which is used to ensure that the same actions are applied to both training and test data.
 #' @return The data with missing values imputed .
-#' @export
+#' @noRd
 imputeMice = function(data, control) {
 	if (!requireNamespace("mice", quietly = TRUE)) {
 		stop("Package \'mice\' must be installed to perform mice imputation")
@@ -108,7 +108,7 @@ imputeMice = function(data, control) {
 #' @param data (data.frame)\cr
 #' The data with missing values.
 #' @return The data with missing values imputed .
-#' @export
+#' @noRd
 imputeKNN = function(data) {
 	if (!requireNamespace("VIM", quietly = TRUE)) {
 		stop("Package \'VIM\' must be installed to performmice KNN")
@@ -145,7 +145,7 @@ imputeKNN = function(data) {
 #' @param control (object)\cr
 #' The control object, which is used to ensure that the same actions are applied to both training and test data.
 #' @return A list containing the data with missing values imputed and the control object.
-#' @export
+#' @noRd
 imputeData = function(data, impute_method = "MICE", control = NULL) {
 	if (ncol(data) == 0) {
 		control = matrix(0, 1, 1)
@@ -172,7 +172,10 @@ imputeData = function(data, impute_method = "MICE", control = NULL) {
 #' Create a pre-processing object to perform imputation in the ML pipeline.
 #' @param impute_method (character)\cr
 #' Method of imputation - \'MICE\' or \'KNN\'
-#' @return Nothing but the function can be used in a pipeline to perform imputation.
+#' @examples
+#' lrn <- mlr::makeLearner(cl = "classif.gbm", id = "test", predict.type = "prob")
+#' lrn <- cpoImputeData("MICE") %>>% lrn
+#' @return  A pre-processing object that  can be used in a pipeline to perform imputation.
 #' @export
 cpoImputeData = mlrCPO::makeCPOExtendedTrafo("imputeData", 
 	mlrCPO::pSS(impute_method = "MICE": character),
@@ -199,6 +202,9 @@ cpoImputeData = mlrCPO::makeCPOExtendedTrafo("imputeData",
 #' @param impute_method (character)\cr
 #' Method of imputation - \'MICE\' or \'KNN\'
 #' @return A pre-processing wrapper. The function can be used in a pipeline to perform imputation.
+#' @examples
+#' lrn <- mlr::makeLearner(cl = "classif.gbm", id = "test", predict.type = "prob")
+#' lrn <- makePreprocWrapperImpute(lrn, "KNN")
 #' @export
 makePreprocWrapperImpute = function(learner, impute_method = "MICE") {
   trainfun = function(data, target, args = list(impute_method)) {			

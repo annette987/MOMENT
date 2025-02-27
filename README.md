@@ -1,16 +1,68 @@
-# MOMENT - Multi-Omics Modelling by ENsemble Techniques
 
-MOMENT provides a set of ensemble machine learning algorithms that can successfully model multi-omics multi-class data. The algorithms are based on a technique known as late integration, training a machine learning model on each modality independently and aggregating the results in different ways to give a final prediction. 
+<!-- README.md is generated from README.Rmd. Please edit that file -->
 
-In addition, MOMENT allows users to model individual modalities, a concatenation of all modalities or a selected subset of modalities, for comparison with the ensemble models, employing either classification or survival analysis. Furthermore, an incremental model can determine a minimal set of modalities for accurate modelling of the data and an exploration model allows the user to plot 2-dimensional representations of the data using principal component analysis (PCA), t-distributed stochastic neighbor embedding (t-SNE) or Uniform Manifold Approximation and Projection (UMAP).
+# MOMENT
 
-MOMENT is fully customisable and highly flexible, using an object-oriented design. It allows the user to model multi-omics multi-class data, without the need for a detailed understanding of the specifics of machine learning, nor of the mlr (Machine Learning in R) package, on which MOMENT relies.
+<!-- badges: start -->
+<!-- badges: end -->
 
-### Example:
+The goal of MOMENT is to …
 
-library(MOMENT)  
-subset = NULL  
-cc = config("your_config_file.xlsx")  
-vote_ens_h = MM_Voting$new(cc, decision = 'hard', subset = subset, validate = FALSE)  
-res_ens_h = vote_ens_h$learn()  
-res_ens_h$write("voting_hard  
+## Installation
+
+You can install the development version of MOMENT from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("annette987/MOMENT")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+``` r
+library(MOMENT)
+#> Loading required package: checkmate
+#> Loading required package: future
+#> Loading required package: mlr
+#> Loading required package: ParamHelpers
+#> Warning message: 'mlr' is in 'maintenance-only' mode since July 2019.
+#> Future development will only happen in 'mlr3'
+#> (<https://mlr3.mlr-org.com>). Due to the focus on 'mlr3' there might be
+#> uncaught bugs meanwhile in {mlr} - please consider switching.
+#> Loading required package: mlrCPO
+#> Loading required package: R6
+#> Welcome to MOMENT - Multi-Omics Modelling by ENsemble Techniques
+#> 
+#> Attaching package: 'MOMENT'
+#> The following object is masked from 'package:utils':
+#> 
+#>     Filters
+## basic example code
+```
+
+What is special about using `README.Rmd` instead of just `README.md`?
+You can include R chunks like so:
+
+``` r
+summary(cars)
+#>      speed           dist       
+#>  Min.   : 4.0   Min.   :  2.00  
+#>  1st Qu.:12.0   1st Qu.: 26.00  
+#>  Median :15.0   Median : 36.00  
+#>  Mean   :15.4   Mean   : 42.98  
+#>  3rd Qu.:19.0   3rd Qu.: 56.00  
+#>  Max.   :25.0   Max.   :120.00
+```
+
+You’ll still need to render `README.Rmd` regularly, to keep `README.md`
+up-to-date. `devtools::build_readme()` is handy for this.
+
+You can also embed plots, for example:
+
+<img src="man/figures/README-pressure-1.png" width="100%" />
+
+In that case, don’t forget to commit and push the resulting figure
+files, so they display on GitHub and CRAN.

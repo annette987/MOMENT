@@ -20,39 +20,6 @@ NULL
 #' @docType data
 NULL
 
-#' Metabolomics
-#'
-#' The Metabolomics data modality.
-#'
-#' @name Metabolomics
-#' @format
-#' A data frame with 106 rows (samples) and 48 columns (features)
-#' @keywords data
-#' @docType data
-NULL
-
-#' OralGenus
-#'
-#' The Oral Microbiome data modality - genus only.
-#'
-#' @name OralGenus
-#' @format
-#' A data frame with 106 rows (samples) and 48 columns (features)
-#' @keywords data
-#' @docType data
-NULL
-
-#' OralSpecies
-#'
-#' The Oral Microbiome data modality - species only.
-#'
-#' @name OralSpecies
-#' @format
-#' A data frame with 106 rows (samples) and 48 columns (features)
-#' @keywords data
-#' @docType data
-NULL
-
 #' Pathology
 #'
 #' The Pathology data modality.
@@ -64,24 +31,14 @@ NULL
 #' @docType data
 NULL
 
-#' StoolGenus
+#' SmallMolecules
 #'
-#' The Stool Microbiome data modality - genus only.
+#' The SmallMolecules data modality.
 #'
-#' @name StoolGenus
+#' @name SmallMolecules
 #' @format
-#' A data frame with 106 rows (samples) and 48 columns (features)
+#' A data frame with 106 rows (samples) and 17 columns (features)
 #' @keywords data
 #' @docType data
 NULL
 
-#' StoolSpecies
-#'
-#' The Stool Microbiome data modality - species only.
-#'
-#' @name StoolSpecies
-#' @format
-#' A data frame with 106 rows (samples) and 48 columns (features)
-#' @keywords data
-#' @docType data
-NULL

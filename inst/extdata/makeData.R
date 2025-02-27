@@ -1,0 +1,10 @@
+library(usethis)
+
+cytokines = read.csv("C:/Users/Annette/Documents/MOMENT/inst/Cytokines.csv", header=TRUE, row.names=NULL, check.names=FALSE, fileEncoding="UTF-8-BOM")
+usethis::use_data(cytokines)
+pathology = read.csv("C:/Users/Annette/Documents/MOMENT/inst/Pathology.csv", header=TRUE, row.names=NULL, check.names=FALSE, fileEncoding="UTF-8-BOM")
+usethis::use_data(pathology)
+lipoproteins = read.csv("C:/Users/Annette/Documents/MOMENT/inst/Lipoproteins.csv", header=TRUE, row.names=NULL, check.names=FALSE, fileEncoding="UTF-8-BOM")
+usethis::use_data(lipoproteins)
+smallmolecules = read.csv("C:/Users/Annette/Documents/MOMENT/inst/SmallMolecules.csv", header=TRUE, row.names=NULL, check.names=FALSE, fileEncoding="UTF-8-BOM")
+usethis::use_data(smallmolecules)
