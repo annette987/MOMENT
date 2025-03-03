@@ -65,8 +65,8 @@ Create a new MM_MoE object.
   subset = NULL,
   balance = FALSE,
   validate = FALSE,
-  filter_zeroes = FALSE,
-  filter_missings = FALSE,
+  filter_zeroes = 90,
+  filter_missings = 50,
   filter_corr = FALSE,
   filter_var = FALSE
 )}\if{html}{\out{</div>}}

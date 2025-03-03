@@ -15,7 +15,7 @@ The second level list contains one value per modality ???}
 
 \item{\code{aggr}}{(list of lists)\cr
 The top level list contains one list per performance metric requested.
-The second level list contains teh aggregated performance for each modality.}
+The second level list contains the aggregated performance for each modality.}
 
 \item{\code{measures}}{(list)\cr
 The requested mlr performance metrics.}

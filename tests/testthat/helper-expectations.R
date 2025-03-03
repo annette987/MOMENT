@@ -6,12 +6,10 @@ expect_results <- function(object) {
 			!is.null(act$val$stab)
 			) 
 	{
-		print("Success!")
     succeed()
     return(invisible(act$val))
   }
 
-	print("Failed")
   message <- sprintf("%s has not returned any results")
   fail(message)
 }

@@ -150,12 +150,10 @@ Features = R6::R6Class("Features", list(
 	#' 	The name of the method used ???
 	#' @param fold_num (integer)\cr
 	#' 	The index of the fold for which the scores were calculated.
-	#' @return A data.frame containing feature importance scores
+	#' @return Nothing
 	#' @export	
 	save = function(mod, task, classes, method, fold_num)
 	{
-			print("Saving features")
-			print(mod)
 			scores = self$getFeatImpScores(mlr::getLearnerModel(mod, more.unwrap = TRUE), classes)
 			selected = mlr::getFilteredFeatures(mlr::getLearnerModel(mod, more.unwrap = FALSE))
 			not_selected = setdiff(mlr::getTaskFeatureNames(task), selected)
@@ -170,7 +168,6 @@ Features = R6::R6Class("Features", list(
 			col_name = paste0(method, "-", fold_num)
 			task_id = task$task.desc$id
 			self$featsel[[task_id]][, col_name] = feat_scores
-			print("Got features")
 	},
 
 
@@ -231,7 +228,7 @@ Features = R6::R6Class("Features", list(
 	#' @param perc (numeric)\cr
 	#' 	Only features which are selected in this percentage of folds or greater are returned.
 	#'  To retrieve all selected features, pass 1??
-	#' @return list
+	#' @return A list containing 2 data.frames
 	#' @export	
 	get_results = function(perc = 1.0) {
 			self$complete()

@@ -52,8 +52,8 @@ Create a new MM_Explorer object.
   decision = "prob",
   subset = NULL,
   balance = FALSE,
-  filter_zeroes = FALSE,
-  filter_missings = FALSE,
+  filter_zeroes = 90,
+  filter_missings = 50,
   filter_corr = FALSE,
   filter_var = FALSE
 )}\if{html}{\out{</div>}}

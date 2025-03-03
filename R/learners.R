@@ -224,7 +224,7 @@ Learners = R6::R6Class("Learners",
 		#' @param subset (integer)\cr
 		#' A vector containing the indices of a subset of modalities to be included in the model.
     #' @return A list of learners, one per modality.
-		#' @noRd
+		#' @export
 		create_learners = function(config, env, pred_type = "response", balance = FALSE, subset = NULL)
 		{
 			learners = list()
@@ -258,7 +258,7 @@ Learners = R6::R6Class("Learners",
 				basefilt = self$base_filters[[config$baseModels[[i]]$featsel]]
 				if (!is.null(basefilt)) {
 					filter_args = list("learner" = lrn, "fw.method" = basefilt$method)
-					if (!is.null(config$cacheDir)) {
+					if (!is.null(config$cacheDir) && !is.na(config$cacheDir)) {
 						filter_args = c(filter_args, list("cache" = config$cacheDir))
 					} else {
 						filter_args = c(filter_args, list("cache" = FALSE))
@@ -311,7 +311,7 @@ Learners = R6::R6Class("Learners",
 		#' @param imp (character)\cr
 		#' The imputation method to be added to the pipeline.
     #' @return A list of learners, one per modality.
-		#' @noRd
+		#' @export
 		create_learner = function(targetVar, baselrn, featsel = NULL, pred_type = "response", balance = FALSE, norm = NULL, imp = NULL)
 		{
 			#NB - check for valid values of lrn_idx and fs_idx, norm and imp
