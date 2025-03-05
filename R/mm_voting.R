@@ -78,7 +78,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 		{
 			model_futures = list()			
 			for (i in 1:length(self$tasks)) {
-				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[i]], task = self$tasks[[i]], subset = training_set), seed = TRUE)
+				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[i]], task = self$tasks[[i]], subset = training_set), seed = TRUE, conditions = character(0))
 			}
 			future::resolve(model_futures)
 			
@@ -121,7 +121,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 			predn_futures = list()
 			
 			for (i in 1:length(self$tasks)) {
-				predn_futures[[i]] = future::future(predict(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE)	
+				predn_futures[[i]] = future::future(predict(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE, conditions = character(0))	
 			}
 			future::resolve(predn_futures)
 

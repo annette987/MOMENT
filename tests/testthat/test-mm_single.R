@@ -2,7 +2,7 @@
 
 
 test_that("Classification - single modality", {
-	cc = make_config(test_path("config_gbm_boruta_4C.xlsx"))
+	cc = make_config(test_path("testdata", "sample_config.xlsx"))
 	active_learners = LRN_GBM
 
 	single_c = MM_Single$new(cc, TASK_CLASSIF, "prob", concat = FALSE, validate = FALSE)
@@ -15,7 +15,7 @@ test_that("Classification - single modality", {
 
 
 test_that("Survival Analysis - single modality", {
-	cc = make_config(test_path("config_gbm_boruta_4C.xlsx"))
+	cc = make_config(test_path("testdata", "sample_config.xlsx"))
 	active_learners = LRN_COX
 	
 	single_s = MM_Single$new(cc, TASK_SURV, "response", concat = FALSE, validate = FALSE)

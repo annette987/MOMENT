@@ -39,7 +39,7 @@ MM_Explorer = R6::R6Class("MM_Explorer",
     #' @return A new [MM_Explorer] object.
 		#' @export
 		initialize = function(config, decision = "prob", subset = NULL, balance = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, filter_zeroes, filter_missings, filter_corr, filter_var)
+			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, FALSE, filter_zeroes, filter_missings, filter_corr, filter_var)
 		},		
 
 
@@ -59,9 +59,8 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 		exploreData = function(plot_type, data, target, file_prefix)
 		{
 			checkmate::assertChoice(plot_type, choices = c("PCA", "TSNE", "UMAP"))
-			checkmate::assertClass(data, data.frame)
-			checkMate::assertString(target)
-			checkMate::assertStrinf(file_prefix)
+			checkmate::assertFactor(target)
+			checkmate::assertString(file_prefix)
 			if (!requireNamespace("ggplot2", quietly = TRUE)) {
 				stop("Package \'ggplot2\' must be installed to generate plots")
 			}

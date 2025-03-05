@@ -6,6 +6,8 @@
 #' @name Config
 NULL
 
+#' @importFrom utils read.csv
+
 normalisation = factor(levels = c("NONE", "STAND", "LOGT", "CPM", "CPM_LOGT"))
 
 new_config = function(config_data, row) {
@@ -74,7 +76,7 @@ new_config_base_empty = function() {
 	)
 }
 
-new_config_learner = function(baselrn, mod, norm, imp) {
+new_config_learner = function(base_data) {
 	structure(
 		list(
 			modality     = base_data['Modality'],
@@ -89,7 +91,7 @@ new_config_learner = function(baselrn, mod, norm, imp) {
 	)
 }
 
-add_learner = function(cf, lrn, learners = base_learners) {
+add_learner = function(cf, lrn, learners) {
 	if (length(cf$baseModels) > 0) {
 		cf$baseModels[[1]]$learner = lrn
 		cf$baseModels[[1]]$norm    = "STAND"		
@@ -99,7 +101,7 @@ add_learner = function(cf, lrn, learners = base_learners) {
 	return(cf)
 }
 
-add_featsel = function(cf, lrn, featsel, learners = base_learners, filters = base_filters) {
+add_featsel = function(cf, lrn, featsel, learners, filters) {
 	for (i in 1:length(cf$baseModels)) {
 		cf$baseModels[[i]]$learner = lrn
 		cf$baseModels[[i]]$params = learners[[lrn]]$args
@@ -143,8 +145,13 @@ new_config_single = function(config_data, row) {
 	)
 }
 
-
-# N.B. What happens if some items don't exist in file? Returns NULL?
+#' @title Create a configuration object
+#' @description 
+#' Reads in the supplied configuration file, which contains information about how the model should be constructed,
+#' and sets up a configuration object for use by the models.
+#' @param filename (character)\cr
+#' The name of teh configuration file.
+#' @return A configuration object.
 #' @export
 make_config = function(filename) {
 	stopifnot(is.character(filename))

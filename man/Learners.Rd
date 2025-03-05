@@ -6,3 +6,152 @@
 \description{
 Select and create a set of learners for the machine learning models
 }
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{base_learners}}{(list)
+List of the learners to be used in modelling.}
+
+\item{\code{base_filters}}{(list)
+List of the filters to be used in modelling.}
+}
+\if{html}{\out{</div>}}
+}
+\section{Methods}{
+\subsection{Public methods}{
+\itemize{
+\item \href{#method-Learners-new}{\code{Learners$new()}}
+\item \href{#method-Learners-create_learners}{\code{Learners$create_learners()}}
+\item \href{#method-Learners-create_learner}{\code{Learners$create_learner()}}
+\item \href{#method-Learners-clone}{\code{Learners$clone()}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Learners-new"></a>}}
+\if{latex}{\out{\hypertarget{method-Learners-new}{}}}
+\subsection{Method \code{new()}}{
+Create a new Learners object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Learners$new(learner_type)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{learner_type}}{(character)\cr
+The type of learner - "CLASSIF" for classification or "SURV" for survival analysis.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A new `Learners` object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Learners-create_learners"></a>}}
+\if{latex}{\out{\hypertarget{method-Learners-create_learners}{}}}
+\subsection{Method \code{create_learners()}}{
+Create the learners for each modality and store in a list.
+A complete pre-processing pipeline is created, 
+including optionally class balancing, normalisation and imputation.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Learners$create_learners(
+  config,
+  env,
+  pred_type = "response",
+  balance = FALSE,
+  subset = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{config}}{(MM_Config)\cr
+Configuration object, specifying how the model should be constructed.}
+
+\item{\code{env}}{(character)\cr
+Environment in which the learners are created. Needed for eval(parse()) to work.}
+
+\item{\code{pred_type}}{(character)\cr
+Type of prediction - 'response' or 'prob'.}
+
+\item{\code{balance}}{(logical(1))\cr
+Should the tasks be balanced during training?}
+
+\item{\code{subset}}{(integer)\cr
+A vector containing the indices of a subset of modalities to be included in the model.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list of learners, one per modality.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Learners-create_learner"></a>}}
+\if{latex}{\out{\hypertarget{method-Learners-create_learner}{}}}
+\subsection{Method \code{create_learner()}}{
+Create a single learner for one modality.
+A complete pre-processing pipeline is created, 
+including optionally class balancing, normalisation and imputation.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Learners$create_learner(
+  targetVar,
+  baselrn,
+  featsel = NULL,
+  pred_type = "response",
+  balance = FALSE,
+  norm = NULL,
+  imp = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{targetVar}}{(character)\cr
+The target variable for the model.}
+
+\item{\code{baselrn}}{(??)\cr
+Details of the base learner to be created.}
+
+\item{\code{featsel}}{(character)\cr
+If feature selection is to be added, details of the feature selector.}
+
+\item{\code{pred_type}}{(character)\cr
+Type of prediction - 'response' or 'prob'.}
+
+\item{\code{balance}}{(logical(1))\cr
+Should the tasks be balanced during training?}
+
+\item{\code{norm}}{(character)\cr
+The normalisation method to be added to the pipeline.}
+
+\item{\code{imp}}{(character)\cr
+The imputation method to be added to the pipeline.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list of learners, one per modality.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Learners-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Learners-clone}{}}}
+\subsection{Method \code{clone()}}{
+The objects of this class are cloneable with this method.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Learners$clone(deep = FALSE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{deep}}{Whether to make a deep clone.}
+}
+\if{html}{\out{</div>}}
+}
+}
+}

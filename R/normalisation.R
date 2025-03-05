@@ -1,17 +1,3 @@
-#' @title Normalisation methods for use with multi-modal modelling
-#'
-#' @description
-#' Provides methods for adding normalisation to the pre-processing pipeline.
-#'
-#' @details
-#' Two methods are provided for adding normalisation to the machine learning pipeline.
-#' One uses mlrCPO to create a new Composable Preprocessing Operator (CPO) for normalisation.
-#' The other creates a preprocessing wrapper that can be added to a learner.
-#' Normalisation is only applied to the numeric columns (non-boolean)
-#'
-#' @name Normalisation
-NULL
-
 #' @noRd
 is.nan.data.frame <- function(x) do.call(cbind, lapply(x, is.nan))
 
@@ -25,7 +11,7 @@ norm_minMax = function(x) {
 #' Perform normalisation using the requested method.
 #' @param data (data.frame)\cr
 #' The data to be normalised.
-#' @param impute_method (character)\cr
+#' @param method (character)\cr
 #' Method of normalisation
 #' @param epsilon (numeric)\cr
 #' A small error value added to eth denominator in some calculations  to avoid division by zero.
@@ -88,8 +74,12 @@ normaliseData = function(data, method = "STAND", epsilon = 1e100) {
 }
 
 
+#' @title Normalise data using a CPO
 #' @description 
 #' Create a pre-processing object to perform normalisation in the ML pipeline.
+#' Eight different methods of normalisation are available: 
+#'     MINMAX, LOGT, STAND, ZSCORE, MEDIAN, CPM, CPM_LOGT, QUANTILE
+#' Normalisation is only applied to the numeric columns (non-boolean)
 #' @param method (character)\cr
 #' Method of normalisation
 #' @return Nothing but the function can be used in a pipeline to perform normalisation.
@@ -113,11 +103,14 @@ cpoNormalise = mlrCPO::makeCPOExtendedTrafo("normalise",
   })
 
 
+#' @title Normalise data using a pre-processing wrapper
 #' @description 
 #' Create a pre-processing wrapper to perform normalisation in the ML pipeline.
+#' Eight different methods of normalisation are available: 
+#'     MINMAX, LOGT, STAND, ZSCORE, MEDIAN, CPM, CPM_LOGT, QUANTILE#' Normalisation is only applied to the numeric columns (non-boolean)
 #' @param learner (character)\cr
 #' The learner to which imputation should be added.
-#' @param impute_method (character)\cr
+#' @param method (character)\cr
 #' Method of normalisation
 #' @return A pre-processing wrapper. The function can be used in a pipeline to perform normalisation.
 #' @examples

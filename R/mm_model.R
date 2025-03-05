@@ -462,6 +462,8 @@ MM_Model = R6::R6Class("MM_Model",
 			for (i in 1:length(raw_data)) {
 				task_id = names(raw_data)[[i]]
 				dat = self$prepare_data(config, i, raw_data[[i]], row_names, task_type)
+				print(head(dat))
+				print(dat$Label)
 
 				if (task_type == TASK_CLASSIF) {		
 					self$classes = as.factor(unique(dat[, config$targetVar]))

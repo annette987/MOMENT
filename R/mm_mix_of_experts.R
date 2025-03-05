@@ -135,7 +135,7 @@ MM_MoE = R6::R6Class("MM_MoE",
 					# Combine the responses for each repeat into a single data frame
 					list("expert_responses" = dplyr::bind_rows(final_response), "features" = self$results)
 #					expert_responses[[cls_idx]] = dplyr::bind_rows(final_response)
-				})	
+				}, conditions = character(0))	
 			}
 
 			future::resolve(expert_futures)	

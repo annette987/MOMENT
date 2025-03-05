@@ -1,3 +1,5 @@
+#' @importFrom rlang enquo
+
 expect_results <- function(object) {
   act <- quasi_label(rlang::enquo(object), arg = "object")
 

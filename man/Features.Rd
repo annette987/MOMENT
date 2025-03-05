@@ -114,7 +114,7 @@ The index of the fold for which the scores were calculated.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A data.frame containing feature importance scores
+Nothing
 }
 }
 \if{html}{\out{<hr>}}
@@ -186,7 +186,7 @@ To retrieve all selected features, pass 1??}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-list
+A list containing 2 data.frames
 }
 }
 \if{html}{\out{<hr>}}

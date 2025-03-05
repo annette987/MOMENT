@@ -82,7 +82,7 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 							task_idx = ifelse(length(self$tasks) == length(self$learners), j, 1L)	
 							task_name = self$tasks[[task_idx]]$task.desc$id				
 							sub_task = subsetTask(self$tasks[[task_idx]], subset = training_set)
-							model_futures[[j]] = future::future(mlr::train(learner = self$learners[[j]], task = sub_task, subset = ri_inner$train.inds[[subset_idx]]))
+							model_futures[[j]] = future::future(mlr::train(learner = self$learners[[j]], task = sub_task, subset = ri_inner$train.inds[[subset_idx]]), conditions = character(0))
 						}
 						
 						# Wait for results
@@ -137,7 +137,7 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 			
 			for (i in 1:length(self$learners)) {
 				task_idx = ifelse(length(self$tasks) == length(self$learners), i, 1L)
-				model_futures[[task_idx]] = future::future(mlr::train(learner = self$learners[[i]], task = self$tasks[[task_idx]], subset = training_set))
+				model_futures[[task_idx]] = future::future(mlr::train(learner = self$learners[[i]], task = self$tasks[[task_idx]], subset = training_set), conditions = character(0))
 			}			
 			resolve(model_futures)
 			

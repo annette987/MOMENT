@@ -417,7 +417,7 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 				#Learn view-specific classifiers and weights over them (Line 5-7) in parallel and wait for results
 				for (view_index in 1:length(self$all_views)) {
 					view_name = self$all_views[[view_index]]
-					result_futures[[view_name]] = future::future(self$learn_classifier(view_name, view_index, train_subset, test_subset, example_weights = w, classes))
+					result_futures[[view_name]] = future::future(self$learn_classifier(view_name, view_index, train_subset, test_subset, example_weights = w, classes), conditions = character(0))
 				}
 				result_futures[["rho"]] = future::future({
 					#Computing weights over views (Line 8)
@@ -429,7 +429,7 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 							self$rho = self$learn_view_weights(initial_guess, w)
 							self$rho_vectors[[length(self$rho_vectors) + 1]] = self$rho
 					}
-				})
+				}, conditions = character(0))
 				future::resolve(result_futures)
 				
 				for (i in 1:length(result_futures)) {

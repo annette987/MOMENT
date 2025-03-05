@@ -98,7 +98,7 @@ MM_Incremental = R6::R6Class("MM_Incremental",
 							} else {
 								predict(mod, task = self$tasks[[i]], subset = test_subset)
 							}
-						})
+						}, conditions = character(0))
 					}
 				}
 			}

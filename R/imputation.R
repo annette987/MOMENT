@@ -1,16 +1,3 @@
-#' @title Imputation methods for use with multi-modal modelling
-#'
-#' @description
-#' Provides two imputation methods for adding imputation to the pre-processing pipeline: Mice and KNN.
-#'
-#' @details
-#' Two methods are provided for adding imputation to the machine learning pipeline.
-#' One uses mlrCPO to create a new Composable Preprocessing Operator (CPO) for imputation.
-#' The other creates a preprocessing wrapper that can be added to a learner.
-#'
-#' @name Imputation
-NULL
-
 #' @noRd
 get_minpc = function(num_feats) {
 		if (num_feats < 100)
@@ -168,8 +155,10 @@ imputeData = function(data, impute_method = "MICE", control = NULL) {
 }		
 
 
+#' @title Impute data using a CPO
 #' @description 
 #' Create a pre-processing object to perform imputation in the ML pipeline.
+#' Two imputation methods are provided: Mice and KNN.
 #' @param impute_method (character)\cr
 #' Method of imputation - \'MICE\' or \'KNN\'
 #' @examples
@@ -195,8 +184,10 @@ cpoImputeData = mlrCPO::makeCPOExtendedTrafo("imputeData",
 )
 
 
+#' @title Impute data using a pre-processing wrapper
 #' @description 
 #' Create a pre-processing wrapper to perform imputation in the ML pipeline.
+#' Two imputation methods are provided: Mice and KNN.
 #' @param learner (character)\cr
 #' The learner to which imputation should be added.
 #' @param impute_method (character)\cr

@@ -138,7 +138,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			for (i in 1:length(self$tasks)) {
 				lrn_idx = ifelse(length(self$tasks) == length(self$learners), i, 1L)
 				task_id = self$tasks[[i]]$task.desc$id
-				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[lrn_idx]], task = self$tasks[[i]], subset = train_subset))
+				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[lrn_idx]], task = self$tasks[[i]], subset = train_subset), conditions = character(0))
 			}
 			future::resolve(model_futures)
 		
@@ -150,7 +150,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					warning(paste0("Model ", task_id, " failed"))
 					warning(mlr::getFailureModelMsg(self$models[[iter]][[task_id]]))
 				}
-				predn_futures[[i]] = future::future(predict(self$models[[iter]][[task_id]], task = self$tasks[[i]], subset = test_subset))
+				predn_futures[[i]] = future::future(predict(self$models[[iter]][[task_id]], task = self$tasks[[i]], subset = test_subset), conditions = character(0))
 			}
 			future::resolve(predn_futures)
 			
@@ -283,7 +283,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				# Also get feature importance scores for each modality
 				for (j in 1:length(self$tasks)) { # Modality
 					task_id = self$tasks[[j]]$task.desc$id
-					predn_futures[[j]] = future::future(predict(self$models[[i]][[task_id]], task = self$tasks[[j]], subset = test_subset))
+					predn_futures[[j]] = future::future(predict(self$models[[i]][[task_id]], task = self$tasks[[j]], subset = test_subset), conditions = character(0))
 				}
 			
 				# Wait for results

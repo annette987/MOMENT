@@ -1,17 +1,7 @@
-#' @title Balancing of classes in multi-modal modelling
-#'
-#' @description
-#' Provides a pre-processing wrapper to balance classes during modelling using the Synthetic Minority Oversampling Technique (SMOTE).
-#'
-#' @details
-#' To implement SMOTE for a multi-class problem, balancing is performed on each class.
-#'
-#' @name Balance
-NULL
-
-
+#' @title Balance data using a pre-processing wrapper
 #' @description 
-#' Create a pre-processing wrapper to balance classes in the ML pipeline.
+#' Create a pre-processing wrapper to balance classes in the ML pipeline using the Synthetic Minority Oversampling Technique (SMOTE).
+#' To implement SMOTE for a multi-class problem, balancing is performed on each class.
 #' @param learner (character)\cr
 #' The learner to which balancing should be added.
 #' @param target_name (character)\cr
@@ -21,7 +11,7 @@ NULL
 #' @return A pre-processing wrapper. The function can be used in a pipeline to perform balancing.
 #' @examples
 #' lrn <- mlr::makeLearner(cl = "classif.gbm", id = "test", predict.type = "prob")
-#' lrn <- makePreprocWrapperBalanceMC(lrn, targetVar, "SMOTE")
+#' lrn <- makePreprocWrapperBalanceMC(lrn, "ID", "SMOTE")
 #' @export
 makePreprocWrapperBalanceMC = function(learner, target_name, bal_method) {
   trainfun = function(data, target, args = list(target_name, bal_method)) {
