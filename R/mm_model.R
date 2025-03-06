@@ -287,7 +287,7 @@ MM_Model = R6::R6Class("MM_Model",
 					
 				drops_var = c()
 				fs_ratio = ncol(dataset) / nrow(dataset)
-				if (filter_var && fs_ratio > 10) {
+				if (filter_var && (fs_ratio > 10)) {
 					dfvar = sapply(dataset, var, na.rm = TRUE)
 					dfvar = dfvar[order(dfvar, decreasing = TRUE, na.last = TRUE)]
 					if (length(dfvar) > 500) {
@@ -462,8 +462,6 @@ MM_Model = R6::R6Class("MM_Model",
 			for (i in 1:length(raw_data)) {
 				task_id = names(raw_data)[[i]]
 				dat = self$prepare_data(config, i, raw_data[[i]], row_names, task_type)
-				print(head(dat))
-				print(dat$Label)
 
 				if (task_type == TASK_CLASSIF) {		
 					self$classes = as.factor(unique(dat[, config$targetVar]))

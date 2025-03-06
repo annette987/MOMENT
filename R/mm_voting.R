@@ -76,6 +76,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @export
 		train = function(training_set, rpt, fold) 
 		{
+			print("Training")
 			model_futures = list()			
 			for (i in 1:length(self$tasks)) {
 				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[i]], task = self$tasks[[i]], subset = training_set), seed = TRUE, conditions = character(0))
@@ -112,6 +113,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @export
 		predict = function(test_set, decision, rpt, fold) 
 		{
+			print("Predicting")
 			checkmate::assertInteger(test_set)
 			checkmate::assertChoice(decision, choices = c('vote', 'hard', 'prob', 'soft'))
 			checkmate::assertInteger(rpt)
@@ -180,6 +182,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @export
 		learn = function() 
 		{
+			print("Learning")
 			for (rpt in 1:self$ri$desc$reps) {
 				for (fold in 1:self$ri$desc$folds) {
 					subset_idx = (rpt - 1) * self$ri$desc$folds + fold
