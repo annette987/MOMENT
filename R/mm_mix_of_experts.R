@@ -47,7 +47,8 @@ MM_MoE = R6::R6Class("MM_MoE",
 		#' @export
 		initialize = function(config, model_type = "VOTE", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
 			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)	
-					
+			self$model_type = model_type
+			
 			ovr_data = self$create_ovr_tasks(config$dataDir, config, self$task_type, subset, filter_zeroes, filter_missings, filter_corr, filter_var)
 			self$tasks = ovr_data$tasks
 			self$ovr_classes = ovr_data$classes
@@ -70,7 +71,7 @@ MM_MoE = R6::R6Class("MM_MoE",
 					self$models[[cls]]$clone_model(self, self$tasks[[cls]], self$ovr_classes[[cls]])		
 				}
 			}
-#			self$results = MM_Results$new(self$classes, self$tasks[[1]], self$measures, self$model_type, self$decision)
+			self$results = MM_Results$new(self$classes, self$tasks[[1]], self$measures, self$model_type, self$decision)
 		},		
 
 
