@@ -113,8 +113,10 @@ Performance = R6::R6Class("Performance", list(
 		if (!is.na(result_file)) {
 			data = read.csv(result_file, sep = ",", dec = '.', header = TRUE, stringsAsFactors=FALSE)
 		} else {
-			data = as.data.frame(cbind(unlist(self$perf_acc), unlist(self$perf_auc)))
-			colnames(data) = self$measures
+			for (m in names(self$perf)) {
+					data = cbind(data, unlist(self$perf[[m]]))
+			}
+			colnames(data) = gsub("^.*?\\.", "", names(self$perf))
 		}
 
 		par(cex.main = 2.5)
@@ -123,7 +125,7 @@ Performance = R6::R6Class("Performance", list(
 #		jpeg(paste0(out_file, "_plot.jpg"))
 		plt = boxplot(data, 
 						col = rainbow(ncol(data)), 
-						main = paste0(method, " - Performance"),
+						main = Performance",
 						xlab = "Measurement", 
 						names = colnames(data), 
 						ylab = "Value",

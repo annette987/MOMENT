@@ -23,8 +23,8 @@ MM_Single = R6::R6Class("MM_Single",
     #' @param config Model parameters (MM_Config).
     #' @return A new `MM_Single`object.
 		#' @export
-		initialize = function(config, model_type = "CLASSIF", predict_type = "response", concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, model_type, predict_type, NULL, concat, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
+		initialize = function(config, task_type = "classif", predict_type = "response", concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
+			super$initialize(config, task_type, predict_type, NULL, NULL, concat, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 			self$model_type = model_type
 		},		
 
@@ -44,7 +44,7 @@ MM_Single = R6::R6Class("MM_Single",
 			self$vresults$save_predictions(vresponses$truth, vresponses$response, as.list(self$classes))
 #			vroc$calc_mc_roc(as.factor(vresponses$truth), as.factor(vresponses$response))
 
-#			vpred_resp = make_mlr_prediction(vresponses, vtasks[[1]]$task.desc)
+#			vpred_resp = make_mlr_prediction(vresponses, mlr::getTaskDesc(vtasks[[1]]))
 #			vperf$calculate(vpred_resp)
 			self$vresults$complete()
 			return(self$vresults)

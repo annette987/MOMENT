@@ -10,10 +10,10 @@ NULL
 MM_Model = R6::R6Class("MM_Model", 
 	public = list(
 		config     = NULL,
-		model_type = NULL,
-		task_type  = TASK_CLASSIF,
+		task_type  = "classif",
+		predict_type = "prob",
+		decision   = "hard",
 		targetVar  = "",
-		decision   = "prob",
 		validation = FALSE,
 		tasks      = list(),
 		vtasks     = NULL,
@@ -31,7 +31,7 @@ MM_Model = R6::R6Class("MM_Model",
 		#' Creates the required learners, and other structures needed by mlr.
 		#' @param config (MM_Config)\cr
 		#' Configuration object, specifying how the model should be constructed.
-    #' @param model_type (character)\cr
+    #' @param task_type (character)\cr
 		#' Type of model - "CLASSIF" for classification or "SURV" for survival analysis. 
 		#' @param decision (character)\cr
 		#' Type of prediction - 'response' or 'prob'.
@@ -54,7 +54,7 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @return A new `MM_Model`object
 		#' @export
 		#' 
-		initialize = function(config, model_type = "CLASSIF", decision = "hard", subset = NULL, concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE)
+		initialize = function(config, task_type = "classif", predict_type = "prob", decision = "hard", subset = NULL, concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE)
 		{
 			mlr::configureMlr(show.learner.output = TRUE, on.learner.error = 'warn', on.par.without.desc = 'warn')
 			future::plan("multicore", workers = 10)
@@ -64,11 +64,10 @@ MM_Model = R6::R6Class("MM_Model",
 				self$config     = config
 				self$targetVar  = config$targetVar
 				
-				if (!missing(model_type)) {
-					checkmate::assertChoice(model_type, choices = c("CLASSIF", "SURV"))
+				if (!missing(task_type)) {
+					checkmate::assertChoice(task_type, choices = c("classif", "surv", "multilabel"))
 				}
-				self$model_type = model_type
-				self$task_type = ifelse(model_type == "SURV", TASK_SURV, TASK_CLASSIF)
+				self$task_type = task_type
 				
 				if (!missing(subset) && !is.null(subset)) {
 					checkmate::assertNumeric(subset, unique = TRUE)
@@ -77,15 +76,19 @@ MM_Model = R6::R6Class("MM_Model",
 					checkmate::assertChoice(decision, choices = c("hard", "vote", "soft", "prob", "meta"))
 				}
 				self$decision   = decision
-				predict_type   = ifelse(decision == "hard" || decision == "vote", "response", "prob")
+				
+				if (!missing(predict_type)) {
+					checkmate::assertChoice(predict_type, choices = c("response", "prob"))
+				}
+				self$predict_type   = predict_type
 					
-				if (self$model_type == "SURV") {
-					self$measures = PerformanceMeasures$new(self$model_type)$measures
+				if (self$task_type == "SURV") {
+					self$measures = PerformanceMeasures$new(self$task_type)$measures
 				} else {
 					checkmate::assertLogical(balance)
-					self$measures = PerformanceMeasures$new(self$model_type, decision)$measures
+					self$measures = PerformanceMeasures$new(self$task_type, decision)$measures
 					learners = Learners$new(self$task_type)
-					self$learners = learners$create_learners(config, env = environment(), predict_type, balance, subset)
+					self$learners = learners$create_learners(config, env = environment(), self$predict_type, balance, subset)
 				}
 
 				checkmate::assertNumeric(filter_zeroes, lower = 0.0, upper = 100)
@@ -103,7 +106,7 @@ MM_Model = R6::R6Class("MM_Model",
 					self$tasks = ctasks
 				}
 			
-				self$results = MM_Results$new(self$classes, self$tasks, self$measures, model_type, decision)
+				self$results = MM_Results$new(self$classes, self$tasks, self$measures, task_type, decision)
 				resamp = mlr::makeResampleDesc("RepCV", reps = config$itersOuter, folds = config$foldsOuter, stratify = TRUE)
 				self$ri = mlr::makeResampleInstance(resamp, self$tasks[[1]])
 
@@ -145,7 +148,7 @@ MM_Model = R6::R6Class("MM_Model",
 				self$learners   = learners
 			}
 			self$config   	= model$config
-			self$model_type = model$model_type
+			self$task_type = model$task_type
 			self$task_type  = model$task_type
 			self$targetVar  = model$targetVar
 			self$decision   = model$decision
@@ -464,9 +467,15 @@ MM_Model = R6::R6Class("MM_Model",
 				task_id = names(raw_data)[[i]]
 				dat = self$prepare_data(config, i, raw_data[[i]], row_names, task_type)
 
-				if (task_type == TASK_CLASSIF) {		
-					self$classes = as.factor(unique(dat[, config$targetVar]))
-					tsk = mlr::makeClassifTask(id = task_id, data = dat, target = config$targetVar)
+				if (task_type == TASK_CLASSIF) {
+					if (length(config$targetVar) > 1) {
+						for (label in config$targetVar) {
+							dat[, label] = as.logical(dat[, label])
+						}
+						tsk = mlr::makeMultilabelTask(id = task_id, data = dat, target = config$targetVar)
+					} else {
+						tsk = mlr::makeClassifTask(id = task_id, data = dat, target = config$targetVar)
+					}
 				} else if (task_type == TASK_SURV) {
 					tsk = mlr::makeSurvTask(id = task_id, data = dat, target = c(config$timeVar, config$statusVar), fixup.data = "no", check.data = FALSE)
 				}
@@ -506,7 +515,7 @@ MM_Model = R6::R6Class("MM_Model",
 				old_dat = getTaskData(base_tasks[[i]], target.extra = FALSE)
 				new_dat = rbind(old_dat, dat)
 
-				if (self$model_type == "SURV") {
+				if (self$task_type == "SURV") {
 					tsk = mlr::makeSurvTask(id = task_id, data = new_dat, target = c(config$timeVar, config$statusVar), fixup.data = "no", check.data = FALSE)
 				} else {
 					tsk = mlr::makeClassifTask(id = task_id, data = new_dat, target = config$targetVar)
@@ -601,7 +610,7 @@ MM_Model = R6::R6Class("MM_Model",
 			df_list[[length(df_list) + 1]] = target_df			
 			combined_df = do.call(cbind, df_list)
 
-			if (self$model_type == "SURV") {		
+			if (self$task_type == "SURV") {		
 				tsk = mlr::makeSurvTask(id = "concat", data = combined_df, target = target_name, fixup.data = "no", check.data = FALSE)
 			} else {
 				tsk = mlr::makeClassifTask(id = "concat", data = combined_df, target = target_name, fixup.data = "no", check.data = FALSE)

@@ -64,8 +64,12 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 			#' Should low variance features be included in the model?
 			#' @return A new`PB_MVBoost` object.
 			#' @export
-		initialize = function(config, nrounds = 10, decision_tree_depth = 2, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-				super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
+			
+			## CHECK IF WE NEED TO PASS DECISION - OR IS THIS DETERMINED BY THE MODEL?
+
+		initialize = function(config, nrounds = 10, decision_tree_depth = 2, task_type = "classif", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
+				pred_type = ifelse(decision %in% c("prob", "soft"), "prob", "response")
+				super$initialize(config, task_type, pred_type, decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 				self$all_views = names(self$tasks)
 				self$nb_view_classifiers = rep(0, length(self$all_views))
 
@@ -97,7 +101,7 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 			self$y_test = list()
 			
 			for (i in 1:length(self$tasks)) {
-				task_id = self$tasks[[i]]$task.desc$id
+				task_id = mlr::getTaskID(self$tasks[[i]])
 				dat = getTaskData(self$tasks[[i]])
 				
 				# Convert y to numeric
@@ -538,12 +542,20 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 					self$format_data(train_subset, test_subset)
 					pbmv_res = self$learn_pbmv(train_subset, test_subset, self$classes, fold)
 
-					fold_result = data.frame('id' = test_subset, 
-																	 'ID' = row.names(self$X_train[[1]][test_subset, ]), 
-																	 'truth' = pbmv_res$truth,
-																	 'response' = pbmv_res$response)
-					self$results$save_responses(fold_result, rep, fold)
-					fold_responses[[fold]] = fold_result
+#					fold_result = data.frame('id' = test_subset, 
+#																	 'ID' = row.names(self$X_train[[1]][test_subset, ]), 
+#																	 'truth' = pbmv_res$truth,
+#																	 'response' = pbmv_res$response)
+																	 
+					fold_predn = mlr::makePrediction(task.desc = mlr::getTaskDesc(self$tasks[[1]]),
+																					 rownames = row.names(self$X_train[[1]][test_subset, ]),
+																					 id = test_subset,
+																					 truth = pbmv_res$truth,
+																					 predict.type = self$predict_type,
+																					 y = pbmv_res$response,
+																					 time = NULL)
+					self$results$save_responses(fold_predn, rep, fold)
+					fold_responses[[fold]] = fold_predn$data
 				}
 				
 				# Combine the responses for each fold

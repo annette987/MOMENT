@@ -38,7 +38,7 @@ MM_Results = R6::R6Class("MM_Results",
 		{
 			checkmate::assertChoice(model_type, choices = c("CLASSIF", "SURV"))
 			self$classes = classes
-			self$task_desc = tasks[[1]]$task.desc
+			self$task_desc = mlr::getTaskDesc(tasks[[1]])
 			self$predn = Prediction$new()
 			self$roc = ROCMultiClass$new()
 			self$perf = Performance$new(measures)

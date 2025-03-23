@@ -11,6 +11,14 @@ NULL
 normalisation = factor(levels = c("NONE", "STAND", "LOGT", "CPM", "CPM_LOGT"))
 
 new_config = function(config_data, row) {
+	target_str = config_data[row, 'TargetVar']
+	if (!is.null(target_str) && !is.na(target_str)) {
+		targets = unlist(strsplit(target_str, split = ",", fixed=TRUE))
+		targets = make.names(targets)
+	} else {
+		targets = c()
+	}	
+	
 	structure(
 		list(
 			expType     = config_data[row, 'ExpType'],
@@ -26,7 +34,7 @@ new_config = function(config_data, row) {
 			hvMetric    = config_data[row, 'HVMetric'],			
 			hvThreshold = config_data[row, 'HVThreshold'],			
 			hvValue     = config_data[row, 'HVValue'],			
-			targetVar   = config_data[row, 'TargetVar'],
+			targetVar   = targets,
 			statusVar		= config_data[row, 'StatusVar'],
 			timeVar			= config_data[row, 'TimeVar'],
 			idVar   		= config_data[row, 'IDVar'],
@@ -125,13 +133,21 @@ new_config_data = function(base_data) {
 }
 
 new_config_single = function(config_data, row) {
+	target_str = config_data[row, 'TargetVar']
+	if (!is.null(target_str) && !is.na(target_str)) {
+		targets = unlist(strsplit(target_str, split = ",", fixed=TRUE))
+		targets = make.names(targets)
+	} else {
+		targets = c()
+	}	
+
 	structure(
 		list(
 			expType      = config_data[row, 'ExpType'],
 			resultFile   = config_data[row, 'ResultFile'],
 			modality     = config_data[row, 'Modality'],
 			dataset      = config_data[row, 'DataFile'],
-			targetVar    = config_data[row, 'TargetVar'],
+			targetVar    = targets,
 			statusVar		 = config_data[row, 'StatusVar'],
 			timeVar			 = config_data[row, 'TimeVar'],
 			idVar    		 = config_data[row, 'IDVar'],

@@ -19,8 +19,6 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 		#' Configuration object, specifying how the model should be constructed.
     #' @param model_type (character)\cr
 		#' Type of model - "CLASSIF" for classification or "SURV" for survival analysis. 
-		#' @param decision (character)\cr
-		#' Type of prediction - 'response' or 'prob'.
 		#' @param subset (integer)\cr
 		#' @param concat (logical(1))\cr
 		#' Should the tasks be concatenated to form a single, large dataset?
@@ -38,8 +36,8 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 		#' Should low variance features be included in the model?
     #' @return A new [MM_Explorer] object.
 		#' @export
-		initialize = function(config, decision = "prob", subset = NULL, balance = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, FALSE, filter_zeroes, filter_missings, filter_corr, filter_var)
+		initialize = function(config, subset = NULL, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
+			super$initialize(config, "classif", "response", "hard", subset, FALSE, FALSE, FALSE, filter_zeroes, filter_missings, filter_corr, filter_var)
 		},		
 
 
@@ -220,13 +218,12 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 			assertString(file_prefix)
 			
 			for (i in 1:length(self$tasks)) {
-				task_id = self$tasks[[i]]$task.desc$id
 				dat = mlr::getTaskData(self$tasks[[i]], target.extra = TRUE)
 				imp_data = imputeData(dat$data, config$baseModels[[i]]$imputation, NULL)
 				if (any(is.na(imp_data))) {
 					warning("Missing values present after imputation!")
 				} else {
-					filename = paste(file_prefix, task_id, sep = "_")
+					filename = paste(file_prefix, mlr::getTaskID(self$tasks[[i]]), sep = "_")
 					self$exploreData("PCA", imp_data$data, dat$target, filename)
 					self$exploreData("TSNE", imp_data$data, dat$target, filename)
 					self$exploreData("UMAP", imp_data$data, dat$target, filename)

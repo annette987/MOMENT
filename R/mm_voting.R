@@ -22,8 +22,9 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @inheritParams MM_Model$initialize
     #' @return A new `MM_Voting` object.
 		#' @export
-		initialize = function(config, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
+		initialize = function(config, task_type, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
+			pred_type = ifelse(decision %in% c("prob", "soft"), "prob", "response")
+			super$initialize(config, task_type, pred_type, decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 		},		
 
 
@@ -84,7 +85,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 			future::resolve(model_futures)
 			
 			for (i in 1:length(model_futures)) {
-				task_id = self$tasks[[i]]$task.desc$id
+				task_id = mlr::getTaskID(self$tasks[[i]])
 				private$models[[task_id]] = future::value(model_futures[[i]])
 				
 				if (mlr::isFailureModel(private$models[[task_id]])) {
@@ -129,8 +130,6 @@ MM_Voting = R6::R6Class("MM_Voting",
 
 			for (i in 1:length(predn_futures)) {
 				pred = future::value(predn_futures[[i]])
-				task_id = self$tasks[[i]]$task.desc$id
-
 				if (is.null(responses)) {
 					responses = pred$data[, c('id', 'truth')]
 					responses$ID = rownames(pred$data)
@@ -139,10 +138,10 @@ MM_Voting = R6::R6Class("MM_Voting",
 				if ((decision == 'vote') || (decision == 'hard')) {
 					res = pred$data[, 'response', drop = FALSE]
 					res$ID = rownames(pred$data)
-					responses[, task_id] = res[match(responses$ID, res$ID), 'response']
+					responses[, mlr::getTaskID(self$tasks[[i]])] = res[match(responses$ID, res$ID), 'response']
 				} else if ((decision == 'prob') || (decision == 'soft')) {
 					probs = pred$data[, grepl("prob.", colnames(pred$data))]
-					prob_cols = gsub("prob", task_id, colnames(probs))
+					prob_cols = gsub("prob", mlr::getTaskID(self$tasks[[i]]), colnames(probs))
 					probs$ID = rownames(pred$data)
 					responses[, prob_cols] = probs[match(responses$ID, probs$ID), grepl("prob.", colnames(probs)), drop = FALSE]
 				}								
@@ -169,7 +168,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 			self$vresults$save_responses(vresponses, 1, 1)
 			vroc$calc_mc_roc(as.factor(vresponses$truth), as.factor(vresponses$response))
 
-			vpred_resp = make_mlr_prediction(vresponses, vtasks[[1]]$task.desc)
+			vpred_resp = make_mlr_prediction(vresponses, mlr::getTaskDesc(vtasks[[1]]))
 			vperf$calculate(vpred_resp$data)
 			self$vresults$complete()
 			return(self$vresults)

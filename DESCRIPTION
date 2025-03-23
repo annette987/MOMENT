@@ -38,6 +38,7 @@ Suggests:
     randomForestSRC,
     readxl,
     Rtsne,
+		stringi,
     survival,
     testit,
     tidyr,

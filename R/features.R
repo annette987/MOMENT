@@ -79,8 +79,12 @@ Features = R6::R6Class("Features", list(
 			}
 			
 		} else if (inherits(mod, "rfsrc")) {
-			imp_data = mod$importance
-			colnames(imp_data) = c('all')
+			if (!is.null(mod$importance)) {
+				imp_data = mod$importance
+			} else {
+				imp = vimp.rfsrc(mod)
+				imp_data = imp$classOutput
+			}
 		} else if (inherits(mod, "randomForest")) {
 			imp_data = mod$importance
 			colnames(imp_data) = c('all')
@@ -166,8 +170,7 @@ Features = R6::R6Class("Features", list(
 			}
 			
 			col_name = paste0(method, "-", fold_num)
-			task_id = task$task.desc$id
-			self$featsel[[task_id]][, col_name] = feat_scores
+			self$featsel[[mlr::getTaskID(task)]][, col_name] = feat_scores
 	},
 
 

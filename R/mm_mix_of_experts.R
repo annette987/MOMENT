@@ -45,8 +45,13 @@ MM_MoE = R6::R6Class("MM_MoE",
 		#' Should low variance features be included in the model?
     #' @return A new [MM_MoE] object.
 		#' @export
-		initialize = function(config, model_type = "VOTE", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)	
+		initialize = function(config, model_type = "vote", task_type, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
+			pred_type = ifelse(decision %in% c("prob", "soft"), "prob", "response")
+			super$initialize(config, task_type, pred_type, decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)	
+
+			if (!missing(model_type)) {
+				checkmate::assertChoice(model_type, choices = c("vote", "ada"))
+			}
 			self$model_type = model_type
 			
 			ovr_data = self$create_ovr_tasks(config$dataDir, config, self$task_type, subset, filter_zeroes, filter_missings, filter_corr, filter_var)
@@ -63,10 +68,10 @@ MM_MoE = R6::R6Class("MM_MoE",
 			}
 			
 			for (cls in names(self$ovr_classes)) {
-				if (self$model_type == "VOTE") {
+				if (self$model_type == "vote") {
 					self$models[[cls]] = MM_Voting$new(NULL)
 					self$models[[cls]]$clone_model(self, self$tasks[[cls]], self$ovr_classes[[cls]])
-				} else if (self$model_type == "ADA") {
+				} else if (self$model_type == "ada") {
 					self$models[[cls]] = MM_Adaboost$new(NULL)	
 					self$models[[cls]]$clone_model(self, self$tasks[[cls]], self$ovr_classes[[cls]])		
 				}
@@ -112,10 +117,10 @@ MM_MoE = R6::R6Class("MM_MoE",
 #							predns = sample_ids
 #							rownames(predns) <- predns$ID
 
-							if (self$model_type == "VOTE") {
+							if (self$model_type == "vote") {
 								self$models[[cls_idx]]$train(train_subset, rep, fold)
 								predns = self$models[[cls_idx]]$predict(test_subset, self$decision, rep, fold)
-							} else if (self$model_type == "ADA") {
+							} else if (self$model_type == "ada") {
 								self$models[[cls_idx]]$train(train_subset)
 								predns = self$models[[cls_idx]]$predict(test_subset)$data
 							} else {
@@ -187,7 +192,17 @@ MM_MoE = R6::R6Class("MM_MoE",
 					idx = (rpt - 1) * self$ri$desc$folds + fold
 					roc_rpt = summary_responses[summary_responses$fold == idx, ]
 					roc_rpt[roc_rpt == "Unknown"] = "REST"
+					
+#					roc_predn = mlr::makePrediction(task.desc = mlr::getTaskDesc(self$tasks[[1]]),
+#																					 rownames = row.names(self$X_train[[1]][test_subset, ]),
+#																					 id = test_subset,
+#																					 truth = pbmv_res$truth,
+#																					 predict.type = self$predict_type,
+#																					 y = pbmv_res$response,
+#																					 time = NULL)
+#					self$results$save_responses(roc_predn, rpt, fold)
 					self$results$save_responses(roc_rpt, rpt, fold)
+
 				}
 			}
 			self$results$complete()  # Needs summary responses saved

@@ -26,8 +26,9 @@ MM_Incremental = R6::R6Class("MM_Incremental",
 		#' @param decision Aggregation method - 'vote' (majority vote) or 'prob' (soft vote)
 		#' @return A new `MM_Incremental`object.
 		#' @export
-		initialize = function(config, metric = "F1", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
+		initialize = function(config, metric = "F1", task_type = "classif", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
+			pred_type = ifelse(decision %in% c("prob", "soft"), "prob", "response")
+			super$initialize(config, task_type, pred_type, decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 			self$perf_metric = metric
 		},
 		

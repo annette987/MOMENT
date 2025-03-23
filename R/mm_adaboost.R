@@ -35,8 +35,9 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
     #' @param meta_lrn Name of meta learner. Used only if meta learning is the combination method.
     #' @return A new`MM_Adaboost` object.
 		#' @export
-		initialize = function(config, nrounds = 10, meta_lrn = "RF", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
+		initialize = function(config, nrounds = 10, meta_lrn = "RF", task_type = "classif", decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
+			pred_type = ifelse(decision %in% c("prob", "soft"), "prob", "response")
+			super$initialize(config, task_type, pred_type, decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 			self$nrounds = nrounds					# Number of boosting iterations
 			if (decision == "meta") {
 				learner = Learners$new(self$task_type)$base_learners[[meta_lrn]]
@@ -103,7 +104,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					}
 				} else {
 					pred = predict(self$meta_models[[iter]], newdata = meta_data)
-					results$response = pred$data$response
+					results$response = mlr::getPredictionResponse(pred)
 				}
 			}
 			return(results)
@@ -137,14 +138,13 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			# Train a model on each task (modality) in parallel and wait for the results
 			for (i in 1:length(self$tasks)) {
 				lrn_idx = ifelse(length(self$tasks) == length(self$learners), i, 1L)
-				task_id = self$tasks[[i]]$task.desc$id
 				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[lrn_idx]], task = self$tasks[[i]], subset = train_subset), conditions = character(0))
 			}
 			future::resolve(model_futures)
 		
 			# Predict from each model in parallel and wait for the results
 			for (i in 1:length(model_futures)) {
-				task_id = self$tasks[[i]]$task.desc$id
+				task_id = mlr::getTaskID(self$tasks[[i]])
 				self$models[[iter]][[task_id]] = value(model_futures[[i]])
 				if (mlr::isFailureModel(self$models[[iter]][[task_id]])) {
 					warning(paste0("Model ", task_id, " failed"))
@@ -157,7 +157,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			# Combine the responses from each task into a single data.frame and add the response
 			for (i in 1:length(predn_futures)) {
 				pred = value(predn_futures[[i]])
-				task_id = self$tasks[[i]]$task.desc$id
 				
 				# Set up predns first time through
 				if (is.null(predns)) { 
@@ -166,14 +165,15 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				}
 
 				if (self$decision %in% c("vote", "hard") || self$decision == "meta") {
-					if (!any(is.na(pred$data$response))) {
-						predns[, task_id] = pred$data[match(predns$ID, rownames(pred$data)), 'response']
+					if (!any(is.na(mlr::getPredictionResponse(pred)))) {
+						predns[, mlr::getTaskID(self$tasks[[i]])] = pred$data[match(predns$ID, rownames(pred$data)), 'response']
 					}
 				} else {
+						# This should use mlr::getPredictionProbabilities - check
 						probs = pred$data[, grepl("prob.", colnames(pred$data))]
 						probs$ID = rownames(pred$data)
 						prob_cols = paste0("prob.", levels(classes))
-						predns[, paste0(task_id, ".", levels(classes))] = probs[match(predns$ID, probs$ID), prob_cols, drop = FALSE]
+						predns[, paste0(mlr::getTaskID(self$tasks[[i]]), ".", levels(classes))] = probs[match(predns$ID, probs$ID), prob_cols, drop = FALSE]
 				}
 			}		
 			return(as.data.frame(predns))
@@ -282,25 +282,23 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				# Get prediction for each modality and store in a data.frame
 				# Also get feature importance scores for each modality
 				for (j in 1:length(self$tasks)) { # Modality
-					task_id = self$tasks[[j]]$task.desc$id
-					predn_futures[[j]] = future::future(predict(self$models[[i]][[task_id]], task = self$tasks[[j]], subset = test_subset), conditions = character(0))
+					predn_futures[[j]] = future::future(predict(self$models[[i]][[mlr::getTaskID(self$tasks[[j]])]], task = self$tasks[[j]], subset = test_subset), conditions = character(0))
 				}
 			
 				# Wait for results
 				future::resolve(predn_futures)			
 				for (j in 1:length(predn_futures)) {
 					pred = value(predn_futures[[j]])
-					task_id = self$tasks[[j]]$task.desc$id
 					if (j == 1) {
 						results = data.frame("id" = pred$data$id, "ID" = row.names(pred$data), "truth" = pred$data$truth)
 					}
 					if (self$decision %in% c("prob", "soft")) {
 						probs = pred$data[, !colnames(pred$data) %in% c('id', 'truth', 'response')]
-						colnames(probs) = gsub("prob", task_id, colnames(probs))
+						colnames(probs) = gsub("prob", mlr::getTaskID(self$tasks[[j]]), colnames(probs))
 						results = cbind(results, probs)
 						row.names(results) = NULL
 					} else {
-						results[, task_id] = pred$data$response
+						results[, mlr::getTaskID(self$tasks[[j]])] = pred$data$response
 					}
 				}
 				
@@ -322,7 +320,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			
 			y_pred_max = apply(y_pred, 1, which.max)
 			final = data.frame('id' = results$id, 'ID' = results$ID, 'truth' = results$truth, 'response' = levels(self$classes)[y_pred_max], y_pred[, grepl('prob.', colnames(y_pred))]) 
-			return(self$results$make_mlr_prediction(final, self$tasks[[1]]$task.desc, self$decision))
+			return(self$results$make_mlr_prediction(final, mlr::getTaskDesc(self$tasks[[1]]), self$decision))
 		},
 		
 		
@@ -363,7 +361,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			
 			# First extract the feature importance scores from the saved models for each task
 			for (j in 1:length(self$tasks)) {
-				task_id = self$tasks[[j]]$task.desc$id
+				task_id = getTaskID(self$tasks[[j]])
 				self$feats[[task_id]] = list()
 		
 				for (i in 1:length(self$models)) {

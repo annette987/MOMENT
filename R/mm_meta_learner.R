@@ -45,8 +45,9 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 		#' @return A new `MM_Meta_Learner`object
 		#' @export
 		#' 
-		initialize = function(config, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, "CLASSIF", decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)	
+		initialize = function(config, task_type, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
+			pred_type = ifelse(decision %in% c("prob", "soft"), "prob", "response")
+			super$initialize(config, "classif", pred_type, decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)	
 			self$inner = mlr::makeResampleDesc("CV", iters = config$foldsInner, stratify = TRUE)
 			self$meta_model = MM_Model$new(NULL)
 			learner = Learners$new(self$task_type)$base_learners[[config$metaLearner]]
@@ -80,7 +81,6 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 						model_futures = list()
 						for (j in 1:length(self$tasks)) {
 							task_idx = ifelse(length(self$tasks) == length(self$learners), j, 1L)	
-							task_name = self$tasks[[task_idx]]$task.desc$id				
 							sub_task = subsetTask(self$tasks[[task_idx]], subset = training_set)
 							model_futures[[j]] = future::future(mlr::train(learner = self$learners[[j]], task = sub_task, subset = ri_inner$train.inds[[subset_idx]]), conditions = character(0))
 						}
@@ -90,20 +90,23 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 						for (j in 1:length(model_futures)) {
 							mod = future::value(model_futures[[j]])
 
-							if (!is.null(mod)) {
-								task_name = self$tasks[[j]]$task.desc$id				
+							if (!is.null(mod)) {			
 		#						raw_mod = mlr::getLearnerModel(mods, more.unwrap = TRUE)
-		#						feat_base[[j]]$save_multiclass(task_name, getFeatImpScores(raw_mod, classes), i, subset_idx)
+		#						feat_base[[j]]$save_multiclass(mlr::getTaskID(self$tasks[[j]]), getFeatImpScores(raw_mod, classes), i, subset_idx)
 								
 								sub_task = subsetTask(self$tasks[[j]], subset = training_set)						
 								pred = predict(mod, task = sub_task, subset = ri_inner$test.inds[[subset_idx]])
-								pred_df = as.data.frame(pred$data[, grepl("prob.", colnames(pred$data))])
+#								pred_df = as.data.frame(pred$data[, grepl("prob.", colnames(pred$data))])
+
+								# EXPECTING PROBABILITIES. DO THEY NEED TO BE? COULD BE RESPONSES? 
+								# SOMETHING META LEARNER CAN LEARN FROM
+								pred_df = mlr::getPredictionProbabilities(pred)
 								colnames(pred_df) = paste0(names(self$tasks)[[j]], ".", colnames(pred_df))
 								pred_df[is.na(pred_df)] = 0
 								predn_results[[length(predn_results) + 1]] = pred_df
 								if (is.null(truth))
 								{
-									truth = factor(pred$data$truth)
+									truth = factor(mlr::getPredictionTruth(pred))
 								}
 							}
 						}
@@ -142,7 +145,7 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 			resolve(model_futures)
 			
 			for (i in 1:length(model_futures)) {
-				task_id = self$tasks[[i]]$task.desc$id
+				task_id = mlr::getTaskID(self$tasks[[i]])
 				private$models[[task_id]] = future::value(model_futures[[i]])
 
 				if (mlr::isFailureModel(private$models[[task_id]])) {
@@ -207,16 +210,16 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 			meta_data = list()
 			for (i in 1:length(self$learners)) {
 				task_idx = ifelse(length(self$tasks) == length(self$learners), i, 1L)
-				task_name = self$tasks[[task_idx]]$task.desc$id				
 				pred = predict(private$models[[i]], task = self$tasks[[task_idx]], subset = test_set)
 
-				pred_df = as.data.frame(pred$data[, grepl("prob.", colnames(pred$data))])
-				colnames(pred_df) = paste0(task_name, ".", colnames(pred_df))
+#				pred_df = as.data.frame(pred$data[, grepl("prob.", colnames(pred$data))])
+				pred_df = mlr::getPredictionProbabilities(pred)
+				colnames(pred_df) = paste0(mlr::getTaskID(self$tasks[[task_idx]]), ".", colnames(pred_df))
 				meta_data[[length(meta_data) + 1]] = pred_df
 			}
 			
 			meta = data.frame(meta_data)
-			meta[self$targetVar] = factor(pred$data$truth)
+			meta[self$targetVar] = factor(mlr::getPredictionTruth(pred))
 			pred = predict(meta_model, newdata = meta)
 			return(pred)
 		},
