@@ -159,19 +159,38 @@ Features = R6::R6Class("Features", list(
 	save = function(mod, task, classes, method, fold_num)
 	{
 			scores = self$getFeatImpScores(mlr::getLearnerModel(mod, more.unwrap = TRUE), classes)
-			print(head(scores))
-			selected = mlr::getFilteredFeatures(mlr::getLearnerModel(mod, more.unwrap = FALSE))
-			not_selected = setdiff(mlr::getTaskFeatureNames(task), selected)
+			if (inherits(scores, "matrix")) {
+				selected = mlr::getFilteredFeatures(getLearnerModel(mod, more.unwrap = FALSE))
+				not_selected = setdiff(getTaskFeatureNames(tasks[[i]]), selected)
+				feat_scores = scores[, "all"]
+				names(feat_scores) = rownames(scores)
+				if (length(not_selected) > 0) {
+					feat_scores[not_selected] = 0
+					names(feat_scores[not_selected]) = not_selected
+				}
+				feats$save("combn", feat_scores, task_id, fold_num)
+			} else if (inherits(scores, "list")) {
+				# Scores are from a multilabel model.
+				# There is one importance matrix per model for rfsrc.
+				# All features have a feature importance score.
+				for (j in 1:length(scores)) {
+					feat_scores = scores[[j]]$importance[scores[[j]]$importance[, "all"] > 0, "all"]
+					feats[[j]]$save(names(scores)[[j]], feat_scores, task_id, fold_num)
+				}			
+			}						
 			
-			feat_scores = scores[, "all"]
-			names(feat_scores) = rownames(scores)
-			if (length(not_selected) > 0) {
-				feat_scores[not_selected] = 0
-				names(feat_scores[not_selected]) = not_selected
-			}
+#			selected = mlr::getFilteredFeatures(mlr::getLearnerModel(mod, more.unwrap = FALSE))
+#			not_selected = setdiff(mlr::getTaskFeatureNames(task), selected)
 			
-			col_name = paste0(method, "-", fold_num)
-			self$featsel[[mlr::getTaskId(task)]][, col_name] = feat_scores
+#			feat_scores = scores[, "all"]
+#			names(feat_scores) = rownames(scores)
+#			if (length(not_selected) > 0) {
+#				feat_scores[not_selected] = 0
+#				names(feat_scores[not_selected]) = not_selected
+#			}
+			
+#			col_name = paste0(method, "-", fold_num)
+#			self$featsel[[mlr::getTaskId(task)]][, col_name] = feat_scores
 	},
 
 
