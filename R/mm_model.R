@@ -57,10 +57,6 @@ MM_Model = R6::R6Class("MM_Model",
 		#' 
 		initialize = function(config, task_type = "classif", predict_type = "prob", decision = "hard", subset = NULL, concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE)
 		{
-			print("Initialising model")
-			print(task_type)
-			print(predict_type)
-			print(decision)
 			mlr::configureMlr(show.learner.output = TRUE, on.learner.error = 'warn', on.par.without.desc = 'warn')
 			future::plan("multicore", workers = 10)
 			Filters$new()
@@ -90,22 +86,17 @@ MM_Model = R6::R6Class("MM_Model",
 				if (self$task_type == "surv") {
 					self$measures = PerformanceMeasures$new(self$task_type)$measures
 				} else {
-					print("Setting up perf measures")
 					checkmate::assertLogical(balance)
 					self$measures = PerformanceMeasures$new(self$task_type, decision)$measures
-					print("Measures set")
 					learners = Learners$new(self$task_type)
-					print("Learners initialised")
 					self$learners = learners$create_learners(config, env = environment(), self$predict_type, balance, subset)
 				}
-				print("Learners created")
 
 				checkmate::assertNumeric(filter_zeroes, lower = 0.0, upper = 100)
 				checkmate::assertNumeric(filter_zeroes, lower = 0.0, upper = 100)
 				checkmate::assertLogical(filter_corr)
 				checkmate::assertLogical(filter_var)
 				self$tasks = self$create_tasks(config$dataDir, config, self$task_type, subset, filter_zeroes, filter_zeroes, filter_corr, filter_var)
-				print("Tasks created")
 
 				checkmate::assertLogical(concat)
 				if (concat) {
@@ -117,10 +108,8 @@ MM_Model = R6::R6Class("MM_Model",
 				}
 			
 				self$results = MM_Results$new(self$classes, self$tasks, self$measures, task_type, decision)
-				print("Results createed")
-				resamp = mlr::makeResampleDesc("RepCV", reps = config$itersOuter, folds = config$foldsOuter, stratify = TRUE)
+				resamp = mlr::makeResampleDesc("RepCV", reps = config$itersOuter, folds = config$foldsOuter, stratify = (task_type != "multilabel"))
 				self$ri = mlr::makeResampleInstance(resamp, self$tasks[[1]])
-				print("Resamp created")
 
 				if (!missing(validate)) {
 					checkmate::assertLogical(validate)

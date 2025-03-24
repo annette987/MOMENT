@@ -235,7 +235,6 @@ Learners = R6::R6Class("Learners",
 		#' @export
 		create_learners = function(config, env, pred_type = "response", balance = FALSE, subset = NULL)
 		{
-			print("Creating learners")
 			learners = list()
 			getArgs <- function(...) return(list(...))
 			evalstr <- function(ss) eval.parent(parse(text=sprintf("getArgs(%s)", ss)))
@@ -249,7 +248,6 @@ Learners = R6::R6Class("Learners",
 				} else {
 					pars = config$baseModels[[i]]$params
 				}
-				print(pars)
 
 				if (is.na(config$baseModels[[i]]$fsparams) || (length(config$baseModels[[i]]$fsparams) == 0)) {
 					fspars = list()
@@ -259,13 +257,10 @@ Learners = R6::R6Class("Learners",
 				} else {
 					fspars = config$baseModels[[i]]$fsparams
 				}
-				print(fspars)
 				
 				#	Begin pipeline with basic learner
 				baselrn = self$base_learners[[config$baseModels[[i]]$learner]]
-				print(baselrn)
 				lrn = do.call(mlr::makeLearner, args = append(list("cl" = baselrn$class, "id" = baselrn$name, "predict.type" = pred_type, fix.factors.prediction = TRUE), pars))
-				print("Learner created")
 				
 				# Add feature selection to pipeline
 				basefilt = self$base_filters[[config$baseModels[[i]]$featsel]]
@@ -278,25 +273,21 @@ Learners = R6::R6Class("Learners",
 					}
 					lrn = do.call(mlr::makeFilterWrapper, args = c(filter_args, fspars))
 				}
-				print("Filter added")
 				
 				#Add multi-class balancing to the pipeline if requested
 				if (balance) {
 					lrn = makePreprocWrapperBalanceMC(lrn, config$targetVar, "SMOTE")					
 				}		
-				print("Balance added")	
 				
 				#	Add normalisation to pipeline
 				if (!is.null(config$baseModels[[i]]$norm)) {				
 					lrn = cpoNormalise(config$baseModels[[i]]$norm) %>>% lrn		
-				}
-				print("Normalisation added")					
+				}			
 				
 				#Add imputation to the pipeline - use cop as it adds the missings property
 				if (!is.null(config$baseModels[[i]]$imputation)) {				
 					lrn = cpoImputeData(config$baseModels[[i]]$imputation, NULL) %>>% lrn
-				}
-				print("Imputation added")					
+				}			
 	
 				learners[[i]] = lrn
 			}
