@@ -159,6 +159,7 @@ Features = R6::R6Class("Features", list(
 	save = function(mod, task, classes, method, fold_num)
 	{
 			scores = self$getFeatImpScores(mlr::getLearnerModel(mod, more.unwrap = TRUE), classes)
+			print(head(scores))
 			selected = mlr::getFilteredFeatures(mlr::getLearnerModel(mod, more.unwrap = FALSE))
 			not_selected = setdiff(mlr::getTaskFeatureNames(task), selected)
 			
