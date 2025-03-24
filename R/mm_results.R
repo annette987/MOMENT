@@ -87,7 +87,7 @@ MM_Results = R6::R6Class("MM_Results",
 			if (self$model_type == "surv") {
 				predn_class = "PredictionSurv"
 				check_cols  = c("response", "truth.time", "truth.event")
-			else if (self$model_type == "multilabel") {
+			} else if (self$model_type == "multilabel") {
 				predn_class = "PredictionMultilabel"
 				check_cols  = c("response", "truth")  # WRONG - Need to look for truth.*, label.*? or response.*?
 			} else {
