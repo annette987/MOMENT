@@ -90,12 +90,14 @@ MM_Model = R6::R6Class("MM_Model",
 					learners = Learners$new(self$task_type)
 					self$learners = learners$create_learners(config, env = environment(), self$predict_type, balance, subset)
 				}
+				print("Learners created")
 
 				checkmate::assertNumeric(filter_zeroes, lower = 0.0, upper = 100)
 				checkmate::assertNumeric(filter_zeroes, lower = 0.0, upper = 100)
 				checkmate::assertLogical(filter_corr)
 				checkmate::assertLogical(filter_var)
 				self$tasks = self$create_tasks(config$dataDir, config, self$task_type, subset, filter_zeroes, filter_zeroes, filter_corr, filter_var)
+				print("Tasks created")
 
 				checkmate::assertLogical(concat)
 				if (concat) {
@@ -107,8 +109,10 @@ MM_Model = R6::R6Class("MM_Model",
 				}
 			
 				self$results = MM_Results$new(self$classes, self$tasks, self$measures, task_type, decision)
+				print("Results createed")
 				resamp = mlr::makeResampleDesc("RepCV", reps = config$itersOuter, folds = config$foldsOuter, stratify = TRUE)
 				self$ri = mlr::makeResampleInstance(resamp, self$tasks[[1]])
+				print("Resamp created")
 
 				if (!missing(validate)) {
 					checkmate::assertLogical(validate)
@@ -121,6 +125,7 @@ MM_Model = R6::R6Class("MM_Model",
 					self$vresults = MM_Results$new(self$classes, self$vtasks)
 				}
 			}
+			print("Initialisation complete")
 		},
 		
     #' @description 
