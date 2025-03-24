@@ -56,6 +56,10 @@ MM_Model = R6::R6Class("MM_Model",
 		#' 
 		initialize = function(config, task_type = "classif", predict_type = "prob", decision = "hard", subset = NULL, concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE)
 		{
+			print("Initialising model")
+			print(task_type)
+			print(predict_type)
+			print(decision)
 			mlr::configureMlr(show.learner.output = TRUE, on.learner.error = 'warn', on.par.without.desc = 'warn')
 			future::plan("multicore", workers = 10)
 			Filters$new()
@@ -387,7 +391,7 @@ MM_Model = R6::R6Class("MM_Model",
 				raw[raw == ''] = NA
 			} else {
 				selected = selected[!selected %in% c(exclusions, "")]
-				if (task_type == TASK_SURV) {
+				if (task_type == "surv") {
 					selected = c(row_names, config$timeVar, config$statusVar, selected)
 				} else {
 					selected = c(row_names, config$targetVar, selected)
@@ -559,9 +563,11 @@ MM_Model = R6::R6Class("MM_Model",
 					dat[, config$targetVar][dat[, config$targetVar] != cls] = "REST"
 					ovr_classes[[cls]] = as.factor(unique(dat[, config$targetVar]))
 
-					if (task_type == TASK_CLASSIF) {		
+					if (task_type == "classif") {		
 						tsk = mlr::makeClassifTask(id = task_id, data = dat, target = config$targetVar)
-					} else if (task_type == TASK_SURV) {
+					else if (task_type == "multilabel") {		
+						tsk = mlr::makeMultilabelTask(id = task_id, data = dat, target = config$targetVar)
+					} else if (task_type == "surv") {
 						tsk = mlr::makeSurvTask(id = task_id, data = dat, target = c(config$timeVar, config$statusVar), fixup.data = "no", check.data = FALSE)
 					}
 					tasks[[cls]][[task_id]] = tsk
