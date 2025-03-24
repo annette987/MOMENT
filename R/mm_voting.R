@@ -107,7 +107,9 @@ MM_Voting = R6::R6Class("MM_Voting",
 			
 			for (i in 1:length(model_futures)) {
 				task_id = mlr::getTaskId(self$tasks[[i]])
+				print(task_id)
 				private$models[[task_id]] = future::value(model_futures[[i]])
+				print(private$models[[task_id]])
 				
 				if (mlr::isFailureModel(private$models[[task_id]])) {
 					warning(paste0("Model ", task_id, " failed on repeat ", rpt, " fold ", fold))
@@ -146,6 +148,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 			
 			for (i in 1:length(self$tasks)) {
 				print(paste0("i = ", i))
+				print(private$models[[i]])
 				predn_futures[[i]] = future::future(predict(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE, conditions = character(0))	
 			}
 			future::resolve(predn_futures)
