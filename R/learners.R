@@ -103,7 +103,7 @@ Learners = R6::R6Class("Learners",
 						)
 				} else if (learner_type == "multilabel") {
 						self$base_learners = list(
-							"RFSRC" = list("class" = "multilabel.randomForestSRC",
+							"MLRFSRC" = list("class" = "multilabel.randomForestSRC",
 														"code" = LRN_RFSRC,
 														"name" = "RFSRC",
 														"tune_params" = rfsrc_params2,
