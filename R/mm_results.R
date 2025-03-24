@@ -130,7 +130,7 @@ MM_Results = R6::R6Class("MM_Results",
 		save_features = function(model, task, method, fold_num)
 		{
 			if (self$model_type == 'multilabel') {
-				labels = mlr:getTaskTargetNames(task)
+				labels = mlr::getTaskTargetNames(task)
 				for (lbl_idx in labels) {
 					self$feats[[lbl_idx]]$save(model, task, self$classes, method, fold_num)
 				}
@@ -180,7 +180,7 @@ MM_Results = R6::R6Class("MM_Results",
 			}
 			
 			if (self$model_type == 'multilabel') {
-				labels = mlr:getTaskTargetNames(task)
+				labels = mlr::getTaskTargetNames(task)
 				for (lbl_idx in labels) {
 					self$stab[[lbl_idx]]$save_all(self$model_type, self$feats[[lbl_idx]]$featsel)
 				}
