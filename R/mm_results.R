@@ -37,15 +37,26 @@ MM_Results = R6::R6Class("MM_Results",
 		initialize = function(classes, tasks, measures, model_type = "classif", decision = "response")
 		{
 			checkmate::assertChoice(model_type, choices = c("classif", "multilabel", "surv"))
+			self$model_type = model_type
+			self$decision = decision
 			self$classes = classes
 			self$task_desc = mlr::getTaskDesc(tasks[[1]])
 			self$predn = Prediction$new()
 			self$roc = ROCMultiClass$new()
 			self$perf = Performance$new(measures)
-			self$stab = Stability$new(classes)			
-			self$feats = Features$new(tasks)
-			self$model_type = model_type
-			self$decision = decision
+			
+			if (model_type == 'multilabel') {
+				self$feats = list()
+				self$stab = list()
+				labels = mlr:getTaskTargetNames(tasks[[1]])
+				for (lbl_idx in labels) {
+					self$feats[[lbl_idx]] = Features$new(tasks)
+					self$stab[[lbl_idx]]  = Stability$new(classes)
+				}
+			} else {
+				self$feats = Features$new(tasks)
+				self$stab  = Stability$new(classes)			
+			}
 		},
 
 		
@@ -118,7 +129,14 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @export				
 		save_features = function(model, task, method, fold_num)
 		{
-			self$feats$save(model, task, self$classes, method, fold_num)
+			if (self$model_type == 'multilabel') {
+				labels = mlr:getTaskTargetNames(task)
+				for (lbl_idx in labels) {
+					self$feats[[lbl_idx]]$save(model, task, self$classes, method, fold_num)
+				}
+			} else {
+				self$feats$save(model, task, self$classes, method, fold_num)
+			}
 		},
 
 		
@@ -160,7 +178,15 @@ MM_Results = R6::R6Class("MM_Results",
 			if (self$model_type == "classif") {
 				self$roc$calc_mc_roc(as.factor(private$responses$truth), as.factor(private$responses$response))
 			}
-			self$stab$save_all(self$model_type, self$feats$featsel)
+			
+			if (self$model_type == 'multilabel') {
+				labels = mlr:getTaskTargetNames(task)
+				for (lbl_idx in labels) {
+					self$stab[[lbl_idx]]$save_all(self$model_type, self$feats[[lbl_idx]]$featsel)
+				}
+			} else {
+				self$stab$save_all(self$model_type, self$feats$featsel)
+			}
 #			self$predn$save(private$responses)
 		},	
 

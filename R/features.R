@@ -158,7 +158,9 @@ Features = R6::R6Class("Features", list(
 	#' @export	
 	save = function(mod, task, classes, method, fold_num)
 	{
+			col_name = paste0(method, "-", fold_num)
 			scores = self$getFeatImpScores(mlr::getLearnerModel(mod, more.unwrap = TRUE), classes)
+			
 			if (inherits(scores, "matrix")) {
 				selected = mlr::getFilteredFeatures(getLearnerModel(mod, more.unwrap = FALSE))
 				not_selected = setdiff(getTaskFeatureNames(tasks[[i]]), selected)
@@ -168,7 +170,7 @@ Features = R6::R6Class("Features", list(
 					feat_scores[not_selected] = 0
 					names(feat_scores[not_selected]) = not_selected
 				}
-				feats$save("combn", feat_scores, task_id, fold_num)
+				self$featsel[[mlr::getTaskId(task)]][, col_name] = feat_scores
 			} else if (inherits(scores, "list")) {
 				# Scores are from a multilabel model.
 				# There is one importance matrix per model for rfsrc.
@@ -176,8 +178,11 @@ Features = R6::R6Class("Features", list(
 				for (j in 1:length(scores)) {
 					feat_scores = scores[[j]]$importance[scores[[j]]$importance[, "all"] > 0, "all"]
 					feats[[j]]$save(names(scores)[[j]], feat_scores, task_id, fold_num)
+					self$featsel[[j]][[mlr::getTaskId(task)]][, col_name] = feat_scores
 				}			
-			}						
+			}
+
+							
 			
 #			selected = mlr::getFilteredFeatures(mlr::getLearnerModel(mod, more.unwrap = FALSE))
 #			not_selected = setdiff(mlr::getTaskFeatureNames(task), selected)
@@ -189,8 +194,7 @@ Features = R6::R6Class("Features", list(
 #				names(feat_scores[not_selected]) = not_selected
 #			}
 			
-#			col_name = paste0(method, "-", fold_num)
-#			self$featsel[[mlr::getTaskId(task)]][, col_name] = feat_scores
+			self$featsel[[mlr::getTaskId(task)]][, col_name] = feat_scores
 	},
 
 
