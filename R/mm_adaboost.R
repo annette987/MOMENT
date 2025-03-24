@@ -164,7 +164,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		
 			# Predict from each model in parallel and wait for the results
 			for (i in 1:length(model_futures)) {
-				task_id = mlr::getTaskID(self$tasks[[i]])
+				task_id = mlr::getTaskId(self$tasks[[i]])
 				self$models[[iter]][[task_id]] = value(model_futures[[i]])
 				if (mlr::isFailureModel(self$models[[iter]][[task_id]])) {
 					warning(paste0("Model ", task_id, " failed"))
@@ -186,14 +186,14 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 
 				if (self$decision %in% c("vote", "hard") || self$decision == "meta") {
 					if (!any(is.na(mlr::getPredictionResponse(pred)))) {
-						predns[, mlr::getTaskID(self$tasks[[i]])] = pred$data[match(predns$ID, rownames(pred$data)), 'response']
+						predns[, mlr::getTaskId(self$tasks[[i]])] = pred$data[match(predns$ID, rownames(pred$data)), 'response']
 					}
 				} else {
 						# This should use mlr::getPredictionProbabilities - check
 						probs = pred$data[, grepl("prob.", colnames(pred$data))]
 						probs$ID = rownames(pred$data)
 						prob_cols = paste0("prob.", levels(classes))
-						predns[, paste0(mlr::getTaskID(self$tasks[[i]]), ".", levels(classes))] = probs[match(predns$ID, probs$ID), prob_cols, drop = FALSE]
+						predns[, paste0(mlr::getTaskId(self$tasks[[i]]), ".", levels(classes))] = probs[match(predns$ID, probs$ID), prob_cols, drop = FALSE]
 				}
 			}		
 			return(as.data.frame(predns))
@@ -302,7 +302,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				# Get prediction for each modality and store in a data.frame
 				# Also get feature importance scores for each modality
 				for (j in 1:length(self$tasks)) { # Modality
-					predn_futures[[j]] = future::future(predict(self$models[[i]][[mlr::getTaskID(self$tasks[[j]])]], task = self$tasks[[j]], subset = test_subset), conditions = character(0))
+					predn_futures[[j]] = future::future(predict(self$models[[i]][[mlr::getTaskId(self$tasks[[j]])]], task = self$tasks[[j]], subset = test_subset), conditions = character(0))
 				}
 			
 				# Wait for results
@@ -314,11 +314,11 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					}
 					if (self$decision %in% c("prob", "soft")) {
 						probs = pred$data[, !colnames(pred$data) %in% c('id', 'truth', 'response')]
-						colnames(probs) = gsub("prob", mlr::getTaskID(self$tasks[[j]]), colnames(probs))
+						colnames(probs) = gsub("prob", mlr::getTaskId(self$tasks[[j]]), colnames(probs))
 						results = cbind(results, probs)
 						row.names(results) = NULL
 					} else {
-						results[, mlr::getTaskID(self$tasks[[j]])] = pred$data$response
+						results[, mlr::getTaskId(self$tasks[[j]])] = pred$data$response
 					}
 				}
 				
@@ -381,7 +381,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			
 			# First extract the feature importance scores from the saved models for each task
 			for (j in 1:length(self$tasks)) {
-				task_id = getTaskID(self$tasks[[j]])
+				task_id = getTaskId(self$tasks[[j]])
 				self$feats[[task_id]] = list()
 		
 				for (i in 1:length(self$models)) {

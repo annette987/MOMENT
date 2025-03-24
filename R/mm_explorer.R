@@ -216,7 +216,7 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 				if (any(is.na(imp_data))) {
 					warning("Missing values present after imputation!")
 				} else {
-					filename = paste(file_prefix, mlr::getTaskID(self$tasks[[i]]), sep = "_")
+					filename = paste(file_prefix, mlr::getTaskId(self$tasks[[i]]), sep = "_")
 					self$exploreData("PCA", imp_data$data, dat$target, filename)
 					self$exploreData("TSNE", imp_data$data, dat$target, filename)
 					self$exploreData("UMAP", imp_data$data, dat$target, filename)

@@ -170,7 +170,7 @@ Features = R6::R6Class("Features", list(
 			}
 			
 			col_name = paste0(method, "-", fold_num)
-			self$featsel[[mlr::getTaskID(task)]][, col_name] = feat_scores
+			self$featsel[[mlr::getTaskId(task)]][, col_name] = feat_scores
 	},
 
 

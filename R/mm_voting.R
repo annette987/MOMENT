@@ -106,7 +106,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 			future::resolve(model_futures)
 			
 			for (i in 1:length(model_futures)) {
-				task_id = mlr::getTaskID(self$tasks[[i]])
+				task_id = mlr::getTaskId(self$tasks[[i]])
 				private$models[[task_id]] = future::value(model_futures[[i]])
 				
 				if (mlr::isFailureModel(private$models[[task_id]])) {
@@ -159,10 +159,10 @@ MM_Voting = R6::R6Class("MM_Voting",
 				if ((decision == 'vote') || (decision == 'hard')) {
 					res = pred$data[, 'response', drop = FALSE]
 					res$ID = rownames(pred$data)
-					responses[, mlr::getTaskID(self$tasks[[i]])] = res[match(responses$ID, res$ID), 'response']
+					responses[, mlr::getTaskId(self$tasks[[i]])] = res[match(responses$ID, res$ID), 'response']
 				} else if ((decision == 'prob') || (decision == 'soft')) {
 					probs = pred$data[, grepl("prob.", colnames(pred$data))]
-					prob_cols = gsub("prob", mlr::getTaskID(self$tasks[[i]]), colnames(probs))
+					prob_cols = gsub("prob", mlr::getTaskId(self$tasks[[i]]), colnames(probs))
 					probs$ID = rownames(pred$data)
 					responses[, prob_cols] = probs[match(responses$ID, probs$ID), grepl("prob.", colnames(probs)), drop = FALSE]
 				}								

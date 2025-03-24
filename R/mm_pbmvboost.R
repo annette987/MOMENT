@@ -104,7 +104,7 @@ PB_MVBoost = R6::R6Class("PB_MVBoost",
 			self$y_test = list()
 			
 			for (i in 1:length(self$tasks)) {
-				task_id = mlr::getTaskID(self$tasks[[i]])
+				task_id = mlr::getTaskId(self$tasks[[i]])
 				dat = getTaskData(self$tasks[[i]])
 				
 				# Convert y to numeric

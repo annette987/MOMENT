@@ -93,7 +93,7 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 
 							if (!is.null(mod)) {			
 		#						raw_mod = mlr::getLearnerModel(mods, more.unwrap = TRUE)
-		#						feat_base[[j]]$save_multiclass(mlr::getTaskID(self$tasks[[j]]), getFeatImpScores(raw_mod, classes), i, subset_idx)
+		#						feat_base[[j]]$save_multiclass(mlr::getTaskId(self$tasks[[j]]), getFeatImpScores(raw_mod, classes), i, subset_idx)
 								
 								sub_task = subsetTask(self$tasks[[j]], subset = training_set)						
 								pred = predict(mod, task = sub_task, subset = ri_inner$test.inds[[subset_idx]])
@@ -146,7 +146,7 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 			resolve(model_futures)
 			
 			for (i in 1:length(model_futures)) {
-				task_id = mlr::getTaskID(self$tasks[[i]])
+				task_id = mlr::getTaskId(self$tasks[[i]])
 				private$models[[task_id]] = future::value(model_futures[[i]])
 
 				if (mlr::isFailureModel(private$models[[task_id]])) {
@@ -215,7 +215,7 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 
 #				pred_df = as.data.frame(pred$data[, grepl("prob.", colnames(pred$data))])
 				pred_df = mlr::getPredictionProbabilities(pred)
-				colnames(pred_df) = paste0(mlr::getTaskID(self$tasks[[task_idx]]), ".", colnames(pred_df))
+				colnames(pred_df) = paste0(mlr::getTaskId(self$tasks[[task_idx]]), ".", colnames(pred_df))
 				meta_data[[length(meta_data) + 1]] = pred_df
 			}
 			
