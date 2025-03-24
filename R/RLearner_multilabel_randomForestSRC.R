@@ -1,3 +1,7 @@
+#' @importFrom mlr makeRLearner
+#' @importFrom mlr trainLearner
+#' @importFrom mlr predictLearner
+
 #' @export
 makeRLearner.multilabel.randomForestSRC = function() {
   makeRLearnerMultilabel(

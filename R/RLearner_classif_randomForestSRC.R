@@ -1,3 +1,8 @@
+#' @importFrom mlr makeRLearner
+#' @importFrom mlr trainLearner
+#' @importFrom mlr predictLearner
+#' @importFrom mlr getFeatureImportanceLearner
+
 #' @export
 makeRLearner.classif.randomForestSRC = function() {
   makeRLearnerClassif(

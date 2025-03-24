@@ -49,9 +49,7 @@ Create a new MM_Explorer object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MM_Explorer$new(
   config,
-  decision = "prob",
   subset = NULL,
-  balance = FALSE,
   filter_zeroes = 90,
   filter_missings = 50,
   filter_corr = FALSE,
@@ -65,13 +63,8 @@ Create a new MM_Explorer object.
 \item{\code{config}}{(MM_Config)\cr
 Configuration object, specifying how the model should be constructed.}
 
-\item{\code{decision}}{(character)\cr
-Type of prediction - 'response' or 'prob'.}
-
-\item{\code{subset}}{(integer)\cr}
-
-\item{\code{balance}}{(logical(1))\cr
-Should the tasks be balanced during training?}
+\item{\code{subset}}{(integer)\cr
+A vector of integers specifying the indices of the modalities to be included in the model.}
 
 \item{\code{filter_zeroes}}{(double(1))\cr
 Features with this percentage of zero values or greater will not be included in the model.}
@@ -84,15 +77,6 @@ Should correlated features be included in the model? If FALSE, one feature from 
 
 \item{\code{filter_var}}{(double(1))\cr
 Should low variance features be included in the model?}
-
-\item{\code{model_type}}{(character)\cr
-Type of model - "CLASSIF" for classification or "SURV" for survival analysis.}
-
-\item{\code{concat}}{(logical(1))\cr
-Should the tasks be concatenated to form a single, large dataset?}
-
-\item{\code{validate}}{(logical(1))\cr
-Should the model be validated with validation data provided in the config file.}
 }
 \if{html}{\out{</div>}}
 }

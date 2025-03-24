@@ -34,7 +34,7 @@ Create a new PerformanceMeasures object.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{task_type}}{(character)\cr
-The type of task - "CLASSIF" for classification or "SURV" for survival analysis.}
+Type of model - "classif" for classification, "multilabel" for multilabel classification or "surv" for survival analysis.}
 
 \item{\code{predict_type}}{(character)\cr
 The type of prediction to be made - “response” or “prob.}

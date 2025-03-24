@@ -105,7 +105,7 @@ Learners = R6::R6Class("Learners",
 						self$base_learners = list(
 							"MLRFSRC" = list("class" = "multilabel.randomForestSRC",
 														"code" = LRN_RFSRC,
-														"name" = "RFSRC",
+														"name" = "MLRFSRC",
 														"tune_params" = rfsrc_params2,
 														"args" = list(ntree = 1000, importance = TRUE))
 						)
@@ -249,6 +249,7 @@ Learners = R6::R6Class("Learners",
 				} else {
 					pars = config$baseModels[[i]]$params
 				}
+				print(pars)
 
 				if (is.na(config$baseModels[[i]]$fsparams) || (length(config$baseModels[[i]]$fsparams) == 0)) {
 					fspars = list()
@@ -258,6 +259,7 @@ Learners = R6::R6Class("Learners",
 				} else {
 					fspars = config$baseModels[[i]]$fsparams
 				}
+				print(fspars)
 				
 				#	Begin pipeline with basic learner
 				baselrn = self$base_learners[[config$baseModels[[i]]$learner]]

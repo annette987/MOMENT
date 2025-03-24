@@ -60,7 +60,8 @@ Create a new MM_MoE object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MM_MoE$new(
   config,
-  model_type = "VOTE",
+  model_type = "vote",
+  task_type,
   decision = "prob",
   subset = NULL,
   balance = FALSE,
@@ -78,13 +79,14 @@ Create a new MM_MoE object.
 \item{\code{config}}{(MM_Config)\cr
 Configuration object, specifying how the model should be constructed.}
 
-\item{\code{model_type}}{(character)\cr
-Type of model - "CLASSIF" for classification or "SURV" for survival analysis.}
+\item{\code{task_type}}{(character)\cr
+Type of model - "classif" for classification, "multilabel" for multilabel classification or "surv" for survival analysis.}
 
 \item{\code{decision}}{(character)\cr
-Type of prediction - 'response' or 'prob'.}
+Type of decision in combining modalities - "prob" or "soft" for soft voting, "vote" or "hard" for hard voting, "meta for meta learning}
 
-\item{\code{subset}}{(integer)\cr}
+\item{\code{subset}}{(integer)\cr
+A vector of integers specifying the indices of the modalities to be included in the model.}
 
 \item{\code{balance}}{(logical(1))\cr
 Should the tasks be balanced during training?}

@@ -39,7 +39,7 @@ Create a new Learners object.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{learner_type}}{(character)\cr
-The type of learner - "CLASSIF" for classification or "SURV" for survival analysis.}
+The type of learner - "classif" for classification, "multilabel" for multilabel classification or "surv" for survival analysis.}
 }
 \if{html}{\out{</div>}}
 }
