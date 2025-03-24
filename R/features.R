@@ -34,113 +34,6 @@ Features = R6::R6Class("Features", list(
 		}
 	},	
 
-	#' @description 
-	#' Extract the feature importance scores from an mlr model.
-	#' Convert the custom importance data from each model into a uniform format -
-	#' a data.frame with one row per feature and one column per class, 
-	#' plus a column labelled 'all', which gives the feature importance for the model as a whole.
-	#' The 'all' column may contain zeroes if this data is not available.
-	#' @param mod (???)\cr
-	#' 	The mlr model
-	#' @param class_names (character vector)
-	#' 	Names of the classes in the data
-	#' @return A data.frame containing feature importance scores
-	#' @export
-	getFeatImpScores = function(mod, class_names = NULL)
-	{	
-		imp_data = NULL
-		if (is.null(mod)) {
-			cat(paste("=======> Model is null!!\n"))		
-		} else if (inherits(mod, "WrappedModel") && isFailureModel(mod)) {
-			cat(paste("=======> Model is a FailureModel!!!\n"))
-			cat(mlr::getFailureModelMsg(mod))		
-		} else if (inherits(mod, "coxph")) {
-			pvalues = summary(mod)$coefficients[,5]
-			imp_data = as.data.frame(pvalues)
-			colnames(imp_data) = c('all')
-		} else if (inherits(mod, "CoxBoost")) {
-			coef.nonzero = CoxBoost::coef(mod)
-			imp_data = coef.nonzero
-		} else if (inherits(mod, "glmboost")) {
-			coef.nonzero = glmboost::coef(mod)
-			imp_data  = coef.nonzero[2:length(coef.nonzero)]						# 1st column is Intercept - ignore this
-		} else if (inherits(mod, "cv.glmnet")) {
-			coef.min = glmnet::coef(mod, s = mod$lambda.min)
-			# For binary class problems coef.min is a single dgCMatrix
-			# For multi-class problems coef.min is a list of dgCMatrix, one per class
-			if (inherits(coef.min, "dgCMatrix")) {
-				coef.min = coef.min[!rownames(coef.min) %in% c("(Intercept)"), ]
-				imp_data = data.frame('all' = coef.min)
-			} else {
-				imp_data = as.data.frame(do.call(cbind, lapply(coef.min, as.matrix)))
-				imp_data = imp_data[!rownames(imp_data) %in% c("(Intercept)"), ]
-				colnames(imp_data) = class_names[1:ncol(imp_data)]
-				imp_data['all'] = rep(0, nrow(imp_data))
-			}
-			
-		} else if (inherits(mod, "rfsrc")) {
-			if (!is.null(mod$importance)) {
-				imp_data = mod$importance
-			} else {
-				imp = randomForestSRC::vimp.rfsrc(mod)
-				imp_data = imp$classOutput
-			}
-		} else if (inherits(mod, "randomForest")) {
-			imp_data = mod$importance
-			colnames(imp_data) = c('all')
-		} else if (inherits(mod, "ranger")) {
-			# N.B. This one needs to use local.importance but mlr doesn't allow it!
-			ind = which(mod$variable.importance != 0)
-			imp_data = as.data.frame(mod$variable.importance)
-			rownames(imp_data) =  names(mod$variable.importance)
-			imp_data = imp_data[ind, , drop = FALSE]
-			colnames(imp_data) = c('all')
-		} else if (inherits(mod, "xgb.Booster")) {
-			if (mod$params$booster == BOOSTER_LINEAR) {
-				imp_col = "Weight"
-			} else {
-				imp_col = "Gain"
-			}
-			if (mod$params$booster == BOOSTER_LINEAR) {
-				imp = xgboost::xgb.importance(model = mod)
-				if ('Class' %in% colnames(imp)) {
-					imp_data = as.data.frame(imp %>% 
-											tidyr::pivot_wider(names_from = "Class", 
-																				 values_from = "Weight", 
-																					names_prefix = "Class"))
-					colnames(imp_data) = c("Feature", class_names[1:(length(class_names))])
-				} else {
-					imp_data = as.data.frame(imp)
-				}
-				
-				rownames(imp_data) = imp_data$Feature
-				imp_data$Feature = NULL
-				imp_data['all'] = 0		# Not provided - no way to calculate
-			} else {
-				imp = xgboost::xgb.importance(model = mod)
-				imp_data = as.data.frame(imp)[, c("Feature", imp_col)]
-				colnames(imp_data) = c("Feature", "all")
-				rownames(imp_data) = imp_data$Feature
-				imp_data$Feature = NULL
-			}
-		} else if (inherits(mod, "svm")) {
-				imp <- t(mod$coefs) %*% mod$SV                   				# weight vectors
-				imp <- apply(imp, 2, function(v){sqrt(sum(v^2))})  	# weight
-				imp <- sort(imp, decreasing = T)
-				imp_data = data.frame("all" = imp)
-		} else if (inherits(mod, "gbm")) {
-				imp = gbm::summary.gbm(mod, method = gbm::relative.influence)
-				colnames(imp) = c("var", "all")
-				imp_data = data.frame('all' = imp[, "all"], row.names = imp[, "var"])
-		} else if (inherits(mod, "rpart")) {
-				imp_data = data.frame('all' = mod$variable.importance)
-		} else if (inherits(mod, "naiveBayes")) {
-		} else {
-			warning(paste0("Unknown model class: ", class(mod)))
-		}
-
-		return(imp_data)
-	},
 
 	#' @description 
 	#' Retrieve and save the feature importance scores from one mlr model.
@@ -156,44 +49,17 @@ Features = R6::R6Class("Features", list(
 	#' 	The index of the fold for which the scores were calculated.
 	#' @return Nothing
 	#' @export	
-	save = function(mod, task, classes, method, fold_num)
+	save = function(scores, mod, task, classes, method, fold_num)
 	{
 			col_name = paste0(method, "-", fold_num)
-			scores = self$getFeatImpScores(mlr::getLearnerModel(mod, more.unwrap = TRUE), classes)
-			
-			if (inherits(scores, "matrix")) {
-				selected = mlr::getFilteredFeatures(getLearnerModel(mod, more.unwrap = FALSE))
-				not_selected = setdiff(getTaskFeatureNames(tasks[[i]]), selected)
-				feat_scores = scores[, "all"]
-				names(feat_scores) = rownames(scores)
-				if (length(not_selected) > 0) {
-					feat_scores[not_selected] = 0
-					names(feat_scores[not_selected]) = not_selected
-				}
-				self$featsel[[mlr::getTaskId(task)]][, col_name] = feat_scores
-			} else if (inherits(scores, "list")) {
-				# Scores are from a multilabel model.
-				# There is one importance matrix per model for rfsrc.
-				# All features have a feature importance score.
-				for (j in 1:length(scores)) {
-					feat_scores = scores[[j]]$importance[scores[[j]]$importance[, "all"] > 0, "all"]
-					feats[[j]]$save(names(scores)[[j]], feat_scores, task_id, fold_num)
-					self$featsel[[j]][[mlr::getTaskId(task)]][, col_name] = feat_scores
-				}			
+			selected = mlr::getFilteredFeatures(getLearnerModel(mod, more.unwrap = FALSE))
+			not_selected = setdiff(getTaskFeatureNames(task, selected)
+			feat_scores = scores[, "all"]
+			names(feat_scores) = rownames(scores)
+			if (length(not_selected) > 0) {
+				feat_scores[not_selected] = 0
+				names(feat_scores[not_selected]) = not_selected
 			}
-
-							
-			
-#			selected = mlr::getFilteredFeatures(mlr::getLearnerModel(mod, more.unwrap = FALSE))
-#			not_selected = setdiff(mlr::getTaskFeatureNames(task), selected)
-			
-#			feat_scores = scores[, "all"]
-#			names(feat_scores) = rownames(scores)
-#			if (length(not_selected) > 0) {
-#				feat_scores[not_selected] = 0
-#				names(feat_scores[not_selected]) = not_selected
-#			}
-			
 			self$featsel[[mlr::getTaskId(task)]][, col_name] = feat_scores
 	},
 
