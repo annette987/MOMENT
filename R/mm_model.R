@@ -626,7 +626,7 @@ MM_Model = R6::R6Class("MM_Model",
 
 			if (self$task_type == "surv") {		
 				tsk = mlr::makeSurvTask(id = "concat", data = combined_df, target = target_name, fixup.data = "no", check.data = FALSE)
-			else if (self$task_type == "multilabel") {		
+			} else if (self$task_type == "multilabel") {		
 				tsk = mlr::makeMultilabelTask(id = "concat", data = combined_df, target = target_name, fixup.data = "no", check.data = FALSE)
 			} else {
 				tsk = mlr::makeClassifTask(id = "concat", data = combined_df, target = target_name, fixup.data = "no", check.data = FALSE)
