@@ -14,7 +14,8 @@ Depends:
     mlrCPO,
     R (>= 3.5),
     R6,
-		sqldf
+		sqldf,
+		stringi
 Imports:
 		BBmisc,
 		dplyr,
@@ -38,7 +39,6 @@ Suggests:
     randomForestSRC,
     readxl,
     Rtsne,
-		stringi,
     survival,
     testit,
     tidyr,
