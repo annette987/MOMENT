@@ -48,7 +48,7 @@ MM_Results = R6::R6Class("MM_Results",
 			if (model_type == 'multilabel') {
 				self$feats = list()
 				self$stab = list()
-				labels = mlr:getTaskTargetNames(tasks[[1]])
+				labels = mlr::getTaskTargetNames(tasks[[1]])
 				for (lbl_idx in labels) {
 					self$feats[[lbl_idx]] = Features$new(tasks)
 					self$stab[[lbl_idx]]  = Stability$new(classes)
