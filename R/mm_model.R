@@ -565,7 +565,7 @@ MM_Model = R6::R6Class("MM_Model",
 
 					if (task_type == "classif") {		
 						tsk = mlr::makeClassifTask(id = task_id, data = dat, target = config$targetVar)
-					else if (task_type == "multilabel") {		
+					} else if (task_type == "multilabel") {		
 						tsk = mlr::makeMultilabelTask(id = task_id, data = dat, target = config$targetVar)
 					} else if (task_type == "surv") {
 						tsk = mlr::makeSurvTask(id = task_id, data = dat, target = c(config$timeVar, config$statusVar), fixup.data = "no", check.data = FALSE)
