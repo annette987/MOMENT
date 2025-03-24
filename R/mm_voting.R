@@ -19,8 +19,29 @@ MM_Voting = R6::R6Class("MM_Voting",
 		
     #' @description 
 		#' Create a new MM_Voting object.
-		#' @inheritParams MM_Model$initialize
-    #' @return A new `MM_Voting` object.
+		#' @param config (MM_Config)\cr
+		#' Configuration object, specifying how the model should be constructed.
+		#' @param task_type (character)\cr
+		#' Type of model - "classif" for classification, "multilabel" for multilabel classification or "surv" for survival analysis. 
+		#' @param decision (character)\cr
+		#' Type of decision in combining modalities - "prob" or "soft" for soft voting, "vote" or "hard" for hard voting, "meta for meta learning
+		#' @param subset (integer)\cr
+		#' A vector of integers specifying the indices of the modalities to be included in the model.
+		#' @param concat (logical(1))\cr
+		#' Should the tasks be concatenated to form a single, large dataset?
+		#' @param balance (logical(1))\cr
+		#' Should the tasks be balanced during training?
+		#' @param validate (logical(1))\cr
+		#' Should the model be validated with validation data provided in the config file.
+		#' @param filter_zeroes (double(1))\cr
+		#' Features with this percentage of zero values or greater will not be included in the model.
+		#' @param filter_missings (double(1))\cr
+		#' Features with this percentage of missing values or greater will not be included in the model.
+		#' @param filter_corr (double(1))\cr
+		#' Should correlated features be included in the model? If FALSE, one feature from each correlated pair is eliminated.
+		#' @param filter_var (double(1))\cr
+		#' Should low variance features be included in the model?
+		#' @return A new`MM_Voting` object.
 		#' @export
 		initialize = function(config, task_type, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
 			pred_type = ifelse(decision %in% c("prob", "soft"), "prob", "response")

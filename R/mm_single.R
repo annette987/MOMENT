@@ -16,11 +16,32 @@ MM_Single = R6::R6Class("MM_Single",
 	inherit = MM_Model,
 	public = list(
 		single_results = list(),
-		model_type = "CLASSIF",
+		model_type = "classif",
 		
     #' @description 
 		#' Create a new MM_Single object.
-    #' @param config Model parameters (MM_Config).
+		#' @param config (MM_Config)\cr
+		#' Configuration object, specifying how the model should be constructed.
+		#' @param task_type (character)\cr
+		#' Type of model - "classif" for classification, "multilabel" for multilabel classification or "surv" for survival analysis. 
+		#' @param predict_type (character)\cr
+		#' Type of prediction - "response" or "prob"
+		#' @param subset (integer)\cr
+		#' A vector of integers specifying the indices of the modalities to be included in the model.
+		#' @param concat (logical(1))\cr
+		#' Should the tasks be concatenated to form a single, large dataset?
+		#' @param balance (logical(1))\cr
+		#' Should the tasks be balanced during training?
+		#' @param validate (logical(1))\cr
+		#' Should the model be validated with validation data provided in the config file.
+		#' @param filter_zeroes (double(1))\cr
+		#' Features with this percentage of zero values or greater will not be included in the model.
+		#' @param filter_missings (double(1))\cr
+		#' Features with this percentage of missing values or greater will not be included in the model.
+		#' @param filter_corr (double(1))\cr
+		#' Should correlated features be included in the model? If FALSE, one feature from each correlated pair is eliminated.
+		#' @param filter_var (double(1))\cr
+		#' Should low variance features be included in the model?
     #' @return A new `MM_Single`object.
 		#' @export
 		initialize = function(config, task_type = "classif", predict_type = "response", concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {

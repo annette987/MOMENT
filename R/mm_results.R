@@ -29,14 +29,14 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @param measures (list)\cr
 		#' A list of the performance measures being used to assess the model's performance.
 		#' @param model_type (character)\cr
-		#' The type of model - Classification ("CLASSIF") or Survival Analisis ("SURV").
+		#' Type of model - "classif" for classification, "multilabel" for multilabel classification or "surv" for survival analysis. 
 		#' @param decision (character)\cr
 		#' The type of prediction made - “response” or “prob.
     #' @return A new `MM_Results` object.
 		#' @export
-		initialize = function(classes, tasks, measures, model_type = "CLASSIF", decision = "response")
+		initialize = function(classes, tasks, measures, model_type = "classif", decision = "response")
 		{
-			checkmate::assertChoice(model_type, choices = c("CLASSIF", "SURV"))
+			checkmate::assertChoice(model_type, choices = c("classif", "multilabel", "surv"))
 			self$classes = classes
 			self$task_desc = mlr::getTaskDesc(tasks[[1]])
 			self$predn = Prediction$new()
@@ -61,8 +61,8 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @export
 		save_responses = function(responses, rpt, fold)
 		{
-			stopifnot(self$model_type != "SURV")
-			stopifnot(inherits(responses, "data.frame") && (all(c("response", "truth") %in% colnames(responses))) && self$model_type != "SURV")
+			stopifnot(self$model_type != "surv")
+			stopifnot(inherits(responses, "data.frame") && (all(c("response", "truth") %in% colnames(responses))) && self$model_type != "surv")
 			responses$rpt = rpt
 			responses$fold = fold
 			private$responses = rbind(private$responses, responses)	
@@ -84,9 +84,12 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @export		
 		save_predictions = function(pred, task = NULL, model = NULL)
 		{
-			if (self$model_type == "SURV") {
+			if (self$model_type == "surv") {
 				predn_class = "PredictionSurv"
 				check_cols  = c("response", "truth.time", "truth.event")
+			else if (self$model_type == "multilabel") {
+				predn_class = "PredictionMultilabel"
+				check_cols  = c("response", "truth")  # WRONG - Need to look for truth.*, label.*? or response.*?
 			} else {
 				predn_class = "PredictionClassif"
 				check_cols  = c("response", "truth")
@@ -95,7 +98,7 @@ MM_Results = R6::R6Class("MM_Results",
 			stopifnot(all(check_cols %in% colnames(pred$data)))
 			private$responses = rbind(private$responses, pred$data)			
 			self$perf$calculate(pred, task, model)
-			if (self$model_type != "SURV") {
+			if (self$model_type == "classif") {
 				self$roc$calc(pred$data$truth, pred$data$response, as.list(self$classes))
 			}
 		},
@@ -154,7 +157,7 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @export				
 		complete = function()
 		{
-			if (self$model_type != "SURV") {
+			if (self$model_type == "classif") {
 				self$roc$calc_mc_roc(as.factor(private$responses$truth), as.factor(private$responses$response))
 			}
 			self$stab$save_all(self$model_type, self$feats$featsel)
@@ -172,7 +175,7 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @export				
 		write = function(result_file_prefix, suffix = NULL)
 		{
-			if (self$model_type != "SURV") {
+			if (self$model_type == "classif") {
 				self$roc$write(result_file_prefix, suffix)
 				self$roc$plot("TITLE", result_file_prefix)
 			}

@@ -31,11 +31,12 @@ MM_Model = R6::R6Class("MM_Model",
 		#' Creates the required learners, and other structures needed by mlr.
 		#' @param config (MM_Config)\cr
 		#' Configuration object, specifying how the model should be constructed.
-    #' @param task_type (character)\cr
-		#' Type of model - "CLASSIF" for classification or "SURV" for survival analysis. 
+		#' @param task_type (character)\cr
+		#' Type of model - "classif" for classification, "multilabel" for multilabel classification or "surv" for survival analysis. 
 		#' @param decision (character)\cr
-		#' Type of prediction - 'response' or 'prob'.
+		#' Type of decision in combining modalities - "prob" or "soft" for soft voting, "vote" or "hard" for hard voting, "meta for meta learning
 		#' @param subset (integer)\cr
+		#' A vector of integers specifying the indices of the modalities to be included in the model.
 		#' @param concat (logical(1))\cr
 		#' Should the tasks be concatenated to form a single, large dataset?
 		#' @param balance (logical(1))\cr
@@ -89,9 +90,12 @@ MM_Model = R6::R6Class("MM_Model",
 				if (self$task_type == "surv") {
 					self$measures = PerformanceMeasures$new(self$task_type)$measures
 				} else {
+					print("Setting up perf measures")
 					checkmate::assertLogical(balance)
 					self$measures = PerformanceMeasures$new(self$task_type, decision)$measures
+					print("Measures set")
 					learners = Learners$new(self$task_type)
+					print("Learners initialised")
 					self$learners = learners$create_learners(config, env = environment(), self$predict_type, balance, subset)
 				}
 				print("Learners created")
@@ -212,7 +216,7 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @param prepend Should the data modality be prepended to the name of each feature?
     #' @return The filtered data
 		#' @noRd
-		prepare_data = function(config, idx, raw, id_col, task_type = "CLASSIF", prepend = FALSE) {
+		prepare_data = function(config, idx, raw, id_col, task_type = "classif", prepend = FALSE) {
 			dataset = as.data.frame(raw)
 			
 			# Remove the patient ID, as it becomes the row name. 
@@ -347,7 +351,7 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @param row_names Name of column containing sample identifier
 		#' @param selected If this is the second call to this function, the names of the columns selected the first time
 		#' @param prepend Should the data modality be prepended to the name of each feature?
-		#' @param task_type Type of task - either CLASSIF or SURV
+		#' @param task_type Type of task - "classif", "multilabel", "surv"
 		#' @param validation Is this validation data?
     #' @return A data.frame cobtaining the selected columns of the raw data or all column sif none selected
 		#' @noRd
@@ -456,7 +460,7 @@ MM_Model = R6::R6Class("MM_Model",
 		#' The data for each task will be filtered according to the filter parameters.
     #' @param data_dir Name of directory in which the data files are located
     #' @param config Configuration object
-		#' @param task_type Type of task - either CLASSIF or SURV
+		#' @param task_type Type of task - "classif", "multilabel", "surv"
 		#' @param ovr_class One vs Rest class - if non-null data is converted to binary with this class vs REST
 		#" @param subset Vector of integers indicating subset of modalities to use
 		#' @param filter_zeroes Remove features with a higher percentage of zero values than specified here
@@ -504,7 +508,7 @@ MM_Model = R6::R6Class("MM_Model",
     #' @param base_tasks The base tasks to be validated
     #' @return A list of mlr tasks, one per modality
 		#' @export
-		create_validation_tasks = function(base_tasks, data_dir, config, task_type = TASK_CLASSIF, subset = NULL, filter_zeroes = 90, filter_missings = 50, filter_corr = FALSE, filter_var = FALSE)
+		create_validation_tasks = function(base_tasks, data_dir, config, task_type = "classif", subset = NULL, filter_zeroes = 90, filter_missings = 50, filter_corr = FALSE, filter_var = FALSE)
 		{
 			tasks = list()
 			row_names = ifelse(is.null(config$idVar) || is.na(config$idVar), "ID", config$idVar)
@@ -522,8 +526,10 @@ MM_Model = R6::R6Class("MM_Model",
 				old_dat = getTaskData(base_tasks[[i]], target.extra = FALSE)
 				new_dat = rbind(old_dat, dat)
 
-				if (self$task_type == "SURV") {
+				if (self$task_type == "surv") {
 					tsk = mlr::makeSurvTask(id = task_id, data = new_dat, target = c(config$timeVar, config$statusVar), fixup.data = "no", check.data = FALSE)
+				} else if (task_type == "multilabel") {		
+					tsk = mlr::makeMultilabelTask(id = task_id, data = new_dat, target = config$targetVar)
 				} else {
 					tsk = mlr::makeClassifTask(id = task_id, data = new_dat, target = config$targetVar)
 				}
@@ -545,7 +551,7 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @param target_var The target variable 
     #' @return A list of mlr tasks, converted to binary
 		#' @export
-		create_ovr_tasks = function(data_dir, config, task_type = TASK_CLASSIF, subset = NULL, filter_zeroes = 90, filter_missings = 50, filter_corr = FALSE, filter_var = FALSE)
+		create_ovr_tasks = function(data_dir, config, task_type = "classif", subset = NULL, filter_zeroes = 90, filter_missings = 50, filter_corr = FALSE, filter_var = FALSE)
 		{			
 			tasks = list()
 			ovr_classes = list()
@@ -601,7 +607,6 @@ MM_Model = R6::R6Class("MM_Model",
 
     #' @description Concatenate a list of tasks into a single task
     #' @param tasks The list fo tasks to be concatenated
-		#' @param task_type The type of task "CLASSIF" or "SURV"
     #' @return A list containing a single task
 		#' @export
 		concat_tasks = function(tasks)
@@ -619,8 +624,10 @@ MM_Model = R6::R6Class("MM_Model",
 			df_list[[length(df_list) + 1]] = target_df			
 			combined_df = do.call(cbind, df_list)
 
-			if (self$task_type == "SURV") {		
+			if (self$task_type == "surv") {		
 				tsk = mlr::makeSurvTask(id = "concat", data = combined_df, target = target_name, fixup.data = "no", check.data = FALSE)
+			else if (self$task_type == "multilabel") {		
+				tsk = mlr::makeMultilabelTask(id = "concat", data = combined_df, target = target_name, fixup.data = "no", check.data = FALSE)
 			} else {
 				tsk = mlr::makeClassifTask(id = "concat", data = combined_df, target = target_name, fixup.data = "no", check.data = FALSE)
 			}	

@@ -1,31 +1,9 @@
-MMOmicsConst = new.env(parent = emptyenv())
-
-#
-# Experiment types
-#
-assign("TASK_CLASSIF", "CLASSIF", MMOmicsConst)
-
-EXP_CLASSFN  = "CLASSFN"
-EXP_FUSION	 = "FUSION"
-EXP_COMBN	 	 = "COMBN"
-EXP_SURVIVAL = "SURV"
-EXP_ENSEMBLE = "ENS"
-EXP_TEMPORAL = "TPM"
-
-#
-# Task types
-#
-TASK_CLASSIF = "CLASSIF"
-TASK_SURV		 = "SURV"	
 
 #
 # Classes for multiclass classification
 #
-MC_LEVELS  = c("CIR", "CON", "LN", "LX")
-MC_CLASSES = factor(MC_LEVELS)
-MC_MEASURES = factor(c("Precision", "Recall", "F1-score", "Accuracy"))
 MC_PLOTS = list("sens" = "Sensitivity", "spec" = "Specificity", "F1" = "F1 Score", "acc" = "Accuracy")
-MC_PERF = list("acc" = "Accuracy", "auc" = "AUC")
+
 
 #
 #	Constant values for  benchmarking tests

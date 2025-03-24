@@ -19,7 +19,7 @@ Learners = R6::R6Class("Learners",
     #' @description 
 		#' Create a new Learners object.
 		#' @param learner_type (character)\cr
-		#' The type of learner - "CLASSIF" for classification or "SURV" for survival analysis.
+		#' The type of learner - "classif" for classification, "multilabel" for multilabel classification or "surv" for survival analysis. 
     #' @return A new `Learners` object.
 		#' @export
 		initialize = function(learner_type) {
@@ -260,6 +260,7 @@ Learners = R6::R6Class("Learners",
 				
 				#	Begin pipeline with basic learner
 				baselrn = self$base_learners[[config$baseModels[[i]]$learner]]
+				print(baselrn)
 				lrn = do.call(mlr::makeLearner, args = append(list("cl" = baselrn$class, "id" = baselrn$name, "predict.type" = pred_type, fix.factors.prediction = TRUE), pars))
 				
 				# Add feature selection to pipeline

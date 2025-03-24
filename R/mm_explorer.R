@@ -17,15 +17,8 @@ MM_Explorer = R6::R6Class("MM_Explorer",
 		#' Create a new MM_Explorer object.
 		#' @param config (MM_Config)\cr
 		#' Configuration object, specifying how the model should be constructed.
-    #' @param model_type (character)\cr
-		#' Type of model - "CLASSIF" for classification or "SURV" for survival analysis. 
 		#' @param subset (integer)\cr
-		#' @param concat (logical(1))\cr
-		#' Should the tasks be concatenated to form a single, large dataset?
-		#' @param balance (logical(1))\cr
-		#' Should the tasks be balanced during training?
-		#' @param validate (logical(1))\cr
-		#' Should the model be validated with validation data provided in the config file.
+		#' A vector of integers specifying the indices of the modalities to be included in the model.
 		#' @param filter_zeroes (double(1))\cr
 		#' Features with this percentage of zero values or greater will not be included in the model.
 		#' @param filter_missings (double(1))\cr

@@ -22,11 +22,12 @@ MM_Meta_Learner = R6::R6Class("MM_Meta_Learner",
 		#' Create a new MM_Meta_Learner object, based on the parameters specified in the config object.
 		#' @param config (MM_Config)\cr
 		#' Configuration object, specifying how the model should be constructed.
-    #' @param model_type (character)\cr
-		#' Type of model - "CLASSIF" for classification or "SURV" for survival analysis. 
+		#' @param task_type (character)\cr
+		#' Type of model - "classif" for classification, "multilabel" for multilabel classification or "surv" for survival analysis. 
 		#' @param decision (character)\cr
-		#' Type of prediction - 'response' or 'prob'.
+		#' Type of decision in combining modalities - "prob" or "soft" for soft voting, "vote" or "hard" for hard voting, "meta for meta learning
 		#' @param subset (integer)\cr
+		#' A vector of integers specifying the indices of the modalities to be included in the model.
 		#' @param concat (logical(1))\cr
 		#' Should the tasks be concatenated to form a single, large dataset?
 		#' @param balance (logical(1))\cr

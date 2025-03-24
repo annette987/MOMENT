@@ -15,7 +15,7 @@ PerformanceMeasures = R6::R6Class("PerformanceMeasures",
     #' @description 
 		#' Create a new PerformanceMeasures object.
 		#' @param task_type (character)\cr
-		#' The type of task - "CLASSIF" for classification or "SURV" for survival analysis.
+		#' Type of model - "classif" for classification, "multilabel" for multilabel classification or "surv" for survival analysis. 
 		#' @param predict_type (character)\cr
 		#' The type of prediction to be made - “response” or “prob.
     #' @return A new `PerformanceMeasures` object.
@@ -75,6 +75,7 @@ PerformanceMeasures = R6::R6Class("PerformanceMeasures",
 					self$measures = list(acc.na)
 				}
 			} else if (task_type == "multilabel" ){
+				print("Multilabel measures")
 				self$measures = list(multilabel.ppv, multilabel.tpr, multilabel.f1, multilabel.acc, multilabel.subset01, multilabel.hamloss)
 			}
 		}
