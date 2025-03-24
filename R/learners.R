@@ -53,7 +53,7 @@ Learners = R6::R6Class("Learners",
 				ParamHelpers::makeNumericParam("cost", lower = 0.1, upper = 2)
 			)
 
-			if (learner_type == TASK_CLASSIF) {	# Classification models
+			if (learner_type == "classif") {	# Classification models
 					self$base_learners = list(
 						"RANGER" = list("class" = "classif.ranger",
 													"code" = LRN_RANGER,
@@ -100,6 +100,14 @@ Learners = R6::R6Class("Learners",
 													"name" = "RF",
 													"tune_params" = rfsrc_params1,
 													"args" = list(ntree = 1000, importance = TRUE, nodesize = 4))
+						)
+				} else if (learner_type == "multilabel") {
+						self$base_learners = list(
+							"RFSRC" = list("class" = "multilabel.randomForestSRC",
+														"code" = LRN_RFSRC,
+														"name" = "RFSRC",
+														"tune_params" = rfsrc_params2,
+														"args" = list(ntree = 1000, importance = TRUE))
 						)
 				} else {  # Survival modela
 						self$base_learners = list(

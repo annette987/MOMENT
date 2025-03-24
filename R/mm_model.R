@@ -82,7 +82,7 @@ MM_Model = R6::R6Class("MM_Model",
 				}
 				self$predict_type   = predict_type
 					
-				if (self$task_type == "SURV") {
+				if (self$task_type == "surv") {
 					self$measures = PerformanceMeasures$new(self$task_type)$measures
 				} else {
 					checkmate::assertLogical(balance)
@@ -342,7 +342,7 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @param validation Is this validation data?
     #' @return A data.frame cobtaining the selected columns of the raw data or all column sif none selected
 		#' @noRd
-		read_raw = function(dir, config, idx, row_names = 'ID', selected = NULL, prepend = FALSE, task_type = TASK_CLASSIF, validation = FALSE) 
+		read_raw = function(dir, config, idx, row_names = 'ID', selected = NULL, prepend = FALSE, task_type = "classif", validation = FALSE) 
 		{
 			if (inherits(config, "config_single")) {
 				transposing = FALSE
@@ -456,7 +456,7 @@ MM_Model = R6::R6Class("MM_Model",
 		#' @param filter_var Remove features with low variance
     #' @return A list of mlr tasks, one per modality
 		#' @export
-		create_tasks = function(data_dir, config, task_type = TASK_CLASSIF, subset = NULL, filter_zeroes = 90, filter_missings = 50, filter_corr = FALSE, filter_var = FALSE)
+		create_tasks = function(data_dir, config, task_type = "classif", subset = NULL, filter_zeroes = 90, filter_missings = 50, filter_corr = FALSE, filter_var = FALSE)
 		{
 			tasks = list()
 			row_names = ifelse(is.null(config$idVar) || is.na(config$idVar), "ID", config$idVar)	
@@ -467,16 +467,14 @@ MM_Model = R6::R6Class("MM_Model",
 				task_id = names(raw_data)[[i]]
 				dat = self$prepare_data(config, i, raw_data[[i]], row_names, task_type)
 
-				if (task_type == TASK_CLASSIF) {
-					if (length(config$targetVar) > 1) {
-						for (label in config$targetVar) {
-							dat[, label] = as.logical(dat[, label])
-						}
-						tsk = mlr::makeMultilabelTask(id = task_id, data = dat, target = config$targetVar)
-					} else {
-						tsk = mlr::makeClassifTask(id = task_id, data = dat, target = config$targetVar)
+				if (task_type == "classif") {
+					tsk = mlr::makeClassifTask(id = task_id, data = dat, target = config$targetVar)
+				} else if (task_type == "multilabel") {
+					for (label in config$targetVar) {
+						dat[, label] = as.logical(dat[, label])
 					}
-				} else if (task_type == TASK_SURV) {
+					tsk = mlr::makeMultilabelTask(id = task_id, data = dat, target = config$targetVar)
+				} else if (task_type == "surv") {
 					tsk = mlr::makeSurvTask(id = task_id, data = dat, target = c(config$timeVar, config$statusVar), fixup.data = "no", check.data = FALSE)
 				}
 				tasks[[task_id]] = tsk
