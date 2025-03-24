@@ -82,7 +82,7 @@ Features = R6::R6Class("Features", list(
 			if (!is.null(mod$importance)) {
 				imp_data = mod$importance
 			} else {
-				imp = vimp.rfsrc(mod)
+				imp = randomForestSRC::vimp.rfsrc(mod)
 				imp_data = imp$classOutput
 			}
 		} else if (inherits(mod, "randomForest")) {
