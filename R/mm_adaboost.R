@@ -111,9 +111,9 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				
 				if (length(self$meta_models) < iter) {
 					self$meta_models[[iter]] = mlr::train(self$meta_learner, meta_task)
-					if (isFailureModel(self$meta_models[[iter]])) {
+					if (mlr::isFailureModel(self$meta_models[[iter]])) {
 						warning(paste0("Meta learner failed"))
-						warning(getFailureModelMsg(self$meta_models[[iter]]))
+						warning(mlr::getFailureModelMsg(self$meta_models[[iter]]))
 					}
 					
 					mod = mlr::getLearnerModel(self$meta_models[[iter]], more.unwrap = TRUE)

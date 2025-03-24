@@ -145,19 +145,21 @@ MM_Voting = R6::R6Class("MM_Voting",
 			predn_futures = list()
 			
 			for (i in 1:length(self$tasks)) {
+				print(paste0("i = ", i))
 				predn_futures[[i]] = future::future(predict(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE, conditions = character(0))	
 			}
 			future::resolve(predn_futures)
 			print("Futures resolved")
+			print(decision)
 
 			for (i in 1:length(predn_futures)) {
+				print(paste0("i = ", i))
 				pred = future::value(predn_futures[[i]])
+				print(pred)
 				if (is.null(responses)) {
 					responses = pred$data[, c('id', 'truth')]
 					responses$ID = rownames(pred$data)
 				}
-				print(decision)
-				print(pred)
 				
 				if ((decision == 'vote') || (decision == 'hard')) {
 					res = pred$data[, 'response', drop = FALSE]
