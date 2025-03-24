@@ -125,7 +125,7 @@ Performance = R6::R6Class("Performance", list(
 #		jpeg(paste0(out_file, "_plot.jpg"))
 		plt = boxplot(data, 
 						col = rainbow(ncol(data)), 
-						main = Performance",
+						main = "Performance",
 						xlab = "Measurement", 
 						names = colnames(data), 
 						ylab = "Value",
