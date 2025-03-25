@@ -109,7 +109,6 @@ MM_Voting = R6::R6Class("MM_Voting",
 				task_id = mlr::getTaskId(self$tasks[[i]])
 				print(task_id)
 				private$models[[task_id]] = future::value(model_futures[[i]])
-				print(private$models[[task_id]])
 				
 				if (mlr::isFailureModel(private$models[[task_id]])) {
 					warning(paste0("Model ", task_id, " failed on repeat ", rpt, " fold ", fold))
@@ -148,17 +147,14 @@ MM_Voting = R6::R6Class("MM_Voting",
 			
 			for (i in 1:length(self$tasks)) {
 				print(paste0("i = ", i))
-				print(private$models[[i]])
 				predn_futures[[i]] = future::future(predict(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE, conditions = character(0))	
 			}
 			future::resolve(predn_futures)
 			print("Futures resolved")
-			print(decision)
 
 			for (i in 1:length(predn_futures)) {
 				print(paste0("i = ", i))
 				pred = future::value(predn_futures[[i]])
-				print(pred)
 				if (is.null(responses)) {
 					responses = pred$data[, c('id', 'truth')]
 					responses$ID = rownames(pred$data)
@@ -214,11 +210,13 @@ MM_Voting = R6::R6Class("MM_Voting",
 			for (rpt in 1:self$ri$desc$reps) {
 				for (fold in 1:self$ri$desc$folds) {
 					subset_idx = (rpt - 1) * self$ri$desc$folds + fold
+					print(paste0("Subset idx = ", subset_idx))
 					training_set = self$ri$train.inds[[subset_idx]]
 					test_set = self$ri$test.inds[[subset_idx]]
 
 					self$train(training_set, rpt, fold)
 					predns = self$predict(test_set, self$decision, rpt, fold)
+					print("Finished fold")
 				}
 			}
 			

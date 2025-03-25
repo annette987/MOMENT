@@ -122,7 +122,6 @@ MM_Model = R6::R6Class("MM_Model",
 					self$vresults = MM_Results$new(self$classes, self$vtasks)
 				}
 			}
-			print("Initialisation complete")
 		},
 		
     #' @description 

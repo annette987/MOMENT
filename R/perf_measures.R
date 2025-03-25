@@ -75,7 +75,6 @@ PerformanceMeasures = R6::R6Class("PerformanceMeasures",
 					self$measures = list(acc.na)
 				}
 			} else if (task_type == "multilabel" ){
-				print("Multilabel measures")
 				self$measures = list(multilabel.ppv, multilabel.tpr, multilabel.f1, multilabel.acc, multilabel.subset01, multilabel.hamloss)
 			}
 		}
