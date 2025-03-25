@@ -53,7 +53,7 @@ Features = R6::R6Class("Features", list(
 	{
 			col_name = paste0(method, "-", fold_num)
 			selected = mlr::getFilteredFeatures(getLearnerModel(mod, more.unwrap = FALSE))
-			not_selected = setdiff(getTaskFeatureNames(task, selected))
+			not_selected = setdiff(getTaskFeatureNames(task), selected)
 			feat_scores = scores[, "all"]
 			names(feat_scores) = rownames(scores)
 			if (length(not_selected) > 0) {
