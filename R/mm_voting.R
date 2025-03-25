@@ -150,34 +150,31 @@ MM_Voting = R6::R6Class("MM_Voting",
 				print(paste0("i = ", i))
 				predn_futures[[i]] = future::future(predict(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE, conditions = character(0))	
 			}
-			Sys.sleep(10)
-			for (i in 1:length(predn_futures)) {
-				print(paste0("i = ", i))
-				if (resolved(predn_futures[[i]])) {
-					print(paste0(i, " resolved"))
-				}
-			}
 			future::resolve(predn_futures)
 			print("Futures resolved")
 
 			for (i in 1:length(predn_futures)) {
 				print(paste0("i = ", i))
 				pred = future::value(predn_futures[[i]])
+				print(head(pred$data))
 				if (is.null(responses)) {
-					responses = pred$data[, c('id', 'truth')]
+					truth_cols = colnames(pred$data)[grepl("^truth", colnames(pred$data))]
+					responses = pred$data[, c('id', truth_cols)]
 					responses$ID = rownames(pred$data)
 				}
 				
-				if ((decision == 'vote') || (decision == 'hard')) {
-					res = pred$data[, 'response', drop = FALSE]
-					res$ID = rownames(pred$data)
-					responses[, mlr::getTaskId(self$tasks[[i]])] = res[match(responses$ID, res$ID), 'response']
-				} else if ((decision == 'prob') || (decision == 'soft')) {
-					probs = pred$data[, grepl("prob.", colnames(pred$data))]
-					prob_cols = gsub("prob", mlr::getTaskId(self$tasks[[i]]), colnames(probs))
-					probs$ID = rownames(pred$data)
-					responses[, prob_cols] = probs[match(responses$ID, probs$ID), grepl("prob.", colnames(probs)), drop = FALSE]
-				}								
+				search_str = ifelse((decision == 'vote') || (decision == 'hard'), "^response", "^prob")
+#				if ((decision == 'vote') || (decision == 'hard')) {
+				res = pred$data[, grepl(search_str, colnames(pred$data))]
+				res_cols = gsub(search_str, mlr::getTaskId(self$tasks[[i]]), colnames(res))
+				res$ID = rownames(pred$data)
+				responses[, res_cols] = res[match(responses$ID, res$ID), , drop = FALSE]
+#				} else if ((decision == 'prob') || (decision == 'soft')) {
+#					probs = pred$data[, grepl("^prob", colnames(pred$data))]
+#					prob_cols = gsub("prob", mlr::getTaskId(self$tasks[[i]]), colnames(probs))
+#					probs$ID = rownames(pred$data)
+#					responses[, prob_cols] = probs[match(responses$ID, probs$ID), grepl("^prob", colnames(probs)), drop = FALSE]
+#				}								
 			}
 			
 			responses = self$get_final_decision(responses, self$classes)
