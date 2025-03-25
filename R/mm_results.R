@@ -239,10 +239,11 @@ MM_Results = R6::R6Class("MM_Results",
 		save_features = function(model, task, method, fold_num)
 		{
 			scores = self$getFeatImpScores(mlr::getLearnerModel(model, more.unwrap = TRUE), self$classes)
+			print(names(scores))
 			if (self$model_type == 'multilabel') {
 				labels = mlr::getTaskTargetNames(task)
 				for (lbl_idx in labels) {
-					self$feats[[lbl_idx]]$save(scores[[lbl_idx]], model, task, method, fold_num)
+					self$feats[[lbl_idx]]$save(scores[[lbl_idx]]$importance, model, task, method, fold_num)
 				}
 			} else {
 				self$feats$save(scores, model, task, method, fold_num)
