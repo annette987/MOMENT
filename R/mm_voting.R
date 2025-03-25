@@ -61,6 +61,8 @@ MM_Voting = R6::R6Class("MM_Voting",
 		get_final_decision = function(results, classes) 
 		{
 			print("In get_final_decision")
+			print(classes)
+			print(self$task_type)
 			print(head(results))
 #			results$truth = as.factor(results$truth)
 			if (self$decision %in% c('vote', 'hard')) {
@@ -73,6 +75,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 					print(classes[i])
 					tmp = as.data.frame(results[, grepl(paste0("\\<", classes[i], "\\>"), colnames(results))])
 					prob = rowSums(tmp, na.rm = TRUE) / ncol(tmp)
+					print(prob)
 					if (self$task_type == 'multilabel') {
 						results[, paste0('response.', classes[i])] = ifelse(prob >= 0.5, TRUE, FALSE)
 					} else {

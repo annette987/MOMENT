@@ -107,6 +107,7 @@ MM_Model = R6::R6Class("MM_Model",
 					self$tasks = ctasks
 				}
 			
+				self$classes = mlr::getTaskClassLevels(self$tasks[[1]])
 				self$results = MM_Results$new(self$classes, self$tasks, self$measures, task_type, decision)
 				resamp = mlr::makeResampleDesc("RepCV", reps = config$itersOuter, folds = config$foldsOuter, stratify = (task_type != "multilabel"))
 				self$ri = mlr::makeResampleInstance(resamp, self$tasks[[1]])
