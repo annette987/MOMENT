@@ -104,6 +104,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[i]], task = self$tasks[[i]], subset = training_set), seed = TRUE, conditions = character(0))
 			}
 			future::resolve(model_futures)
+			print("Futures resolved")
 			
 			for (i in 1:length(model_futures)) {
 				task_id = mlr::getTaskId(self$tasks[[i]])
@@ -148,6 +149,13 @@ MM_Voting = R6::R6Class("MM_Voting",
 			for (i in 1:length(self$tasks)) {
 				print(paste0("i = ", i))
 				predn_futures[[i]] = future::future(predict(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE, conditions = character(0))	
+			}
+			Sys.sleep(10)
+			for (i in 1:length(predn_futures)) {
+				print(paste0("i = ", i))
+				if (resolved(predn_futures[[i]]) {
+					print(paste0(i, " resolved")
+				}
 			}
 			future::resolve(predn_futures)
 			print("Futures resolved")
