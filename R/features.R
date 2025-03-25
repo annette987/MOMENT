@@ -37,23 +37,23 @@ Features = R6::R6Class("Features", list(
 
 	#' @description 
 	#' Retrieve and save the feature importance scores from one mlr model.
-	#' @param mod (???)\cr
+	#' @param scores (numeric)
+	#' 	A vector of feature importance scores
+	#' @param mod (object)\cr
 	#' 	The mlr model
 	#' @param task (Task)\cr
 	#' 	The task for which the scores were calculated.
-	#' @param classes (character vector)
-	#' 	Names of the classes in the data
 	#' @param method (character)\cr
 	#' 	The name of the method used ???
 	#' @param fold_num (integer)\cr
 	#' 	The index of the fold for which the scores were calculated.
 	#' @return Nothing
 	#' @export	
-	save = function(scores, mod, task, classes, method, fold_num)
+	save = function(scores, mod, task, method, fold_num)
 	{
 			col_name = paste0(method, "-", fold_num)
 			selected = mlr::getFilteredFeatures(getLearnerModel(mod, more.unwrap = FALSE))
-			not_selected = setdiff(getTaskFeatureNames(task, selected)
+			not_selected = setdiff(getTaskFeatureNames(task, selected))
 			feat_scores = scores[, "all"]
 			names(feat_scores) = rownames(scores)
 			if (length(not_selected) > 0) {
