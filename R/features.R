@@ -51,6 +51,7 @@ Features = R6::R6Class("Features", list(
 	#' @export	
 	save = function(scores, mod, task, method, fold_num)
 	{
+			print(head(scores))
 			col_name = paste0(method, "-", fold_num)
 			selected = mlr::getFilteredFeatures(getLearnerModel(mod, more.unwrap = FALSE))
 			not_selected = setdiff(getTaskFeatureNames(task), selected)

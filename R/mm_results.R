@@ -242,7 +242,7 @@ MM_Results = R6::R6Class("MM_Results",
 			if (self$model_type == 'multilabel') {
 				labels = mlr::getTaskTargetNames(task)
 				for (lbl_idx in labels) {
-					self$feats[[lbl_idx]]$save(scores, model, task, method, fold_num)
+					self$feats[[lbl_idx]]$save(scores[[lbl_idx]], model, task, method, fold_num)
 				}
 			} else {
 				self$feats$save(scores, model, task, method, fold_num)
