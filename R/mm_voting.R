@@ -153,8 +153,8 @@ MM_Voting = R6::R6Class("MM_Voting",
 			Sys.sleep(10)
 			for (i in 1:length(predn_futures)) {
 				print(paste0("i = ", i))
-				if (resolved(predn_futures[[i]]) {
-					print(paste0(i, " resolved")
+				if (resolved(predn_futures[[i]])) {
+					print(paste0(i, " resolved"))
 				}
 			}
 			future::resolve(predn_futures)
