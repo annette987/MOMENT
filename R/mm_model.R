@@ -58,7 +58,7 @@ MM_Model = R6::R6Class("MM_Model",
 		initialize = function(config, task_type = "classif", predict_type = "prob", decision = "hard", subset = NULL, concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE)
 		{
 			mlr::configureMlr(show.learner.output = TRUE, on.learner.error = 'warn', on.par.without.desc = 'warn')
-			future::plan("multicore", workers = 10)
+#			future::plan("multicore", workers = 10)
 			Filters$new()
 			if (!missing(config)) {
 #				assertClass(config, "MM_Config")
