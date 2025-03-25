@@ -60,6 +60,8 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @noRd
 		get_final_decision = function(results, classes) 
 		{
+			print("In get_final_decision")
+			print(colnames(results))
 			results$truth = as.factor(results$truth)
 			if (self$decision %in% c('vote', 'hard')) {
 				# Calculate final prediction with a majority vote across modalities
@@ -156,9 +158,10 @@ MM_Voting = R6::R6Class("MM_Voting",
 			for (i in 1:length(predn_futures)) {
 				print(paste0("i = ", i))
 				pred = future::value(predn_futures[[i]])
-				print(head(pred$data))
+				print(colnames(pred$data))
 				if (is.null(responses)) {
 					truth_cols = colnames(pred$data)[grepl("^truth", colnames(pred$data))]
+					print(truth_cols)
 					responses = pred$data[, c('id', truth_cols)]
 					responses$ID = rownames(pred$data)
 				}
@@ -167,6 +170,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 #				if ((decision == 'vote') || (decision == 'hard')) {
 				res = pred$data[, grepl(search_str, colnames(pred$data))]
 				res_cols = gsub(search_str, mlr::getTaskId(self$tasks[[i]]), colnames(res))
+				print(res_cols)
 				res$ID = rownames(pred$data)
 				responses[, res_cols] = res[match(responses$ID, res$ID), , drop = FALSE]
 #				} else if ((decision == 'prob') || (decision == 'soft')) {
