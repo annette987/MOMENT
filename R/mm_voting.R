@@ -61,28 +61,33 @@ MM_Voting = R6::R6Class("MM_Voting",
 		get_final_decision = function(results, classes) 
 		{
 			print("In get_final_decision")
-			print(colnames(results))
-			results$truth = as.factor(results$truth)
+			print(head(results))
+#			results$truth = as.factor(results$truth)
 			if (self$decision %in% c('vote', 'hard')) {
-				# Calculate final prediction with a majority vote across modalities
-				raw_responses = as.data.frame(results[,!colnames(results) %in% c('id', 'ID', 'truth')])
+				# Calculate final prediction with a majority vote across labels
+				raw_responses = as.data.frame(results[,!colnames(results) %in% c('id', 'ID', 'truth')])		# WRONG!!!
 				results$response = as.factor(apply(raw_responses, 1, function(x) names(which.max(table(x)))))	
 			} else if (self$decision %in% c('prob', 'soft')) {
-				# Calculate sum of probabilities for each class and take max of that as prediction
+				# Calculate sum of probabilities for each class/label and take max of that as prediction
 				for (i in 1:length(classes)) {
-					results[, paste0('prob.', classes[[i]])] = rowSums(as.data.frame(results[, grepl(paste0("\\<", classes[[i]], "\\>"), colnames(results))]), na.rm = TRUE)
+					print(classes[i])
+					tmp = as.data.frame(results[, grepl(paste0("\\<", classes[i], "\\>"), colnames(results))])
+					prob = rowSums(tmp, na.rm = TRUE) / ncol(tmp)
+					if (self$task_type == 'multilabel') {
+						results[, paste0('response.', classes[i])] = ifelse(prob >= 0.5, TRUE, FALSE)
+					} else {
+						results[, paste0('response.', classes[[i]])] = prob
+					}
 				}
-				results$response = apply(results[, grepl("prob.", colnames(results))], 1, function(x) names(which.max(x)))
-				if (!is.null(results$response)) {
+				if (self$task_type != "multilabel") {
+					results$response = apply(results[, grepl("response.", colnames(results))], 1, function(x) names(which.max(x)))
 					results$response = strsplit(as.character(results$response), ".", fixed = TRUE)
 					results$response = as.factor(sapply(results$response, "[[", 2))
-				} else {
-					message("NULL response")
-					message(results)
+					levels(results$response) = levels(results$truth)
 				}
 			}
 			
-			levels(results$response) = levels(results$truth)
+			print(head(results))
 			return(results)
 		},
 
@@ -106,7 +111,6 @@ MM_Voting = R6::R6Class("MM_Voting",
 				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[i]], task = self$tasks[[i]], subset = training_set), seed = TRUE, conditions = character(0))
 			}
 			future::resolve(model_futures)
-			print("Futures resolved")
 			
 			for (i in 1:length(model_futures)) {
 				task_id = mlr::getTaskId(self$tasks[[i]])
@@ -161,24 +165,23 @@ MM_Voting = R6::R6Class("MM_Voting",
 				print(colnames(pred$data))
 				if (is.null(responses)) {
 					truth_cols = colnames(pred$data)[grepl("^truth", colnames(pred$data))]
+					print("Truth columns:")
 					print(truth_cols)
 					responses = pred$data[, c('id', truth_cols)]
 					responses$ID = rownames(pred$data)
 				}
 				
 				search_str = ifelse((decision == 'vote') || (decision == 'hard'), "^response", "^prob")
-#				if ((decision == 'vote') || (decision == 'hard')) {
-				res = pred$data[, grepl(search_str, colnames(pred$data))]
-				res_cols = gsub(search_str, mlr::getTaskId(self$tasks[[i]]), colnames(res))
-				print(res_cols)
-				res$ID = rownames(pred$data)
-				responses[, res_cols] = res[match(responses$ID, res$ID), , drop = FALSE]
-#				} else if ((decision == 'prob') || (decision == 'soft')) {
-#					probs = pred$data[, grepl("^prob", colnames(pred$data))]
-#					prob_cols = gsub("prob", mlr::getTaskId(self$tasks[[i]]), colnames(probs))
-#					probs$ID = rownames(pred$data)
-#					responses[, prob_cols] = probs[match(responses$ID, probs$ID), grepl("^prob", colnames(probs)), drop = FALSE]
-#				}								
+				res = pred$data[, grepl(search_str, colnames(pred$data)), drop = FALSE]
+				print(colnames(res))
+				
+				if (((decision == 'vote') || (decision == 'hard')) && (self$task_type != 'multilabel')) {
+					responses[, paste("response.", mlr::getTaskId(self$tasks[[i]]))] = res[match(responses$ID, rownames(res)), search_str, drop = FALSE]
+				} else if ((decision == 'prob') || (decision == 'soft')) {
+					res_cols = gsub(search_str, mlr::getTaskId(self$tasks[[i]]), colnames(res))
+					res$ID = rownames(pred$data)
+					responses[, res_cols] = res[match(responses$ID, res$ID), , drop = FALSE]
+				}								
 			}
 			
 			responses = self$get_final_decision(responses, self$classes)
