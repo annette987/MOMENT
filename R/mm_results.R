@@ -311,15 +311,21 @@ MM_Results = R6::R6Class("MM_Results",
 		write = function(result_file_prefix, suffix = NULL)
 		{
 			print("Writing out results")
+			self$perf$write(result_file_prefix, suffix)
+#			self$predn$write(result_file_prefix, suffix)
+
 			if (self$model_type == "classif") {
 				self$roc$write(result_file_prefix, suffix)
 				self$roc$plot("TITLE", result_file_prefix)
 			}
-			self$perf$write(result_file_prefix, suffix)
-			self$feats$complete()
-			self$feats$write(result_file_prefix, suffix)
-			self$stab$write(result_file_prefix, suffix)
-#			self$predn$write(result_file_prefix, suffix)
+			
+			if (self$model_type == 'multilabel') {
+				for (i in 1:length(self$feats)) {
+					self$feats[[i]]$complete()
+					self$feats[[i]]$write(result_file_prefix, suffix)
+					self$stab[[i]]$write(result_file_prefix, suffix)
+				}
+			}
 		},
 
 		

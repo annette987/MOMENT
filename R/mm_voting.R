@@ -74,7 +74,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 				} else {
 					for (i in 1:length(classes)) {
 						raw_responses = results[, grepl(paste0("\\<", classes[i], "\\>"), colnames(results)), drop = FALSE]
-						results[, paste0('response.', classes[i])] = apply(raw_responses, 1, function(x) names(which.max(table(x))))
+						results[, paste0('response.', classes[i])] = as.logical(apply(raw_responses, 1, function(x) names(which.max(table(x)))))
 					}
 				}
 				
