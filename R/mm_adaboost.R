@@ -114,7 +114,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					results$response = as.factor(sapply(results$response, "[[", 2))
 					levels(results$response) = levels(results$truth)
 				}
-			}
 
 			} else if (self$decision == "meta") {
 				# Train a meta learner on the results of the base learners or predict using meta model
