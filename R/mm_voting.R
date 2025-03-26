@@ -220,17 +220,14 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @export
 		learn = function() 
 		{
-			print("Learning")
 			for (rpt in 1:self$ri$desc$reps) {
 				for (fold in 1:self$ri$desc$folds) {
 					subset_idx = (rpt - 1) * self$ri$desc$folds + fold
-					print(paste0("Subset idx = ", subset_idx))
 					training_set = self$ri$train.inds[[subset_idx]]
 					test_set = self$ri$test.inds[[subset_idx]]
 
 					self$train(training_set, rpt, fold)
 					predns = self$predict(test_set, self$decision, rpt, fold)
-					print("Finished fold")
 				}
 			}
 			

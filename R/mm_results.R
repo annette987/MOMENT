@@ -185,8 +185,14 @@ MM_Results = R6::R6Class("MM_Results",
 			responses$rpt = rpt
 			responses$fold = fold
 			private$responses = rbind(private$responses, responses)	
-			pred_resp = self$make_mlr_prediction(responses, self$task_desc, self$decision, "PredictionClassif")
-			self$perf$calculate(pred_resp, self$tasks[[1]])
+#			pred = self$make_mlr_prediction(responses, self$task_desc, self$decision, "PredictionClassif")
+			pred = mlr::makePrediction(task.desc = self$task_desc, 
+																	row.names = rownames(responses), 
+																	id = responses$id, 
+																	truth = responses[, grepl("^truth", colnames(responses)), drop = FALSE],
+																	predict.type = self$decision, 
+																	y = responses[, !grepl("^truth", colnames(responses)), drop = FALSE])
+			self$perf$calculate(pred, self$tasks[[1]])
 			self$roc$calc(responses$truth, responses$response, as.list(self$classes))
 		},
 

@@ -340,7 +340,14 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			
 			y_pred_max = apply(y_pred, 1, which.max)
 			final = data.frame('id' = results$id, 'ID' = results$ID, 'truth' = results$truth, 'response' = levels(self$classes)[y_pred_max], y_pred[, grepl('prob.', colnames(y_pred))]) 
-			return(self$results$make_mlr_prediction(final, mlr::getTaskDesc(self$tasks[[1]]), self$decision))
+
+			return(mlr::makePrediction(task.desc = mlr::getTaskDesc(self$tasks[[1]]), 
+																	row.names = results$ID, 
+																	id = results$id, 
+																	truth = results[, grepl("^truth", colnames(final)), drop = FALSE],
+																	predict.type = self$decision, 
+																	y = final[, !grepl("^truth", colnames(final)), drop = FALSE]))		
+#			return(self$results$make_mlr_prediction(final, mlr::getTaskDesc(self$tasks[[1]]), self$decision))
 		},
 		
 		
