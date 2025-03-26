@@ -83,26 +83,38 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' @noRd
 		get_final_decision = function(results, classes, iter) {
 			if (self$decision %in% c('vote', 'hard')) {
-				# Calculate final prediction with a majority vote across modalities
-				raw_responses = as.data.frame(results[,!colnames(results) %in% c('id', 'ID', 'truth')])
-				if (all(is.na(raw_responses))) {
-					results$response = rep(0, nrow(raw_responses))
-				} else {
+				# Calculate final prediction with a majority vote across classes/labels
+				raw_responses = results[, grepl("^response", colnames(results)), drop = FALSE]
+				if (self$task_type != 'multilabel') {
 					results$response = as.factor(apply(raw_responses, 1, function(x) names(which.max(table(x)))))	
+				} else {
+					for (i in 1:length(classes)) {
+						raw_responses = results[, grepl(paste0("\\<", classes[i], "\\>"), colnames(results)), drop = FALSE]
+						results[, paste0('response.', classes[i])] = as.logical(apply(raw_responses, 1, function(x) names(which.max(table(x)))))
+					}
 				}
+
 			} else if (self$decision %in% c('prob', 'soft')) {
-				# Calculate sum of probabilities for each class and take max of that as prediction, but only if it passes a threshold
+				# Calculate average of probabilities for each class/label 
+				# For classification, final response is max probability
+				# For multilabel classification, apply a threhold to the response for each label to get TRUE/FALSE
+				
 				for (i in 1:length(classes)) {
-					results[, paste0('prob.', levels(classes)[i])] = rowSums(as.data.frame(results[, grepl(paste0("\\<", levels(classes)[i], "\\>"), colnames(results))]), na.rm = TRUE) / 
-																												length(levels(classes[i]))
+					tmp = results[, grepl(paste0("\\<", classes[i], "\\>"), colnames(results)), drop = FALSE]
+					prob = rowSums(tmp, na.rm = TRUE) / ncol(tmp)
+					results[, paste0('prob.', classes[[i]])] = prob
+					
+					if (self$task_type == 'multilabel') {
+						results[, paste0('response.', classes[i])] = ifelse(prob >= 0.5, TRUE, FALSE)
+					}
 				}
-				results$response = apply(results[, grepl("prob.", colnames(results))], 1, function(x) names(which.max(x)))
-				if (!is.null(results$response)) {
+				if (self$task_type != "multilabel") {
+					results$response = apply(results[, grepl("response.", colnames(results))], 1, function(x) names(which.max(x)))
 					results$response = strsplit(as.character(results$response), ".", fixed = TRUE)
 					results$response = as.factor(sapply(results$response, "[[", 2))
-				} else {
-					warning("Response is NULL!")
+					levels(results$response) = levels(results$truth)
 				}
+			}
 
 			} else if (self$decision == "meta") {
 				# Train a meta learner on the results of the base learners or predict using meta model
@@ -180,21 +192,32 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				
 				# Set up predns first time through
 				if (is.null(predns)) { 
-					predns = pred$data[, c('id', 'truth')]
+					truth_cols = colnames(pred$data)[grepl("^truth", colnames(pred$data))]
+					predns = pred$data[, c('id', truth_cols)]
 					predns$ID = rownames(pred$data)
 				}
-
-				if (self$decision %in% c("vote", "hard") || self$decision == "meta") {
-					if (!any(is.na(mlr::getPredictionResponse(pred)))) {
-						predns[, mlr::getTaskId(self$tasks[[i]])] = pred$data[match(predns$ID, rownames(pred$data)), 'response']
-					}
+				
+				search_str = ifelse((decision == 'vote') || (decision == 'hard'), "^response", "^prob")
+				res = pred$data[, grepl(search_str, colnames(pred$data)), drop = FALSE]
+				
+				if (((decision == 'vote') || (decision == 'hard')) && (self$task_type != 'multilabel')) {
+					predns[, paste("response.", mlr::getTaskId(self$tasks[[i]]))] = res[match(predns$ID, rownames(res)), , drop = FALSE]
 				} else {
-						# This should use mlr::getPredictionProbabilities - check
-						probs = pred$data[, grepl("prob.", colnames(pred$data))]
-						probs$ID = rownames(pred$data)
-						prob_cols = paste0("prob.", levels(classes))
-						predns[, paste0(mlr::getTaskId(self$tasks[[i]]), ".", levels(classes))] = probs[match(predns$ID, probs$ID), prob_cols, drop = FALSE]
-				}
+					res_cols = gsub(search_str, mlr::getTaskId(self$tasks[[i]]), colnames(res))
+					res$ID = rownames(pred$data)
+					predns[, res_cols] = res[match(responses$ID, res$ID), , drop = FALSE]
+				}								
+
+#				if (self$decision %in% c("vote", "hard") || self$decision == "meta") {
+#					if (!any(is.na(mlr::getPredictionResponse(pred)))) {
+#						predns[, mlr::getTaskId(self$tasks[[i]])] = pred$data[match(predns$ID, rownames(pred$data)), 'response']
+#					}
+#				} else {
+#						probs = pred$data[, grepl("prob.", colnames(pred$data))]
+#						probs$ID = rownames(pred$data)
+#						prob_cols = paste0("prob.", levels(classes))
+#						predns[, paste0(mlr::getTaskId(self$tasks[[i]]), ".", levels(classes))] = probs[match(predns$ID, probs$ID), prob_cols, drop = FALSE]
+#				}
 			}		
 			return(as.data.frame(predns))
 		},
@@ -346,7 +369,8 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 																	id = results$id, 
 																	truth = results[, grepl("^truth", colnames(final)), drop = FALSE],
 																	predict.type = self$decision, 
-																	y = final[, !grepl("^truth", colnames(final)), drop = FALSE]))		
+																	y = final[, !grepl("^truth", colnames(final)), drop = FALSE],
+																	time = NA_real_))		
 #			return(self$results$make_mlr_prediction(final, mlr::getTaskDesc(self$tasks[[1]]), self$decision))
 		},
 		
