@@ -109,7 +109,7 @@ Performance = R6::R6Class("Performance", list(
 	#'  If this value is NA (the default), the results saved internally are plotted.
 	#' @return The plot object
 	#' @export	
-	plot = function(method, result_file = NA) {
+	plot = function(out_file, result_file = NA) {
 		if (!is.na(result_file)) {
 			data = read.csv(result_file, sep = ",", dec = '.', header = TRUE, stringsAsFactors=FALSE)
 		} else {
@@ -122,7 +122,7 @@ Performance = R6::R6Class("Performance", list(
 		par(cex.main = 2.5)
 		par(cex.lab = 2.5)
 		par(cex.axis = 2.5)
-#		jpeg(paste0(out_file, "_plot.jpg"))
+		jpeg(paste0(out_file, "_plot.jpg"))
 		plt = boxplot(data, 
 						col = rainbow(ncol(data)), 
 						main = "Performance",
@@ -130,7 +130,7 @@ Performance = R6::R6Class("Performance", list(
 						names = colnames(data), 
 						ylab = "Value",
 						ylim = c(0.0, 1.0) )
-#		dev.off()
+		dev.off()
 		return(plt)
 	})
 )
