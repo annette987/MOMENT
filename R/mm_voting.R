@@ -65,17 +65,23 @@ MM_Voting = R6::R6Class("MM_Voting",
 			print(self$task_type)
 			print(head(results))
 #			results$truth = as.factor(results$truth)
+
 			if (self$decision %in% c('vote', 'hard')) {
-				# Calculate final prediction with a majority vote across labels
-				raw_responses = as.data.frame(results[,!colnames(results) %in% c('id', 'ID', 'truth')])		# WRONG!!!
+				# Calculate final prediction with a majority vote across classes/labels
+				truth_cols = colnames(pred$data)[grepl("^truth", colnames(pred$data))]
+				raw_responses = results[, grepl("^response", colnames(results)), drop = FALSE]
 				results$response = as.factor(apply(raw_responses, 1, function(x) names(which.max(table(x)))))	
+				
 			} else if (self$decision %in% c('prob', 'soft')) {
-				# Calculate sum of probabilities for each class/label and take max of that as prediction
+				# Calculate average of probabilities for each class/label 
+				# For classification, final response is max probability
+				# For multilable classification, apply a threhold to the response fo reach label to get TRUE/FALSE
+				
 				for (i in 1:length(classes)) {
 					print(classes[i])
-					tmp = as.data.frame(results[, grepl(paste0("\\<", classes[i], "\\>"), colnames(results))])
+					tmp = results[, grepl(paste0("\\<", classes[i], "\\>"), colnames(results)), drop = FALSE]
 					prob = rowSums(tmp, na.rm = TRUE) / ncol(tmp)
-					print(prob)
+					
 					if (self$task_type == 'multilabel') {
 						results[, paste0('response.', classes[i])] = ifelse(prob >= 0.5, TRUE, FALSE)
 					} else {
@@ -179,8 +185,8 @@ MM_Voting = R6::R6Class("MM_Voting",
 				print(colnames(res))
 				
 				if (((decision == 'vote') || (decision == 'hard')) && (self$task_type != 'multilabel')) {
-					responses[, paste("response.", mlr::getTaskId(self$tasks[[i]]))] = res[match(responses$ID, rownames(res)), search_str, drop = FALSE]
-				} else if ((decision == 'prob') || (decision == 'soft')) {
+					responses[, paste("response.", mlr::getTaskId(self$tasks[[i]]))] = res[match(responses$ID, rownames(res)), , drop = FALSE]
+				} else {
 					res_cols = gsub(search_str, mlr::getTaskId(self$tasks[[i]]), colnames(res))
 					res$ID = rownames(pred$data)
 					responses[, res_cols] = res[match(responses$ID, res$ID), , drop = FALSE]

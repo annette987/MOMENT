@@ -181,8 +181,7 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @export
 		save_responses = function(responses, rpt, fold)
 		{
-			stopifnot(self$model_type != "surv")
-			stopifnot(inherits(responses, "data.frame") && (all(c("response", "truth") %in% colnames(responses))) && self$model_type != "surv")
+			stopifnot(inherits(responses, "data.frame") && self$model_type != "surv")
 			responses$rpt = rpt
 			responses$fold = fold
 			private$responses = rbind(private$responses, responses)	
