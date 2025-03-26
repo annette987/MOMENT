@@ -162,7 +162,6 @@ MM_Voting = R6::R6Class("MM_Voting",
 			predn_futures = list()
 			
 			for (i in 1:length(self$tasks)) {
-				print(paste0("i = ", i))
 				predn_futures[[i]] = future::future(predict(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE, conditions = character(0))	
 			}
 			future::resolve(predn_futures)

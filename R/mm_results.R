@@ -238,7 +238,6 @@ MM_Results = R6::R6Class("MM_Results",
 		save_features = function(model, task, method, fold_num)
 		{
 			scores = self$getFeatImpScores(mlr::getLearnerModel(model, more.unwrap = TRUE), self$classes)
-			print(scores)
 			if (self$model_type == 'multilabel') {
 				labels = mlr::getTaskTargetNames(task)
 				for (lbl_idx in labels) {
@@ -311,9 +310,9 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @export				
 		write = function(result_file_prefix, suffix = NULL)
 		{
-			print("Writing out results")
+			print(paste0("Writing out results to ", result_file_prefix))
 			self$perf$write(result_file_prefix, suffix)
-			self$perf$plot(result_file_prefix, suffix)
+			self$perf$plot('', result_file_prefix, suffix)
 #			self$predn$write(result_file_prefix, suffix)
 
 			if (self$model_type == "classif") {
