@@ -312,7 +312,7 @@ MM_Results = R6::R6Class("MM_Results",
 		{
 			print(paste0("Writing out results to ", result_file_prefix))
 			self$perf$write(result_file_prefix, suffix)
-			self$perf$plot('', result_file_prefix, suffix)
+			self$perf$plot('', result_file_prefix)
 #			self$predn$write(result_file_prefix, suffix)
 
 			if (self$model_type == "classif") {
