@@ -63,14 +63,20 @@ MM_Voting = R6::R6Class("MM_Voting",
 			print("In get_final_decision")
 			print(classes)
 			print(self$task_type)
-			print(head(results))
+#			print(head(results))
 #			results$truth = as.factor(results$truth)
 
 			if (self$decision %in% c('vote', 'hard')) {
 				# Calculate final prediction with a majority vote across classes/labels
-				truth_cols = colnames(pred$data)[grepl("^truth", colnames(pred$data))]
 				raw_responses = results[, grepl("^response", colnames(results)), drop = FALSE]
-				results$response = as.factor(apply(raw_responses, 1, function(x) names(which.max(table(x)))))	
+				if (self$task_type != 'multilabel') {
+					results$response = as.factor(apply(raw_responses, 1, function(x) names(which.max(table(x)))))	
+				} else {
+					for (i in 1:length(classes)) {
+						raw_responses = results[, grepl(paste0("\\<", classes[i], "\\>"), colnames(results)), drop = FALSE]
+						results[, paste0('response.', classes[i])] = as.factor(apply(raw_responses, 1, function(x) names(which.max(table(x)))))	
+					}
+				}
 				
 			} else if (self$decision %in% c('prob', 'soft')) {
 				# Calculate average of probabilities for each class/label 
@@ -78,7 +84,6 @@ MM_Voting = R6::R6Class("MM_Voting",
 				# For multilable classification, apply a threhold to the response fo reach label to get TRUE/FALSE
 				
 				for (i in 1:length(classes)) {
-					print(classes[i])
 					tmp = results[, grepl(paste0("\\<", classes[i], "\\>"), colnames(results)), drop = FALSE]
 					prob = rowSums(tmp, na.rm = TRUE) / ncol(tmp)
 					
@@ -96,6 +101,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 				}
 			}
 			
+			print("After final decision:")
 			print(head(results))
 			return(results)
 		},
@@ -174,8 +180,6 @@ MM_Voting = R6::R6Class("MM_Voting",
 				print(colnames(pred$data))
 				if (is.null(responses)) {
 					truth_cols = colnames(pred$data)[grepl("^truth", colnames(pred$data))]
-					print("Truth columns:")
-					print(truth_cols)
 					responses = pred$data[, c('id', truth_cols)]
 					responses$ID = rownames(pred$data)
 				}
@@ -192,6 +196,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 					responses[, res_cols] = res[match(responses$ID, res$ID), , drop = FALSE]
 				}								
 			}
+			print(colnames(responses))
 			
 			responses = self$get_final_decision(responses, self$classes)
 			self$results$save_responses(responses, rpt, fold)
