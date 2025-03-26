@@ -61,13 +61,11 @@ MM_Voting = R6::R6Class("MM_Voting",
 		get_final_decision = function(results, classes) 
 		{
 			print("In get_final_decision")
-			print(classes)
-			print(self$task_type)
-#			print(head(results))
 #			results$truth = as.factor(results$truth)
 
 			if (self$decision %in% c('vote', 'hard')) {
 				# Calculate final prediction with a majority vote across classes/labels
+				
 				raw_responses = results[, grepl("^response", colnames(results)), drop = FALSE]
 				if (self$task_type != 'multilabel') {
 					results$response = as.factor(apply(raw_responses, 1, function(x) names(which.max(table(x)))))	
@@ -81,16 +79,15 @@ MM_Voting = R6::R6Class("MM_Voting",
 			} else if (self$decision %in% c('prob', 'soft')) {
 				# Calculate average of probabilities for each class/label 
 				# For classification, final response is max probability
-				# For multilable classification, apply a threhold to the response fo reach label to get TRUE/FALSE
+				# For multilabel classification, apply a threhold to the response for each label to get TRUE/FALSE
 				
 				for (i in 1:length(classes)) {
 					tmp = results[, grepl(paste0("\\<", classes[i], "\\>"), colnames(results)), drop = FALSE]
 					prob = rowSums(tmp, na.rm = TRUE) / ncol(tmp)
+					results[, paste0('prob.', classes[[i]])] = prob
 					
 					if (self$task_type == 'multilabel') {
 						results[, paste0('response.', classes[i])] = ifelse(prob >= 0.5, TRUE, FALSE)
-					} else {
-						results[, paste0('response.', classes[[i]])] = prob
 					}
 				}
 				if (self$task_type != "multilabel") {
@@ -120,7 +117,6 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @export
 		train = function(training_set, rpt, fold) 
 		{
-			print("Training")
 			model_futures = list()			
 			for (i in 1:length(self$tasks)) {
 				model_futures[[i]] = future::future(mlr::train(learner = self$learners[[i]], task = self$tasks[[i]], subset = training_set), seed = TRUE, conditions = character(0))
@@ -129,7 +125,6 @@ MM_Voting = R6::R6Class("MM_Voting",
 			
 			for (i in 1:length(model_futures)) {
 				task_id = mlr::getTaskId(self$tasks[[i]])
-				print(task_id)
 				private$models[[task_id]] = future::value(model_futures[[i]])
 				
 				if (mlr::isFailureModel(private$models[[task_id]])) {
@@ -158,7 +153,6 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @export
 		predict = function(test_set, decision, rpt, fold) 
 		{
-			print("Predicting")
 			checkmate::assertInteger(test_set)
 			checkmate::assertChoice(decision, choices = c('vote', 'hard', 'prob', 'soft'))
 			checkmate::assertInteger(rpt)
@@ -172,12 +166,9 @@ MM_Voting = R6::R6Class("MM_Voting",
 				predn_futures[[i]] = future::future(predict(private$models[[i]], self$tasks[[i]], subset = test_set), seed = TRUE, conditions = character(0))	
 			}
 			future::resolve(predn_futures)
-			print("Futures resolved")
 
 			for (i in 1:length(predn_futures)) {
-				print(paste0("i = ", i))
 				pred = future::value(predn_futures[[i]])
-				print(colnames(pred$data))
 				if (is.null(responses)) {
 					truth_cols = colnames(pred$data)[grepl("^truth", colnames(pred$data))]
 					responses = pred$data[, c('id', truth_cols)]
@@ -186,7 +177,6 @@ MM_Voting = R6::R6Class("MM_Voting",
 				
 				search_str = ifelse((decision == 'vote') || (decision == 'hard'), "^response", "^prob")
 				res = pred$data[, grepl(search_str, colnames(pred$data)), drop = FALSE]
-				print(colnames(res))
 				
 				if (((decision == 'vote') || (decision == 'hard')) && (self$task_type != 'multilabel')) {
 					responses[, paste("response.", mlr::getTaskId(self$tasks[[i]]))] = res[match(responses$ID, rownames(res)), , drop = FALSE]
@@ -196,7 +186,6 @@ MM_Voting = R6::R6Class("MM_Voting",
 					responses[, res_cols] = res[match(responses$ID, res$ID), , drop = FALSE]
 				}								
 			}
-			print(colnames(responses))
 			
 			responses = self$get_final_decision(responses, self$classes)
 			self$results$save_responses(responses, rpt, fold)
