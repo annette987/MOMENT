@@ -289,7 +289,7 @@ MM_Results = R6::R6Class("MM_Results",
 			}
 			
 			if (self$model_type == 'multilabel') {
-				labels = mlr::getTaskTargetNames(task)
+				labels = mlr::getTaskTargetNames(self$task_desc)
 				for (lbl_idx in labels) {
 					self$stab[[lbl_idx]]$save_all(self$model_type, self$feats[[lbl_idx]]$featsel)
 				}
