@@ -310,6 +310,7 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @export				
 		write = function(result_file_prefix, suffix = NULL)
 		{
+			print("Writing out results")
 			if (self$model_type == "classif") {
 				self$roc$write(result_file_prefix, suffix)
 				self$roc$plot("TITLE", result_file_prefix)
