@@ -191,7 +191,8 @@ MM_Results = R6::R6Class("MM_Results",
 																	id = responses$id, 
 																	truth = responses[, grepl("^truth", colnames(responses)), drop = FALSE],
 																	predict.type = self$decision, 
-																	y = responses[, !grepl("^truth", colnames(responses)), drop = FALSE])
+																	y = responses[, !grepl("^truth", colnames(responses)), drop = FALSE],
+																	time = NA_real_)
 			self$perf$calculate(pred, self$tasks[[1]])
 			self$roc$calc(responses$truth, responses$response, as.list(self$classes))
 		},
