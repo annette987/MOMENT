@@ -144,13 +144,14 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				}
 			}
 
-			return(mlr::makePrediction(task.desc = mlr::getTaskDesc(self$tasks[[1]]), 
-																 row.names = rownames(results), 
-																 id = results$id, 
-																 truth = results[, grepl("^truth", colnames(results)), drop = FALSE],
-																 predict.type = self$decision, 
-																 y = results[, !grepl("^truth", colnames(results)), drop = FALSE],
-																 time = NA_real_))
+			return(results)
+#			return(mlr::makePrediction(task.desc = mlr::getTaskDesc(self$tasks[[1]]), 
+#																 row.names = rownames(results), 
+#																 id = results$id, 
+#																 truth = results[, grepl("^truth", colnames(results)), drop = FALSE],
+#																 predict.type = self$decision, 
+#																 y = results[, !grepl("^truth", colnames(results)), drop = FALSE],
+#																 time = NA_real_))
 		},
 		
 		
@@ -210,7 +211,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				}
 				
 				search_str = ifelse((decision == 'vote') || (decision == 'hard'), "^response", "^prob")
-				print(search_str)
 				res = pred$data[, grepl(search_str, colnames(pred$data)), drop = FALSE]
 				
 				if (((decision == 'vote') || (decision == 'hard')) && (self$task_type != 'multilabel')) {
@@ -232,7 +232,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 #						predns[, paste0(mlr::getTaskId(self$tasks[[i]]), ".", levels(classes))] = probs[match(predns$ID, probs$ID), prob_cols, drop = FALSE]
 #				}
 			}
-			print(head(predns))
 			return(as.data.frame(predns))
 		},
 		
@@ -265,16 +264,19 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					correct = rep(FALSE, length(train_subset))
 				} else {
 					predictions = self$get_final_decision(predictions, self$classes, boost_iter)
-					print(head(predictions$data))
+					print(head(predictions))
 					
 					# Record a correct prediction only if it was made with high confidence, i.e.:
 					# for classification: a clear majority (hard vote) or a probability >= twice that of the next highest class probability,
 					# for multilabel: mean number of correct predictions > 0.5  (OR SHOULD THIS BE HIGHER?)
 					# Otherwise upweight.
 					if (self$task_type == 'multilabel') {
-							truth = mlr::getPredictionTruth(predictions)
-							response = mlr::getPredictionResponse(predictions)
+							truth = predictions[, grepl("^truth", colnames(predictions)), drop = FALSE]
+							print(head(truth))
+							response = predictions[, grepl("^response", colnames(predictions)), drop = FALSE]
+							print(head(response))
 							num_correct = rowSums(truth == response)
+							print(head(num_correct))
 							correct = ifelse(num_correct >= length(self$tasks)/2, 1, 0)
 							print(correct)							
 					} else {
@@ -291,6 +293,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 
 			# Calculate the error
 				err = sum(as.numeric(!correct) * weights, na.rm = TRUE)
+				print(err)
 				if (err == 0) {
 					alpha = 100  # Large positive
 				} else if (err == 1) {
@@ -398,7 +401,8 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			
 			y_pred_max = apply(y_pred, 1, which.max)
 			final = data.frame('id' = results$id, 'ID' = results$ID, 'truth' = results$truth, 'response' = levels(self$classes)[y_pred_max], y_pred[, grepl('prob.', colnames(y_pred))]) 
-
+			print(head(final))
+			
 			return(mlr::makePrediction(task.desc = mlr::getTaskDesc(self$tasks[[1]]), 
 																	row.names = results$ID, 
 																	id = results$id, 
