@@ -204,7 +204,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				} else {
 					res_cols = gsub(search_str, mlr::getTaskId(self$tasks[[i]]), colnames(res))
 					res$ID = rownames(pred$data)
-					predns[, res_cols] = res[match(responses$ID, res$ID), , drop = FALSE]
+					predns[, res_cols] = res[match(predns$ID, res$ID), , drop = FALSE]
 				}								
 
 #				if (self$decision %in% c("vote", "hard") || self$decision == "meta") {
