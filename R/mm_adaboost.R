@@ -83,6 +83,8 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' @noRd
 		get_final_decision = function(results, classes, iter) {
 			print("In get_final_decision")
+			print(self$decision)
+			print(self$task_type)
 			
 			if (self$decision %in% c('vote', 'hard')) {
 				# Calculate final prediction with a majority vote across classes/labels
@@ -95,6 +97,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 						results[, paste0('response.', classes[i])] = as.logical(apply(raw_responses, 1, function(x) names(which.max(table(x)))))
 					}
 				}
+				print(head(results))
 
 			} else if (self$decision %in% c('prob', 'soft')) {
 				# Calculate average of probabilities for each class/label 
@@ -170,6 +173,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' @noRd
 		get_predictions = function(train_subset, test_subset, classes, iter) 
 		{
+			print("In get_predictions")
 			predns = NULL
 			model_futures = list()
 			predn_futures = list()
@@ -206,6 +210,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				}
 				
 				search_str = ifelse((decision == 'vote') || (decision == 'hard'), "^response", "^prob")
+				print(search_str)
 				res = pred$data[, grepl(search_str, colnames(pred$data)), drop = FALSE]
 				
 				if (((decision == 'vote') || (decision == 'hard')) && (self$task_type != 'multilabel')) {
@@ -255,7 +260,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 			# If all predicted correctly, then weights won't be updated, so no point continuing
 			while (boost_iter <= self$nrounds && any(correct == 0)) {
 				predictions = self$get_predictions(wght_sample, train_subset, self$classes, boost_iter)
-				if (all(is.na(predictions[, !names(predictions) %in% c('id', 'ID', 'truth', 'response')]))) { 
+				if (all(is.na(predictions[, !names(predictions) %in% c('id', 'ID', 'truth', 'response')]))) {   # WRONG for multilabel
 					warning("All models failed!")
 					correct = rep(FALSE, length(train_subset))
 				} else {
@@ -269,7 +274,9 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					if (self$task_type == 'multilabel') {
 							truth = mlr::getPredictionTruth(predictions)
 							response = mlr::getPredictionResponse(predictions)
-							correct = mean(truth == response) > 0.5						
+							num_correct = rowSums(truth == response)
+							correct = ifelse(num_correct >= length(self$tasks)/2, 1, 0)
+							print(correct)							
 					} else {
 						if (self$decision == 'prob') {
 							high_conf = t(apply(predictions[, grepl('prob.', colnames(predictions))], 1, function(x) sort(x, TRUE)))
