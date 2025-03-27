@@ -82,6 +82,8 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' labelled 'response', containing the final response for the classifier.
 		#' @noRd
 		get_final_decision = function(results, classes, iter) {
+			print("In get_final_decision")
+			
 			if (self$decision %in% c('vote', 'hard')) {
 				# Calculate final prediction with a majority vote across classes/labels
 				raw_responses = results[, grepl("^response", colnames(results)), drop = FALSE]
@@ -138,14 +140,14 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					results$response = mlr::getPredictionResponse(pred)
 				}
 			}
-			return(mlr::makePrediction(task.desc = self$task_desc, 
+
+			return(mlr::makePrediction(task.desc = mlr::getTaskDesc(self$tasks[[1]]), 
 																 row.names = rownames(results), 
 																 id = results$id, 
 																 truth = results[, grepl("^truth", colnames(results)), drop = FALSE],
 																 predict.type = self$decision, 
 																 y = results[, !grepl("^truth", colnames(results)), drop = FALSE],
 																 time = NA_real_))
-#			return(results)
 		},
 		
 		
@@ -224,7 +226,8 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 #						prob_cols = paste0("prob.", levels(classes))
 #						predns[, paste0(mlr::getTaskId(self$tasks[[i]]), ".", levels(classes))] = probs[match(predns$ID, probs$ID), prob_cols, drop = FALSE]
 #				}
-			}		
+			}
+			print(head(predns))
 			return(as.data.frame(predns))
 		},
 		
