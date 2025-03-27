@@ -344,6 +344,8 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
     #' @return Nothing
 		#' @export
 		predict = function(test_subset) {
+			print("In predict")
+			print(self$classes)
 			k = length(self$classes)
 			y_pred = 0
 			predn_futures = list()
@@ -380,7 +382,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 						res$ID = rownames(pred$data)
 						results[, res_cols] = res[match(results$ID, res$ID), , drop = FALSE]
 					}								
-
 				}
 				
 				# Get the final decision using the results from each modality
@@ -395,12 +396,19 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				} else {
 					m[cbind(1:nrow(m), as.factor(results$response))] = 1
 				}
+				print("m:")
+				print(head(m))
 				
 				y_pred = y_pred + (self$alphas[[i]] * m)
+				print("y_pred:")
+				print(y_pred)
 			}
 			
 			y_pred_max = apply(y_pred, 1, which.max)
+			print("y_pred_max")
+			print(y_pred_max)
 			final = data.frame('id' = results$id, 'ID' = results$ID, 'truth' = results$truth, 'response' = levels(self$classes)[y_pred_max], y_pred[, grepl('prob.', colnames(y_pred))]) 
+			print("Final:")
 			print(head(final))
 			
 			return(mlr::makePrediction(task.desc = mlr::getTaskDesc(self$tasks[[1]]), 
