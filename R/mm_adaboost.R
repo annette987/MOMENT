@@ -138,7 +138,14 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					results$response = mlr::getPredictionResponse(pred)
 				}
 			}
-			return(results)
+			return(mlr::makePrediction(task.desc = self$task_desc, 
+																 row.names = rownames(results), 
+																 id = results$id, 
+																 truth = results[, grepl("^truth", colnames(results)), drop = FALSE],
+																 predict.type = self$decision, 
+																 y = results[, !grepl("^truth", colnames(results)), drop = FALSE],
+																 time = NA_real_))
+#			return(results)
 		},
 		
 		
@@ -234,6 +241,7 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 		#' @export
 		train = function(train_subset) {
 			boost_iter = 1
+			print(paste0("boost_iter = ", boost_iter))
 			correct = rep(0, length(train_subset))
 				
 			# Initialise weights to be equal and take first sample
@@ -249,17 +257,25 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					correct = rep(FALSE, length(train_subset))
 				} else {
 					predictions = self$get_final_decision(predictions, self$classes, boost_iter)
+					print(head(predictions$data))
 					
-					# Record a correct prediction only if it was made with high confidence:
-					# i.e. a clear majority or a probability >= twice that of the next highest class probability.
+					# Record a correct prediction only if it was made with high confidence, i.e.:
+					# for classification: a clear majority (hard vote) or a probability >= twice that of the next highest class probability,
+					# for multilabel: mean number of correct predictions > 0.5  (OR SHOULD THIS BE HIGHER?)
 					# Otherwise upweight.
-					if (self$decision == 'prob') {
-						high_conf = t(apply(predictions[, grepl('prob.', colnames(predictions))], 1, function(x) sort(x, TRUE)))
-						high_conf = ((high_conf[, 1] / high_conf[, 2]) >= 2.0)
-						correct = (as.character(predictions$response) == as.character(predictions$truth)) & high_conf
+					if (self$task_type == 'multilabel') {
+							truth = mlr::getPredictionTruth(predictions)
+							response = mlr::getPredictionResponse(predictions)
+							correct = mean(truth == response) > 0.5						
 					} else {
-						num_correct = rowSums(as.matrix(predictions[, !names(predictions) %in% c('id', 'ID', 'truth', 'response')]) == predictions$truth, na.rm = TRUE)		
-						correct = ifelse(num_correct >= length(self$tasks)/2, 1, 0)
+						if (self$decision == 'prob') {
+							high_conf = t(apply(predictions[, grepl('prob.', colnames(predictions))], 1, function(x) sort(x, TRUE)))
+							high_conf = ((high_conf[, 1] / high_conf[, 2]) >= 2.0)
+							correct = (as.character(predictions$response) == as.character(predictions$truth)) & high_conf
+						} else {
+							num_correct = rowSums(as.matrix(predictions[, !names(predictions) %in% c('id', 'ID', 'truth', 'response')]) == predictions$truth, na.rm = TRUE)		
+							correct = ifelse(num_correct >= length(self$tasks)/2, 1, 0)
+						}
 					}
 				}
 
@@ -282,11 +298,13 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					weights[is.na(weights)] = 0
 				}
 				
-				# Resample with updated weights 
+				# Resample with updated weights
 				wght_sample = sample(train_subset, length(train_subset), replace = TRUE, prob = weights)
-				while (length(unique(predictions[wght_sample, self$targetVar])) != length(unique(predictions[train_subset, self$targetVar]))) {
-					warning("Not all classes represented in sample - trying again")
-					wght_sample = sample(train_subset, length(train_subset), replace = TRUE, prob = weights)
+				if (self$task_type == "classif") {
+					while (length(unique(predictions[wght_sample, self$targetVar])) != length(unique(predictions[train_subset, self$targetVar]))) {
+						warning("Not all classes represented in sample - trying again")
+						wght_sample = sample(train_subset, length(train_subset), replace = TRUE, prob = weights)
+					}
 				}
 				boost_iter = boost_iter + 1
 			}
@@ -328,20 +346,28 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				}
 			
 				# Wait for results
-				future::resolve(predn_futures)			
+				future::resolve(predn_futures)
+				results = NULL
+				
 				for (j in 1:length(predn_futures)) {
 					pred = value(predn_futures[[j]])
-					if (j == 1) {
-						results = data.frame("id" = pred$data$id, "ID" = row.names(pred$data), "truth" = pred$data$truth)
+					if (is.null(results)) {
+						truth_cols = colnames(pred$data)[grepl("^truth", colnames(pred$data))]
+						results = pred$data[, c('id', truth_cols)]
+						results$ID = rownames(pred$data)
 					}
-					if (self$decision %in% c("prob", "soft")) {
-						probs = pred$data[, !colnames(pred$data) %in% c('id', 'truth', 'response')]
-						colnames(probs) = gsub("prob", mlr::getTaskId(self$tasks[[j]]), colnames(probs))
-						results = cbind(results, probs)
-						row.names(results) = NULL
+										
+					search_str = ifelse((self$decision == 'vote') || (self$decision == 'hard'), "^response", "^prob")
+					res = pred$data[, grepl(search_str, colnames(pred$data)), drop = FALSE]
+				
+					if (((self$decision == 'vote') || (self$decision == 'hard')) && (self$task_type != 'multilabel')) {
+						results[, paste("response.", mlr::getTaskId(self$tasks[[j]]))] = res[match(results$ID, rownames(res)), , drop = FALSE]
 					} else {
-						results[, mlr::getTaskId(self$tasks[[j]])] = pred$data$response
-					}
+						res_cols = gsub(search_str, mlr::getTaskId(self$tasks[[j]]), colnames(res))
+						res$ID = rownames(pred$data)
+						results[, res_cols] = res[match(results$ID, res$ID), , drop = FALSE]
+					}								
+
 				}
 				
 				# Get the final decision using the results from each modality
@@ -370,7 +396,6 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 																	predict.type = self$decision, 
 																	y = final[, !grepl("^truth", colnames(final)), drop = FALSE],
 																	time = NA_real_))		
-#			return(self$results$make_mlr_prediction(final, mlr::getTaskDesc(self$tasks[[1]]), self$decision))
 		},
 		
 		

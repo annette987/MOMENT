@@ -150,7 +150,6 @@ MM_Model = R6::R6Class("MM_Model",
 				self$learners   = learners
 			}
 			self$config   	= model$config
-			self$task_type = model$task_type
 			self$task_type  = model$task_type
 			self$targetVar  = model$targetVar
 			self$decision   = model$decision
