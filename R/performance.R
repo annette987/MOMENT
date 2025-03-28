@@ -114,10 +114,12 @@ Performance = R6::R6Class("Performance", list(
 			data = read.csv(result_file, sep = ",", dec = '.', header = TRUE, stringsAsFactors=FALSE)
 		} else {
 			for (m in names(self$perf)) {
-					data = cbind(data, unlist(self$perf[[m]]))
+				print(m)
+				data = cbind(data, unlist(self$perf[[m]]))
 			}
 			colnames(data) = gsub("^.*?\\.", "", names(self$perf))
 		}
+		print(data)
 
 		par(cex.main = 2.5)
 		par(cex.lab = 2.5)
