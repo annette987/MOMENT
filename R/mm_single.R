@@ -95,6 +95,7 @@ MM_Single = R6::R6Class("MM_Single",
 		learn = function(active_learners) 
 		{
 			print("Learning")
+			print(active_learners)
 			learners = Learners$new(self$task_type)
 			base_filters = learners$base_filters
 			base_learners = learners$base_learners
@@ -105,9 +106,12 @@ MM_Single = R6::R6Class("MM_Single",
 				dat = getTaskData(self$tasks[[i]], target.extra = TRUE)
 				if (active_learners <= LRN_LAST || active_learners == LRN_ALL_MODELS) {
 					for (baselrn in base_learners) {
+						print(baselrn$code)
+						print(bitwAnd(active_learners, baselrn$code))
 						if (bitwAnd(active_learners, baselrn$code) || bitwAnd(active_learners, LRN_ALL_MODELS)) {
 							targets = getTaskTargetNames(self$tasks[[i]])
 							lrn = learners$create_learner(targets, baselrn, NULL, self$task_type, self$decision, TRUE)
+							print("Resampling")
 							res = mlr::resample(learner = lrn, task = self$tasks[[i]], measures = self$measures, resampling = self$ri, models = TRUE, extract = getFilteredFeatures)
 							self$single_results[[result_idx]] = self$get_model_results(res, self$tasks[[i]])
 							result_idx = result_idx + 1
