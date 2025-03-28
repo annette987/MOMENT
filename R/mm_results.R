@@ -212,16 +212,13 @@ MM_Results = R6::R6Class("MM_Results",
 		{
 			if (self$model_type == "surv") {
 				predn_class = "PredictionSurv"
-				check_cols  = c("response", "truth.time", "truth.event")
 			} else if (self$model_type == "multilabel") {
 				predn_class = "PredictionMultilabel"
-				check_cols  = c("response", "truth")  # WRONG - Need to look for truth.*, label.*? or response.*?
 			} else {
 				predn_class = "PredictionClassif"
-				check_cols  = c("response", "truth")
 			}
 			
-			stopifnot(all(check_cols %in% colnames(pred$data)))
+			stopifnot(any(grepl("^response|^truth", colnames(pred$data))))
 			private$responses = rbind(private$responses, pred$data)			
 			self$perf$calculate(pred, task, model)
 			if (self$model_type == "classif") {
