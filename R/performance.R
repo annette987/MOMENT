@@ -117,9 +117,10 @@ Performance = R6::R6Class("Performance", list(
 				print(m)
 				data = cbind(data, unlist(self$perf[[m]]))
 			}
+			print(gsub("^.*?\\.", "", names(self$perf)))
+			print(colnames(data))
 			colnames(data) = gsub("^.*?\\.", "", names(self$perf))
 		}
-		print(data)
 
 		par(cex.main = 2.5)
 		par(cex.lab = 2.5)
