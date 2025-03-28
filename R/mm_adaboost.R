@@ -314,6 +314,8 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 				# Resample with updated weights
 				wght_sample = sample(train_subset, length(train_subset), replace = TRUE, prob = weights)
 				if (self$task_type == "classif") {
+					print("Updating weights")
+					print(self$targetVar)
 					while (length(unique(predictions[wght_sample, self$targetVar])) != length(unique(predictions[train_subset, self$targetVar]))) {
 						warning("Not all classes represented in sample - trying again")
 						wght_sample = sample(train_subset, length(train_subset), replace = TRUE, prob = weights)
@@ -393,8 +395,9 @@ MM_Adaboost = R6::R6Class("MM_Adaboost",
 					for (cls in self$classes) {
 						m[, paste0('prob.', cls)] = results[, paste0('prob.', cls)]
 					}
-				} else {					
-					m[cbind(1:nrow(m), as.factor(results[, grepl("^response", colnames(results)), drop = FALSE]))] = 1
+				} else {
+					m[cbind(1:nrow(m), as.factor(results$response))] = 1
+#					m[cbind(1:nrow(m), results[, grepl("^response", colnames(results)), drop = FALSE])] = 1
 				}
 				print("m:")
 				print(head(m))

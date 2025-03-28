@@ -45,7 +45,7 @@ MM_Single = R6::R6Class("MM_Single",
     #' @return A new `MM_Single`object.
 		#' @export
 		initialize = function(config, task_type = "classif", predict_type = "response", concat = FALSE, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
-			super$initialize(config, task_type, predict_type, NULL, NULL, concat, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
+			super$initialize(config, task_type, predict_type, "hard", NULL, concat, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 			self$model_type = model_type
 		},		
 
