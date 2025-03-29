@@ -71,10 +71,13 @@ MM_Single = R6::R6Class("MM_Single",
 		
 		get_model_results = function(res, task)
 		{
+			print("Getting results")
 			results = MM_Results$new(self$classes, self$tasks, self$measures, self$task_type, self$decision)
+			print("MM_Results initialised")
 			
 			for (i in 1:length(res$models)) 
 			{
+				print(paste0("i = ", i))
 				results$save_predictions(res$pred, task, res$models[[i]])
 				results$save_features(res$models[[i]], task, self$task_type, i)
 			}
@@ -92,6 +95,7 @@ MM_Single = R6::R6Class("MM_Single",
 		#' @export
 		learn = function(active_learners) 
 		{
+			print("Learning")
 			learners = Learners$new(self$task_type)
 			base_filters = learners$base_filters
 			base_learners = learners$base_learners
@@ -105,8 +109,10 @@ MM_Single = R6::R6Class("MM_Single",
 							targets = getTaskTargetNames(self$tasks[[i]])
 							lrn = learners$create_learner(targets, baselrn, NULL, self$predict_type, TRUE)
 							res = mlr::resample(learner = lrn, task = self$tasks[[i]], measures = self$measures, resampling = self$ri, models = TRUE, extract = getFilteredFeatures)
+							print("Resampling done")
 							self$single_results[[result_idx]] = self$get_model_results(res, self$tasks[[i]])
 							result_idx = result_idx + 1
+							print(paste0("result_idx = ", result_idx))
 						}
 					}
 				} else {

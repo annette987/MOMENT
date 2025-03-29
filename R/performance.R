@@ -110,6 +110,7 @@ Performance = R6::R6Class("Performance", list(
 	#' @return The plot object
 	#' @export	
 	plot = function(out_file, result_file = NA) {
+		print("Plotting performance")
 		if (!is.na(result_file)) {
 			data = read.csv(result_file, sep = ",", dec = '.', header = TRUE, stringsAsFactors=FALSE)
 		} else {
