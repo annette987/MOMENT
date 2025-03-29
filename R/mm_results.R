@@ -75,6 +75,8 @@ MM_Results = R6::R6Class("MM_Results",
 		getFeatImpScores = function(mod, class_names = NULL)
 		{	
 			print("In getFeatImpScores")
+			print(class(mod))
+			print(str(mod, max.level = 1))
 			imp_data = NULL
 			if (is.null(mod)) {
 				cat(paste("=======> Model is null!!\n"))		
