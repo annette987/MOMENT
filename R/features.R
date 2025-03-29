@@ -29,6 +29,7 @@ Features = R6::R6Class("Features", list(
 	initialize = function(tasks) {
 		for (i in 1:length(tasks)) {
 			all_feats = mlr::getTaskFeatureNames(tasks[[i]])
+			print(all_feats)
 			self$featsel[[names(tasks)[[i]]]]      = data.frame(row.names = all_feats)
 			self$featsel_aggr[[names(tasks)[[i]]]] = data.frame(row.names = all_feats)
 		}
@@ -53,6 +54,7 @@ Features = R6::R6Class("Features", list(
 	{
 			print("Saving features")
 			col_name = paste0(method, "-", fold_num)
+			print(col_name)
 			selected = mlr::getFilteredFeatures(getLearnerModel(mod, more.unwrap = FALSE))
 			print(selected)
 			not_selected = setdiff(getTaskFeatureNames(task), selected)
@@ -64,6 +66,7 @@ Features = R6::R6Class("Features", list(
 				feat_scores[not_selected] = 0
 				names(feat_scores[not_selected]) = not_selected
 			}
+			print(feat_scores)
 			self$featsel[[mlr::getTaskId(task)]][, col_name] = feat_scores
 	},
 
