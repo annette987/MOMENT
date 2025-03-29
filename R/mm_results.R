@@ -76,7 +76,7 @@ MM_Results = R6::R6Class("MM_Results",
 		{	
 			print("In getFeatImpScores")
 			print(class(mod))
-			print(str(mod, max.level = 1))
+#			print(str(mod, max.level = 1))
 			imp_data = NULL
 			if (is.null(mod)) {
 				cat(paste("=======> Model is null!!\n"))		
@@ -119,8 +119,10 @@ MM_Results = R6::R6Class("MM_Results",
 					print(imp_data)
 				}
 			} else if (inherits(mod, "randomForest")) {
+				print("randomForest")
 				imp_data = mod$importance
-				colnames(imp_data) = c('all')
+				print(imp_data)
+#				colnames(imp_data) = c('all')
 			} else if (inherits(mod, "ranger")) {
 				# N.B. This one needs to use local.importance but mlr doesn't allow it!
 				ind = which(mod$variable.importance != 0)
