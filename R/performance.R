@@ -47,6 +47,7 @@ Performance = R6::R6Class("Performance", list(
 	#' @return Nothing
 	#' @export
 	calculate = function(pred, task = NULL, model = NULL) {
+		print("Calculating performance"
 		all_perf = mlr::performance(pred, self$measures, task = task, model = model)
 		for (m in self$measures) {
 			self$perf[[m$id]] = append(self$perf[[m$id]], all_perf[[m$id]])
@@ -111,6 +112,7 @@ Performance = R6::R6Class("Performance", list(
 	#' @export	
 	plot = function(out_file, result_file = NA) {
 		print("Plotting performance")
+		print(self$perf)
 		if (!is.na(result_file)) {
 			data = read.csv(result_file, sep = ",", dec = '.', header = TRUE, stringsAsFactors=FALSE)
 		} else {
@@ -118,6 +120,7 @@ Performance = R6::R6Class("Performance", list(
 				print(m)
 				data = cbind(data, unlist(self$perf[[m]]))
 			}
+			print(data)
 			print(gsub("^.*?\\.", "", names(self$perf)))
 			print(colnames(data))
 			colnames(data) = gsub("^.*?\\.", "", names(self$perf))
