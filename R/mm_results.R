@@ -192,6 +192,7 @@ MM_Results = R6::R6Class("MM_Results",
 			responses$fold = fold
 			private$responses = rbind(private$responses, responses)	
 #			pred = self$make_mlr_prediction(responses, self$task_desc, self$decision, "PredictionClassif")
+			print(self$task_desc)
 			pred = mlr::makePrediction(task.desc = self$task_desc, 
 																	row.names = rownames(responses), 
 																	id = responses$id, 
