@@ -51,10 +51,11 @@ Performance = R6::R6Class("Performance", list(
 		all_perf = mlr::performance(pred, self$measures, task = task, model = model)
 		print(all_perf)
 		for (m in self$measures) {
-			print(m)
+			print(m$id)
 			self$perf[[m$id]] = append(self$perf[[m$id]], all_perf[[m$id]])
 			self$aggr[[m$id]] = mean(unlist(self$perf[[m$id]]), na.rm = TRUE)
 		}
+		print("Saved performance")
 		print(self$perf)
 	},
 

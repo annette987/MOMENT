@@ -74,9 +74,6 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @export
 		getFeatImpScores = function(mod, class_names = NULL)
 		{	
-			print("In getFeatImpScores")
-			print(class(mod))
-#			print(str(mod, max.level = 1))
 			imp_data = NULL
 			if (is.null(mod)) {
 				cat(paste("=======> Model is null!!\n"))		
@@ -108,20 +105,20 @@ MM_Results = R6::R6Class("MM_Results",
 				}
 				
 			} else if (inherits(mod, "rfsrc")) {
-				print("rfsrc")
-				print(str(mod, max.level = 1))
+#				print("rfsrc")
+#				print(str(mod, max.level = 1))
 				if (!is.null(mod$importance)) {
 					imp_data = mod$importance
-					print(imp_data)
+#					print(imp_data)
 				} else {
 					imp = randomForestSRC::vimp.rfsrc(mod)
 					imp_data = imp$classOutput
-					print(imp_data)
+#					print(imp_data)
 				}
 			} else if (inherits(mod, "randomForest")) {
-				print("randomForest")
+#				print("randomForest")
 				imp_data = mod$importance
-				print(imp_data)
+#				print(imp_data)
 #				colnames(imp_data) = c('all')
 			} else if (inherits(mod, "ranger")) {
 				# N.B. This one needs to use local.importance but mlr doesn't allow it!
@@ -252,9 +249,9 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @export				
 		save_features = function(model, task, method, fold_num)
 		{
-			print("Save features")
+#			print("Save features")
 			scores = self$getFeatImpScores(mlr::getLearnerModel(model, more.unwrap = TRUE), self$classes)
-			print(head(scores))
+#			print(head(scores))
 			if (self$model_type == 'multilabel') {
 				labels = mlr::getTaskTargetNames(task)
 				for (lbl_idx in labels) {
