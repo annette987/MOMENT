@@ -47,7 +47,7 @@ Performance = R6::R6Class("Performance", list(
 	#' @return Nothing
 	#' @export
 	calculate = function(pred, task = NULL, model = NULL) {
-		print("Calculating performance"
+		print("Calculating performance")
 		all_perf = mlr::performance(pred, self$measures, task = task, model = model)
 		for (m in self$measures) {
 			self$perf[[m$id]] = append(self$perf[[m$id]], all_perf[[m$id]])
