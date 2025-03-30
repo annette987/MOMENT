@@ -52,8 +52,6 @@ Features = R6::R6Class("Features", list(
 	#' @export	
 	save = function(scores, mod, task, method, fold_num)
 	{
-			print("Saving features")
-			print(scores)
 			col_name = paste0(method, "-", fold_num)
 			selected = rownames(scores)[scores[, "all"] > 0]
 			not_selected = setdiff(getTaskFeatureNames(task), selected)
