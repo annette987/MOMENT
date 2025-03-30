@@ -44,7 +44,9 @@ MM_Voting = R6::R6Class("MM_Voting",
 		#' @return A new`MM_Voting` object.
 		#' @export
 		initialize = function(config, task_type, decision = "prob", subset = NULL, balance = FALSE, validate = FALSE, filter_zeroes = 90.0, filter_missings = 50.0, filter_corr = FALSE, filter_var = FALSE) {
+			print(decision)
 			pred_type = ifelse(decision %in% c("prob", "soft"), "prob", "response")
+			print(paste0("Prediction type: ", pred_type))
 			super$initialize(config, task_type, pred_type, decision, subset, FALSE, balance, validate, filter_zeroes, filter_missings, filter_corr, filter_var)
 		},		
 

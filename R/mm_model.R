@@ -82,6 +82,7 @@ MM_Model = R6::R6Class("MM_Model",
 					checkmate::assertChoice(predict_type, choices = c("response", "prob"))
 				}
 				self$predict_type   = predict_type
+				print(self$predict_type)
 					
 				if (self$task_type == "surv") {
 					self$measures = PerformanceMeasures$new(self$task_type)$measures
@@ -108,7 +109,7 @@ MM_Model = R6::R6Class("MM_Model",
 				}
 			
 				self$classes = mlr::getTaskClassLevels(self$tasks[[1]])
-				self$results = MM_Results$new(self$classes, self$tasks, self$measures, task_type, decision)
+				self$results = MM_Results$new(self$classes, self$tasks, self$measures, task_type, self$predict_type)
 				resamp = mlr::makeResampleDesc("RepCV", reps = config$itersOuter, folds = config$foldsOuter, stratify = (task_type != "multilabel"))
 				self$ri = mlr::makeResampleInstance(resamp, self$tasks[[1]])
 
