@@ -73,7 +73,6 @@ MM_Single = R6::R6Class("MM_Single",
 		{
 			print("Getting results")
 			results = MM_Results$new(self$classes, self$tasks, self$measures, self$task_type, self$decision)
-			print("MM_Results initialised")
 			
 			for (i in 1:length(res$models)) 
 			{
@@ -110,7 +109,8 @@ MM_Single = R6::R6Class("MM_Single",
 							targets = getTaskTargetNames(self$tasks[[i]])
 							lrn = learners$create_learner(targets, baselrn, NULL, self$predict_type, TRUE, config$baseModels[[i]]$norm, config$baseModels[[i]]$imputation)
 							res = mlr::resample(learner = lrn, task = self$tasks[[i]], measures = self$measures, resampling = self$ri, models = TRUE, extract = getFilteredFeatures)
-							print("Resampling done")
+							print(res$measures.test)
+							print(res$pred)
 							self$single_results[[result_idx]] = self$get_model_results(res, self$tasks[[i]])
 							result_idx = result_idx + 1
 						}
