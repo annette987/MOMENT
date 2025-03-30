@@ -78,7 +78,7 @@ MM_Single = R6::R6Class("MM_Single",
 			for (i in 1:length(res$models)) 
 			{
 				print(paste0("i = ", i))
-#				results$save_predictions(res$pred, task, res$models[[i]])
+				results$save_predictions(res$pred, task, res$models[[i]])
 				results$save_features(res$models[[i]], task, self$task_type, i)
 			}
 			results$complete()

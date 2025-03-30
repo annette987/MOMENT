@@ -295,10 +295,3 @@ ROCMultiClass = R6::R6Class("ROCMultiClass", list(
 		return(self$auroc)
 	})
 )
-
-	
-#Get methods
-get_class_names = function(pred) {
-		stopifnot(inherits(pred, "Prediction"))
-		return(pred$task.desc$class.levels)
-}

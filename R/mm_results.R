@@ -299,7 +299,9 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @export				
 		complete = function()
 		{
+			print("Completing results")
 			if (self$model_type == "classif") {
+				print(head(private$responses))
 				self$roc$calc_mc_roc(as.factor(private$responses$truth), as.factor(private$responses$response))
 			}
 			
