@@ -55,14 +55,15 @@ Features = R6::R6Class("Features", list(
 			print("Saving features")
 			print(scores)
 			col_name = paste0(method, "-", fold_num)
-			print(str(getLearnerModel(mod, more.unwrap = FALSE)), max.level = 1)
-			selected = mlr::getFilteredFeatures(getLearnerModel(mod, more.unwrap = FALSE))
+#			print(str(getLearnerModel(mod, more.unwrap = FALSE)), max.level = 1)
+#			selected = mlr::getFilteredFeatures(getLearnerModel(mod, more.unwrap = FALSE))
+			selected = names(scores)[scores > 0]
 			print(selected)
 			not_selected = setdiff(getTaskFeatureNames(task), selected)
 			print(not_selected)
 			feat_scores = scores[, "all"]
 			names(feat_scores) = rownames(scores)
-			print(feat_scores)
+#			print(feat_scores)
 			if (length(not_selected) > 0) {
 				feat_scores[not_selected] = 0
 				names(feat_scores[not_selected]) = not_selected
