@@ -197,7 +197,7 @@ MM_Results = R6::R6Class("MM_Results",
 																	id = responses$id, 
 																	truth = responses[, grepl("^truth", colnames(responses)), drop = FALSE],
 																	predict.type = self$decision, 
-																	y = responses[, !grepl("^truth", colnames(responses)), drop = FALSE],
+																	y = responses[, grepl("^response", colnames(responses)), drop = FALSE],
 																	time = NA_real_)
 			self$perf$calculate(pred, self$tasks[[1]])
 			if (self$task_desc$type == "classif") {
@@ -207,7 +207,7 @@ MM_Results = R6::R6Class("MM_Results",
 
 		
     #' @description 
-		#' Save the predictions made by training and predicting on one fold of data, in the MM_Results container.
+		#' Save the predictions made by training and predicting on all folds of data, in the MM_Results container.
 		#' @param pred (mlr::Prediction)\cr
 		#' An mlr Prediction object containing the predictions to be saved.
 		#' @param task (mlr::Task)\cr
@@ -218,17 +218,11 @@ MM_Results = R6::R6Class("MM_Results",
 		#' @export		
 		save_predictions = function(pred, task = NULL, model = NULL)
 		{
-			if (self$model_type == "surv") {
-				predn_class = "PredictionSurv"
-			} else if (self$model_type == "multilabel") {
-				predn_class = "PredictionMultilabel"
-			} else {
-				predn_class = "PredictionClassif"
-			}
-			
 			stopifnot(any(grepl("^response|^truth", colnames(pred$data))))
-			private$responses = rbind(private$responses, pred$data)			
-			self$perf$calculate(pred, task, model)
+			private$responses = pred$data
+			for (i in 1:max(pred$iter)) {
+				self$perf$calculate(pred, task, model)
+			}
 			if (self$model_type == "classif") {
 				self$roc$calc(pred$data$truth, pred$data$response, as.list(self$classes))
 			}

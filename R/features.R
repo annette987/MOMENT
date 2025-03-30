@@ -29,7 +29,6 @@ Features = R6::R6Class("Features", list(
 	initialize = function(tasks) {
 		for (i in 1:length(tasks)) {
 			all_feats = mlr::getTaskFeatureNames(tasks[[i]])
-			print(all_feats)
 			self$featsel[[names(tasks)[[i]]]]      = data.frame(row.names = all_feats)
 			self$featsel_aggr[[names(tasks)[[i]]]] = data.frame(row.names = all_feats)
 		}
