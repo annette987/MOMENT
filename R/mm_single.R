@@ -93,7 +93,7 @@ MM_Single = R6::R6Class("MM_Single",
     #' @param active_learners (integer)
     #' @return mm_results
 		#' @export
-		learn = function(active_learners) 
+		learn = function(active_learners, config) 
 		{
 			print("Learning")
 			learners = Learners$new(self$task_type)
@@ -106,13 +106,13 @@ MM_Single = R6::R6Class("MM_Single",
 				if (active_learners <= LRN_LAST || active_learners == LRN_ALL_MODELS) {
 					for (baselrn in base_learners) {
 						if (bitwAnd(active_learners, baselrn$code) || bitwAnd(active_learners, LRN_ALL_MODELS)) {
+							print(paste0("result_idx = ", result_idx))
 							targets = getTaskTargetNames(self$tasks[[i]])
-							lrn = learners$create_learner(targets, baselrn, NULL, self$predict_type, TRUE)
+							lrn = learners$create_learner(targets, baselrn, NULL, self$predict_type, TRUE, config$baseModels[[i]]$norm, config$baseModels[[i]]$imputation)
 							res = mlr::resample(learner = lrn, task = self$tasks[[i]], measures = self$measures, resampling = self$ri, models = TRUE, extract = getFilteredFeatures)
 							print("Resampling done")
 							self$single_results[[result_idx]] = self$get_model_results(res, self$tasks[[i]])
 							result_idx = result_idx + 1
-							print(paste0("result_idx = ", result_idx))
 						}
 					}
 				} else {
@@ -121,7 +121,7 @@ MM_Single = R6::R6Class("MM_Single",
 							for (baselrn in base_learners) {
 								if (bitwAnd(active_learners, baselrn$code) || bitwAnd(active_learners, LRN_ALL_MODELS)) {
 									targets = getTaskTargetNames(self$tasks[[i]])
-									lrn = learners$create_learner(targets, baselrn, filt,  self$predict_type, TRUE)
+									lrn = learners$create_learner(targets, baselrn, filt,  self$predict_type, TRUE, config$baseModels[[i]]$norm, config$baseModels[[i]]$imputation)
 									res = mlr::resample(learner = lrn, task = self$tasks[[i]], measures = self$measures, resampling = self$ri, models = TRUE, extract = getFilteredFeatures)
 									self$single_results[[result_idx]] = self$get_model_results(res, self$tasks[[i]])
 									result_idx = result_idx + 1
