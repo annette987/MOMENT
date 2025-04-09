@@ -227,6 +227,7 @@ MM_Model = R6::R6Class("MM_Model",
 			categoricals = c()
 			if (!is.null(cat_str) && !is.na(cat_str)) {
 				categoricals = unname(unlist(strsplit(cat_str, split = ",", fixed = TRUE)))
+				categoricals = intersect(categoricals, colnames(dataset))
 				dataset[, categoricals] <- lapply(dataset[, categoricals], as.factor)
 			}
 			keep = !colnames(dataset) %in% c(config$targetVar, config$timeVar, config$statusVar, categoricals)
@@ -470,6 +471,8 @@ MM_Model = R6::R6Class("MM_Model",
 				dat = self$prepare_data(config, i, raw_data[[i]], row_names, task_type)
 
 				if (task_type == "classif") {
+					if (length(config$targetVar) > 1) {
+						config$tarver
 					tsk = mlr::makeClassifTask(id = task_id, data = dat, target = config$targetVar)
 				} else if (task_type == "multilabel") {
 					for (label in config$targetVar) {

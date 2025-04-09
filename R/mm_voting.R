@@ -93,7 +93,7 @@ MM_Voting = R6::R6Class("MM_Voting",
 					}
 				}
 				if (self$task_type != "multilabel") {
-					results$response = apply(results[, grepl("response.", colnames(results))], 1, function(x) names(which.max(x)))
+					results$response = apply(results[, grepl("prob.", colnames(results))], 1, function(x) names(which.max(x)))
 					results$response = strsplit(as.character(results$response), ".", fixed = TRUE)
 					results$response = as.factor(sapply(results$response, "[[", 2))
 					levels(results$response) = levels(results$truth)

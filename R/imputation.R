@@ -111,7 +111,8 @@ imputeKNN = function(data) {
 				data[,i][is.na(data[,i])] <- mean_val[i]
 			}
 			if (any(is.na(data))) {
-				warning("Still NAs after mean imputation")
+				warning("Still NAs after mean imputation. Setting to zero.")
+				data[is.na(data)] <- 0
 			}
 			return(data)
 	})
