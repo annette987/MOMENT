@@ -471,8 +471,6 @@ MM_Model = R6::R6Class("MM_Model",
 				dat = self$prepare_data(config, i, raw_data[[i]], row_names, task_type)
 
 				if (task_type == "classif") {
-					if (length(config$targetVar) > 1) {
-						config$tarver
 					tsk = mlr::makeClassifTask(id = task_id, data = dat, target = config$targetVar)
 				} else if (task_type == "multilabel") {
 					for (label in config$targetVar) {
